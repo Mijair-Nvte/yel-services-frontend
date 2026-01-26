@@ -9,17 +9,23 @@ import { NoticeActions } from "./notice-actions";
 import { NoticeAttachments } from "./notice-attachments";
 import { priorityStyles, categoryColors } from "./notice.styles";
 
+type NoticeLevel = keyof typeof priorityStyles;
+
 export function NoticeCard({
   notice,
   onDelete,
-   onEdit,
+  onEdit,
 }: {
   notice: any;
   onDelete?: (uid: string) => void;
   onEdit?: () => void;
 }) {
-  const level = (notice.level ?? "normal").toLowerCase();
-  const priority = priorityStyles[level] ?? priorityStyles.normal;
+  const levelRaw = (notice.level ?? "normal").toLowerCase();
+
+  const level: NoticeLevel =
+    levelRaw in priorityStyles ? (levelRaw as NoticeLevel) : "normal";
+
+  const priority = priorityStyles[level];
 
   const hasAttachments = notice.attachments?.length > 0;
 
@@ -112,7 +118,11 @@ export function NoticeCard({
               {notice.is_active ? "Activo" : "Expirado"}
             </Badge>
 
-            <NoticeActions notice={notice} onDelete={onDelete} onEdit={onEdit} />
+            <NoticeActions
+              notice={notice}
+              onDelete={onDelete}
+              onEdit={onEdit}
+            />
           </div>
         </div>
 

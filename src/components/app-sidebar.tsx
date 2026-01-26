@@ -1,15 +1,6 @@
 "use client";
 
 import * as React from "react";
-import {
-  IconDashboard,
-  IconFolder,
-  IconUsers,
-  IconSettings,
-  IconHelp,
-  IconSearch,
-  IconInnerShadowTop,
-} from "@tabler/icons-react";
 
 import { useWorkspaceStore } from "@/store/workspace.store";
 import { NavMain } from "@/components/nav-main";
@@ -24,7 +15,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Calendar, Megaphone, Paperclip } from "lucide-react";
+import {
+  LayoutDashboard,
+  FolderTree,
+  Users,
+  Settings,
+  HelpCircle,
+  Paperclip,
+  Megaphone,
+  Calendar,
+  File,
+} from "lucide-react";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { workspace } = useWorkspaceStore();
@@ -33,12 +34,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     {
       title: "Dashboard",
       url: workspace ? `/dashboard/${workspace.uid}` : "#",
-      icon: IconDashboard,
+      icon: LayoutDashboard, // Equivalente a IconDashboard
     },
     {
       title: "Departamentos",
       url: workspace ? `/dashboard/${workspace.uid}/departments` : "#",
-      icon: IconFolder,
+      icon: FolderTree, // Equivalente a IconFolder
     },
     {
       title: "Avisos",
@@ -46,33 +47,32 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: Megaphone,
     },
     {
-      title: "Ventos/Calendario",
+      title: "Eventos/Calendario", // Corregido el typo de "Ventos"
       url: workspace ? `/dashboard/${workspace.uid}/team` : "#",
       icon: Calendar,
     },
-
     {
       title: "Recursos generales",
-      url: workspace ? `/dashboard/${workspace.uid}/team` : "#",
-      icon: Paperclip,
+      url: workspace ? `/dashboard/${workspace.uid}/resources` : "#",
+      icon: File,
     },
     {
       title: "Equipo",
       url: workspace ? `/dashboard/${workspace.uid}/team` : "#",
-      icon: IconUsers,
+      icon: Users, // Equivalente a IconUsers
     },
   ];
 
   const navSecondary = [
     {
-      title: "Configuracion",
+      title: "Configuración",
       url: workspace ? `/dashboard/${workspace.uid}/settings` : "#",
-      icon: IconSettings,
+      icon: Settings, // Equivalente a IconSettings
     },
     {
-      title: "Ayudar",
+      title: "Ayuda",
       url: "#",
-      icon: IconHelp,
+      icon: HelpCircle, // Equivalente a IconHelp
     },
   ];
 
