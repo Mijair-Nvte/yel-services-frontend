@@ -10,10 +10,10 @@ export default function EditWorkspacePage() {
   const router = useRouter();
   const [workspace, setWorkspace] = useState<any>(null);
 
+  // En page.tsx
   useEffect(() => {
-    WorkspaceService.get(Number(id)).then(setWorkspace);
+    WorkspaceService.get(String(id)).then(setWorkspace);
   }, [id]);
-
   if (!workspace) return <div className="p-6">Loading...</div>;
 
   return (
