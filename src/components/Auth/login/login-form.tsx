@@ -1,35 +1,51 @@
 "use client";
 
-import { AuthService } from "@/services/auth.service";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth.store";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Loginbg from "@/app/assets/loginbg.png";
+
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field";
+
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import { useState } from "react";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
+
+  const { user, loading, login } = useAuthStore();
+
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // ✅ Redirigir automáticamente si ya hay sesión activa
+  useEffect(() => {
+    if (loading) return;
+
+    if (user) {
+      router.replace("/workspaces");
+    }
+  }, [loading, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setError(null);
-    setLoading(true);
+    setSubmitting(true);
 
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
@@ -40,17 +56,27 @@ export function LoginForm({
     };
 
     try {
-      const res = await AuthService.login(payload);
+      await login(payload);
 
-      localStorage.setItem("auth_token", res.token);
-
-      router.push("/workspaces");
+      router.replace("/workspaces");
     } catch (err: any) {
-      setError(err?.message || "Invalid credentials");
+      setError(err?.message || "Credenciales inválidas");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
+
+  // ⏳ Mientras carga auth, no renderizar formulario
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[300px]">
+        Cargando sesión...
+      </div>
+    );
+  }
+
+  // 🚫 Si ya hay sesión, no mostrar login
+  if (user) return null;
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -60,7 +86,7 @@ export function LoginForm({
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Bienvenido de nuevo</h1>
-                <p className="text-muted-foreground text-balance">
+                <p className="text-muted-foreground">
                   Inicia sesión en tu cuenta
                 </p>
               </div>
@@ -76,6 +102,7 @@ export function LoginForm({
                   name="email"
                   type="email"
                   placeholder="m@example.com"
+                  autoComplete="email"
                   required
                 />
               </Field>
@@ -83,24 +110,32 @@ export function LoginForm({
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+
                   <Link
                     href="#"
-                    className="ml-auto text-sm underline-offset-2 hover:underline"
+                    className="ml-auto text-sm text-muted-foreground hover:underline"
                   >
-                   ¿Olvidó su contraseña?
+                    ¿Olvidó su contraseña?
                   </Link>
                 </div>
-                <Input id="password" name="password" type="password" required />
+
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                />
               </Field>
 
               <Field>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Iniciando sesion..." : "Iniciar sesion"}
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting ? "Iniciando sesión..." : "Iniciar sesión"}
                 </Button>
               </Field>
 
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-              O continuar con
+                O continuar con
               </FieldSeparator>
 
               <div className="grid grid-cols-3 gap-4">
@@ -114,24 +149,16 @@ export function LoginForm({
                   Meta
                 </Button>
               </div>
-
-              <FieldDescription className="text-center">
-               ¿No tienes una cuenta? {" "}
-                <Link
-                  href="/signup"
-                  className="underline underline-offset-4 hover:text-primary"
-                >
-                 Regístrate
-                </Link>
-              </FieldDescription>
             </FieldGroup>
           </form>
 
-          <div className="bg-muted relative hidden md:block">
+          <div className="relative hidden md:block">
             <Image
               src={Loginbg}
-              alt="Image"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2]"
+              alt="Login background"
+              fill
+              className="object-cover dark:brightness-[0.25]"
+              priority
             />
           </div>
         </CardContent>

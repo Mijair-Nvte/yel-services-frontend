@@ -26,10 +26,12 @@ import {
   Calendar,
   File,
 } from "lucide-react";
+import Link from "next/link";
+import { useAuthStore } from "@/store/auth.store";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { workspace } = useWorkspaceStore();
-
+ const user = useAuthStore((state) => state.user);
   const navMain = [
     {
       title: "Dashboard",
@@ -82,11 +84,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="!p-1.5">
-              <a href="#">
-                <h1 className="text-white text-xl  font-semibold">
+              <Link href={`/dashboard/${workspace?.uid}`}>
+                <h1 className="text-white text-xl font-semibold">
                   {workspace?.name ?? "Workspace"}
                 </h1>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -100,9 +102,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <NavUser
           user={{
-            name: "User",
-            email: "user@email.com",
-            avatar: "/avatars/user.jpg",
+            name: user?.name ?? "Usuario",
+            email: user?.email ?? "",
+            avatar: user?.avatar ?? "",
           }}
         />
       </SidebarFooter>

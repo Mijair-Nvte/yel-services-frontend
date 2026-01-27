@@ -7,6 +7,7 @@ import {
   IconNotification,
   IconUserCircle,
 } from "@tabler/icons-react";
+
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 
@@ -20,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -33,12 +35,17 @@ export function NavUser({
   user: {
     name: string;
     email: string;
-    avatar: string;
+    avatar?: string;
   };
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
+
+  const shortName =
+    user.name.length > 20 ? user.name.slice(0, 20) + "…" : user.name;
+
+  const initial = user.name?.charAt(0).toUpperCase();
 
   const handleLogout = async () => {
     await logout();
@@ -55,15 +62,23 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                {user.avatar ? (
+                  <AvatarImage src={user.avatar} alt={user.name} />
+                ) : null}
+
+                <AvatarFallback className="rounded-lg">
+                  {initial}
+                </AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
+
+              <div className="grid flex-1 text-left text-sm leading-tight ">
+                <span className="truncate font-medium text-white hover:text-black">{shortName}</span>
+
                 <span className="text-muted-foreground truncate text-xs">
                   {user.email}
                 </span>
               </div>
+
               <IconDotsVertical className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -75,13 +90,19 @@ export function NavUser({
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+              <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  {user.avatar ? (
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                  ) : null}
+
+                  <AvatarFallback className="rounded-lg">
+                    {initial}
+                  </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
+
+                <div className="grid flex-1 leading-tight">
+                  <span className="truncate font-medium">{shortName}</span>
                   <span className="text-muted-foreground truncate text-xs">
                     {user.email}
                   </span>
@@ -93,24 +114,26 @@ export function NavUser({
 
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <IconUserCircle />
-                Account
+                <IconUserCircle className="mr-2 size-4" />
+                Mi cuenta
               </DropdownMenuItem>
+
               <DropdownMenuItem>
-                <IconCreditCard />
-                Billing
+                <IconCreditCard className="mr-2 size-4" />
+                Facturación
               </DropdownMenuItem>
+
               <DropdownMenuItem>
-                <IconNotification />
-                Notifications
+                <IconNotification className="mr-2 size-4" />
+                Notificaciones
               </DropdownMenuItem>
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator />
 
             <DropdownMenuItem onClick={handleLogout}>
-              <IconLogout />
-              Log out
+              <IconLogout className="mr-2 size-4" />
+              Cerrar sesión
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

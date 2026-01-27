@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+
 import { useAuthStore } from "@/store/auth.store";
+import { useWorkspaceStore } from "@/store/workspace.store";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -14,31 +16,49 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { fetchMe, loading, isAuthenticated } = useAuthStore();
 
-  // 🔑 1. Llamar /me al montar el layout
-  useEffect(() => {
-    fetchMe();
-  }, []);
+  const { user, loading } = useAuthStore();
 
-  // 🔒 2. Redirigir si NO está autenticado
+  const { workspaceUid } = useParams<{ workspaceUid: string }>();
+  const { workspace, loadWorkspace, loading: workspaceLoading } =
+    useWorkspaceStore();
+
+  // 🔒 Si no hay sesión → login
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (loading) return;
+
+    if (!user) {
       router.push("/login");
     }
-  }, [loading, isAuthenticated]);
+  }, [loading, user]);
 
-  // ⏳ 3. Loading state
+  // 📦 Cargar workspace si existe UID
+  useEffect(() => {
+    if (!workspaceUid) return;
+    if (!user) return;
+
+    loadWorkspace(workspaceUid);
+  }, [workspaceUid, user]);
+
+  // ⏳ Loading auth
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6">Verificando sesión...</div>;
   }
 
-  // 🚫 Seguridad extra (por si acaso)
-  if (!isAuthenticated) {
+  // 🚫 No render si no hay usuario
+  if (!user) return null;
+
+  // ⏳ Loading workspace
+  if (workspaceLoading) {
+    return <div className="p-6">Cargando workspace...</div>;
+  }
+
+  // 🚫 Workspace inválido
+  if (!workspace) {
+    router.push("/workspaces");
     return null;
   }
 
-  // ✅ 4. UI original intacta
   return (
     <SidebarProvider
       style={
@@ -55,7 +75,7 @@ export default function DashboardLayout({
 
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+            <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">
               {children}
             </div>
           </div>
