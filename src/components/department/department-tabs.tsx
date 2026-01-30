@@ -1,22 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { DepartmentTeam } from "./department-team";
 import { DepartmentNotices } from "./department-notices";
 import { DepartmentResources } from "./department-resources";
 
-export function DepartmentTabs({
-  departmentUid,
-}: {
-  departmentUid: string;
-}) {
+export function DepartmentTabs({ departmentUid }: { departmentUid: string }) {
   const [activeTab, setActiveTab] = useState("team");
 
   return (
@@ -34,7 +25,9 @@ export function DepartmentTabs({
       </TabsContent>
 
       <TabsContent value="notices" className="mt-6">
-        {activeTab === "notices" && <DepartmentNotices />}
+        {activeTab === "notices" && (
+          <DepartmentNotices departmentUid={departmentUid} />
+        )}
       </TabsContent>
 
       <TabsContent value="resources" className="mt-6">

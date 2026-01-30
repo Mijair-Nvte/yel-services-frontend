@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { OrgNoticeService } from "@/services/org_notices/org-notice.service";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+import { Switch } from "@/components/ui/switch";
 
 export function NoticeSheet({
   open,
@@ -37,32 +40,66 @@ export function NoticeSheet({
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [level, setLevel] = useState("info");
+
+  const [isPinned, setIsPinned] = useState(false);
+
+  const [levels, setLevels] = useState<any[]>([]);
+  const [noticeLevelId, setNoticeLevelId] = useState("");
+
   const [loading, setLoading] = useState(false);
 
-  // 🧠 Cargar datos cuando es edición
+  useEffect(() => {
+    async function loadLevels() {
+      try {
+        const data = await OrgNoticeService.levels();
+        setLevels(data);
+
+        if (!notice && data.length > 0) {
+          setNoticeLevelId(String(data[0].id));
+        }
+      } catch (err) {
+        console.error("Error cargando niveles", err);
+      }
+    }
+
+    loadLevels();
+  }, [notice]);
+
   useEffect(() => {
     if (notice) {
       setTitle(notice.title ?? "");
       setBody(notice.body ?? "");
-      setLevel(notice.level ?? "info");
+      setNoticeLevelId(String(notice.notice_level_id));
+
+      setIsPinned(notice.is_pinned ?? false);
     } else {
-      // Reset cuando es nuevo
       setTitle("");
       setBody("");
       setLevel("info");
+      setIsPinned(false);
     }
   }, [notice, open]);
 
+  // ✅ SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      await onSubmit({ title, body, level });
+      await onSubmit({
+        title,
+        body,
+        notice_level_id: Number(noticeLevelId),
+
+        is_pinned: isPinned,
+      });
+
       onClose();
     } finally {
       setLoading(false);
     }
   };
+  const selectedLevel = levels.find((lvl) => String(lvl.id) === noticeLevelId);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -71,6 +108,7 @@ export function NoticeSheet({
           <DialogTitle className="text-xl">
             {notice ? "Editar aviso" : "Crear nuevo aviso"}
           </DialogTitle>
+
           <DialogDescription>
             {notice
               ? "Actualiza la información del aviso"
@@ -108,16 +146,51 @@ export function NoticeSheet({
           {/* NIVEL */}
           <div className="space-y-2">
             <Label>Nivel del aviso</Label>
-            <Select value={level} onValueChange={setLevel}>
+
+            <Select value={noticeLevelId} onValueChange={setNoticeLevelId}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecciona el nivel" />
+                <SelectValue placeholder="Selecciona el nivel">
+                  {selectedLevel && (
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: selectedLevel.color }}
+                      />
+                      <span>{selectedLevel.name}</span>
+                    </div>
+                  )}
+                </SelectValue>
               </SelectTrigger>
+
               <SelectContent>
-                <SelectItem value="info">Informativo</SelectItem>
-                <SelectItem value="warning">Advertencia</SelectItem>
-                <SelectItem value="urgent">Urgente</SelectItem>
+                {levels.map((lvl) => (
+                  <SelectItem key={lvl.id} value={String(lvl.id)}>
+                    <div className="flex items-center justify-between w-full">
+                      <span
+                        className="px-2 py-0.5 rounded-md text-xs font-medium text-white"
+                        style={{ backgroundColor: lvl.color }}
+                      >
+                        {lvl.name.toUpperCase()}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* ✅ NUEVO: PIN SWITCH */}
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div>
+              <p className="font-medium">
+                {isPinned ? "Aviso fijado 📌" : "Fijar este aviso"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Los avisos fijados aparecen siempre arriba en el dashboard.
+              </p>
+            </div>
+
+            <Switch checked={isPinned} onCheckedChange={setIsPinned} />
           </div>
 
           {/* FOOTER */}

@@ -10,7 +10,7 @@ export function NoticeHeader({ onCreate }: { onCreate: () => void }) {
       <div>
         <h1 className="text-2xl font-bold">Avisos y Comunicados</h1>
         <p className="text-sm text-muted-foreground">
-          Centro de comunicación interna
+        Centro de comunicación interna - Mantente informado sobre las últimas novedades
         </p>
       </div>
 

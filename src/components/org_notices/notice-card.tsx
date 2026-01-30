@@ -7,41 +7,59 @@ import { Card, CardContent } from "@/components/ui/card";
 import { NoticeAvatar } from "./notice-avatar";
 import { NoticeActions } from "./notice-actions";
 import { NoticeAttachments } from "./notice-attachments";
-import { priorityStyles, categoryColors } from "./notice.styles";
-
-type NoticeLevel = keyof typeof priorityStyles;
+import { NoticeDetailDialog } from "./notice-detail-dialog";
 
 export function NoticeCard({
   notice,
   onDelete,
   onEdit,
+  onTogglePin,
 }: {
   notice: any;
   onDelete?: (uid: string) => void;
   onEdit?: () => void;
+  onTogglePin?: () => void;
 }) {
-  const levelRaw = (notice.level ?? "normal").toLowerCase();
+  const level = notice.level;
 
-  const level: NoticeLevel =
-    levelRaw in priorityStyles ? (levelRaw as NoticeLevel) : "normal";
-
-  const priority = priorityStyles[level];
+  const levelColor = level?.color ?? "#64748B";
+  const levelName = level?.name ?? "Sin nivel";
 
   const hasAttachments = notice.attachments?.length > 0;
 
+  const preview =
+    notice.body.length > 270
+      ? notice.body.slice(0, 280) + "..."
+      : notice.body;
+
   return (
     <Card
-      className={`p-6 transition-all hover:shadow-md ${priority.border} ${
+      className={`p-6 transition-all duration-300 hover:shadow-xl ${
         !notice.is_active ? "opacity-60" : ""
       }`}
+      style={{
+        borderLeft: `6px solid ${levelColor}`,
+
+        // ✅ Glow elegante
+        boxShadow: `0 0 0px transparent`,
+
+        // Glow suave base
+        background: `linear-gradient(90deg, ${levelColor}10, transparent 60%)`,
+      }}
     >
       <CardContent className="p-0 space-y-4">
         {/* HEADER */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 flex-1 min-w-0">
-            {/* ICON */}
+            {/* ICON dinámico */}
             <div
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${priority.icon}`}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-md"
+              style={{
+                backgroundColor: levelColor,
+
+                // Glow icon
+                boxShadow: `0 0 18px ${levelColor}55`,
+              }}
             >
               <Bell className="h-5 w-5" />
             </div>
@@ -53,23 +71,21 @@ export function NoticeCard({
                   {notice.title}
                 </h3>
 
-                {notice.pinned && <Pin className="h-4 w-4 text-primary" />}
-
-                {notice.level === "urgent" && (
-                  <Badge variant="outline" className={priority.badge}>
-                    Urgente
-                  </Badge>
+                {/* PIN */}
+                {notice.is_pinned && (
+                  <Pin className="h-4 w-4 text-primary" />
                 )}
 
-                {notice.category && (
+                {/* NIVEL dinámico */}
+                {notice.level && (
                   <Badge
-                    variant="outline"
-                    className={
-                      categoryColors[notice.category] ??
-                      categoryColors["General"]
-                    }
+                    className="text-white border-none px-3 py-1 rounded-full shadow-sm"
+                    style={{
+                      backgroundColor: levelColor,
+                      boxShadow: `0 0 10px ${levelColor}55`,
+                    }}
                   >
-                    {notice.category}
+                    {levelName}
                   </Badge>
                 )}
               </div>
@@ -79,14 +95,8 @@ export function NoticeCard({
                 <NoticeAvatar user={notice.creator} />
 
                 <div className="text-sm">
-                  <p className="font-medium">
-                    {notice.creator?.name}
-                    {notice.creator?.position && (
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {notice.creator.position}
-                      </span>
-                    )}
-                  </p>
+                  <p className="font-medium">{notice.creator?.name}</p>
+
                   <p className="text-muted-foreground">
                     {notice.creator?.department} ·{" "}
                     {new Date(notice.created_at).toLocaleDateString("es-MX", {
@@ -108,26 +118,28 @@ export function NoticeCard({
 
           {/* ACTIONS */}
           <div className="flex items-center gap-2 shrink-0">
-            <Badge
-              className={
-                notice.is_active
-                  ? "bg-green-100 text-green-700"
-                  : "bg-muted text-muted-foreground"
-              }
-            >
-              {notice.is_active ? "Activo" : "Expirado"}
-            </Badge>
-
             <NoticeActions
               notice={notice}
               onDelete={onDelete}
               onEdit={onEdit}
+              onTogglePin={onTogglePin}
             />
           </div>
         </div>
 
-        {/* CONTENT */}
-        <p className="text-muted-foreground leading-relaxed">{notice.body}</p>
+        {/* BODY */}
+        <div>
+          <p className="text-muted-foreground leading-relaxed">{preview}</p>
+
+          {/* VER MÁS */}
+          {notice.body.length > 140 && (
+            <NoticeDetailDialog notice={notice}>
+              <button className="text-sm text-primary hover:underline mt-2">
+                Ver más →
+              </button>
+            </NoticeDetailDialog>
+          )}
+        </div>
 
         {/* ATTACHMENTS */}
         {hasAttachments && (

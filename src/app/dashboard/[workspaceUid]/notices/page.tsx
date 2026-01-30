@@ -38,6 +38,15 @@ export default function NoticesPage() {
             setEditingNotice(notice);
             setOpen(true);
           }}
+          onTogglePin={async (notice) => {
+            if (notice.is_pinned) {
+              await OrgNoticeService.unpin(notice.uid);
+            } else {
+              await OrgNoticeService.pin(notice.uid);
+            }
+
+            await reload();
+          }}
         />
       )}
 
