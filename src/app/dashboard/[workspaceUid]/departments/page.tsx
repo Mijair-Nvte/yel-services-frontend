@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useDepartments } from "@/hooks/departments/use-departments";
 import { DepartmentCard } from "@/components/department/department-card";
-import { DepartmentSheet } from "@/components/department/department-sheet";
+import { DepartmentDialog } from "@/components/department/department-dialog";
 import { DepartmentService } from "@/services/department/department.service";
 
 export default function DepartmentsPage() {
@@ -39,7 +39,7 @@ export default function DepartmentsPage() {
         ))}
       </div>
 
-      <DepartmentSheet
+      <DepartmentDialog
         open={open}
         onClose={() => setOpen(false)}
         title="Create department"
