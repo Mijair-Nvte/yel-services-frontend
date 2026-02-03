@@ -9,6 +9,7 @@ import { useWorkspaceStore } from "@/store/workspace.store";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "sonner";
 
 export default function DashboardLayout({
   children,
@@ -20,8 +21,11 @@ export default function DashboardLayout({
   const { user, loading } = useAuthStore();
 
   const { workspaceUid } = useParams<{ workspaceUid: string }>();
-  const { workspace, loadWorkspace, loading: workspaceLoading } =
-    useWorkspaceStore();
+  const {
+    workspace,
+    loadWorkspace,
+    loading: workspaceLoading,
+  } = useWorkspaceStore();
 
   // 🔒 Si no hay sesión → login
   useEffect(() => {
@@ -72,7 +76,7 @@ export default function DashboardLayout({
 
       <SidebarInset>
         <SiteHeader />
-
+        <Toaster richColors position="top-right" />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 p-4 md:gap-6 md:py-6">

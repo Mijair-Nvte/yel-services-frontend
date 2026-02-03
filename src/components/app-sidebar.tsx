@@ -25,6 +25,9 @@ import {
   Megaphone,
   Calendar,
   File,
+  Clipboard,
+  Link2,
+  Link2Icon,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -49,12 +52,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: Megaphone,
     },
     {
-      title: "Eventos/Calendario", // Corregido el typo de "Ventos"
-      url: workspace ? `/dashboard/${workspace.uid}/team` : "#",
-      icon: Calendar,
+      title: "Links", // Corregido el typo de "Ventos"
+      url: workspace ? `/dashboard/${workspace.uid}/links` : "#",
+      icon: Link2Icon,
     },
     {
-      title: "Recursos generales",
+      title: "Archivos",
       url: workspace ? `/dashboard/${workspace.uid}/resources` : "#",
       icon: File,
     },
