@@ -33,7 +33,7 @@ export function ConfirmDeleteDialog({
     <AlertDialog>
       {/* TRIGGER */}
       <AlertDialogTrigger asChild>
-        <Button size="icon" variant="destructive">
+        <Button size="sm" variant="destructive">
           <Trash2Icon className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>

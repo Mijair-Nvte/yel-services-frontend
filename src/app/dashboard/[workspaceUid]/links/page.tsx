@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useOrgLinks } from "@/hooks/org_links/use-org-links";
 import { OrgLinkService } from "@/services/org_links/org-link.service";
@@ -10,6 +10,10 @@ import { LinkHeader } from "@/components/org_links/link-header";
 import { LinkList } from "@/components/org_links/link-list";
 import { LinkSheet } from "@/components/org_links/link-sheet";
 
+import { Input } from "@/components/ui/input";
+
+import { Search, X } from "lucide-react";
+
 export default function LinksPage() {
   const { workspaceUid } = useParams<{ workspaceUid: string }>();
 
@@ -17,6 +21,18 @@ export default function LinksPage() {
 
   const [open, setOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<any | null>(null);
+
+  // ✅ SEARCH STATE
+  const [query, setQuery] = useState("");
+
+  // ✅ FILTERED LINKS
+  const filteredLinks = useMemo(() => {
+    if (!query.trim()) return links;
+
+    return links.filter((link) =>
+      `${link.title} ${link.url}`.toLowerCase().includes(query.toLowerCase()),
+    );
+  }, [links, query]);
 
   return (
     <div className="space-y-6">
@@ -28,12 +44,41 @@ export default function LinksPage() {
         }}
       />
 
+      {/* ✅ SEARCH BAR PRO */}
+      <div className="relative max-w-md">
+        {/* ICON LEFT */}
+        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+
+        {/* INPUT */}
+        <Input
+          placeholder="Buscar enlace..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="pl-9 pr-9"
+        />
+
+        {/* ❌ CLEAR BUTTON */}
+        {query.trim().length > 0 && (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
       {/* LIST */}
       {loading ? (
         <div className="text-sm text-muted-foreground">Cargando enlaces…</div>
+      ) : filteredLinks.length === 0 ? (
+        <div className="text-sm text-muted-foreground">
+          No se encontraron enlaces con “{query}”.
+        </div>
       ) : (
         <LinkList
-          links={links}
+          links={filteredLinks}
           onDelete={removeLink}
           onEdit={(link) => {
             setEditingLink(link);
