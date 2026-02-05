@@ -25,21 +25,25 @@ export function DepartmentDialog({
   open: boolean;
   onClose: () => void;
   title: string;
-  onSubmit: (data: any) => void;
-  initialData?: any;
+  onSubmit: (data: {
+    name: string;
+    description?: string;
+  }) => void;
+  initialData?: {
+    name?: string;
+    description?: string;
+  };
 }) {
-  const [name, setName] = useState(initialData?.name ?? "");
-  const [description, setDescription] = useState(
-    initialData?.description ?? ""
-  );
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
 
-  // ✅ Reset form when dialog closes
+  // 🧠 Sync data when editing
   useEffect(() => {
-    if (!open) {
-      setName("");
-      setDescription("");
+    if (open) {
+      setName(initialData?.name ?? "");
+      setDescription(initialData?.description ?? "");
     }
-  }, [open]);
+  }, [initialData, open]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -52,9 +56,7 @@ export function DepartmentDialog({
           className="space-y-4 mt-4"
           onSubmit={(e) => {
             e.preventDefault();
-
             onSubmit({ name, description });
-
             onClose();
           }}
         >
@@ -74,11 +76,13 @@ export function DepartmentDialog({
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">
-                Cancel
+                Cancelar
               </Button>
             </DialogClose>
 
-            <Button type="submit">Save</Button>
+            <Button type="submit">
+              Guardar
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -10,10 +10,15 @@ export const DepartmentService = {
       body: JSON.stringify(payload),
     }),
 
-  update: (areaId: number, payload: any) =>
-    apiFetch(`/org-areas/${areaId}`, {
+  update: (departmentUid: string, payload: any) =>
+    apiFetch(`/org-areas/${departmentUid}`, {
       method: "PUT",
       body: JSON.stringify(payload),
+    }),
+
+  delete: (departmentUid: string) =>
+    apiFetch(`/org-areas/${departmentUid}`, {
+      method: "DELETE",
     }),
 
   get: (departmentUid: string) => apiFetch(`/org-areas/${departmentUid}`),

@@ -3,32 +3,48 @@
 import {
   Users,
   Briefcase,
-  ArrowRight,
   Building2,
+  MoreVertical,
+  Pencil,
+  Trash,
 } from "lucide-react";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+
 export function DepartmentCard({
   department,
   onClick,
+  onEdit,
+  onDelete,
 }: {
   department: {
+    uid: string;
     name: string;
     description?: string;
     members_count?: number;
     positions_count?: number;
-    status?: "active" | "inactive";
+    is_active?: boolean;
   };
   onClick: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
-  const isActive = department.status !== "inactive";
+  const isActive = department.is_active !== false;
 
   return (
     <Card
       onClick={onClick}
-      className="card-interactive p-6 group cursor-pointer"
+      className="card-interactive p-6 cursor-pointer"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -49,7 +65,6 @@ export function DepartmentCard({
                 Departamento
               </span>
 
-              {/* Status badge */}
               <span
                 className={cn(
                   "rounded-full px-2 py-0.5 text-[10px] font-medium",
@@ -64,18 +79,37 @@ export function DepartmentCard({
           </div>
         </div>
 
-        {/* Action */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <ArrowRight className="h-4 w-4" />
-        </Button>
+        {/* Dropdown Actions */}
+        <div onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={onEdit}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={onDelete}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Description */}
-      <p className="text-sm text-muted-foreground mb-4">
+      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
         {department.description || "Sin descripción"}
       </p>
 
