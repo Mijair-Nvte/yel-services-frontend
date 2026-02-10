@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -12,22 +12,18 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { apiFetch } from "@/services/http";
 
-export function InviteSignupForm() {
-  const params = useSearchParams();
+export function InviteSignupForm({ token }: { token: string }) {
   const router = useRouter();
-  const token = params.get("token");
 
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(true); // validar invitación
-  const [submitting, setSubmitting] = useState(false); // submit form
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // 🔹 Validar invitación
   useEffect(() => {
-    if (!token) return;
-
     apiFetch(`/org-invitations/${token}`)
       .then((res) => {
         setEmail(res.email);
@@ -87,19 +83,16 @@ export function InviteSignupForm() {
               Completa tu registro
             </h1>
 
-            {/* NOMBRE */}
             <Field>
               <FieldLabel>Nombre</FieldLabel>
               <Input name="name" required />
             </Field>
 
-            {/* EMAIL BLOQUEADO */}
             <Field>
               <FieldLabel>Correo electrónico</FieldLabel>
               <Input value={email} disabled />
             </Field>
 
-            {/* PASSWORD */}
             <Field>
               <div className="relative">
                 <Input
@@ -119,7 +112,6 @@ export function InviteSignupForm() {
               </div>
             </Field>
 
-            {/* CONFIRM PASSWORD */}
             <Field>
               <div className="relative">
                 <Input
@@ -145,17 +137,9 @@ export function InviteSignupForm() {
               </div>
             </Field>
 
-            {/* SUBMIT */}
-            <Button
-              className="w-full"
-              type="submit"
-              disabled={submitting}
-            >
+            <Button className="w-full" type="submit" disabled={submitting}>
               {submitting && (
-                <Spinner
-                  data-icon="inline-start"
-                  className="mr-2"
-                />
+                <Spinner data-icon="inline-start" className="mr-2" />
               )}
               {submitting ? "Creando cuenta..." : "Crear cuenta"}
             </Button>
