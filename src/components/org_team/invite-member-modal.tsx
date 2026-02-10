@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -20,8 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDepartments } from "@/hooks/departments/use-departments";
 
+import { useDepartments } from "@/hooks/departments/use-departments";
 import { useOrgInvitations } from "@/hooks/org_team/use-org-invitations";
 
 export function InviteMemberModal({ workspaceUid }: { workspaceUid: string }) {
@@ -31,25 +32,29 @@ export function InviteMemberModal({ workspaceUid }: { workspaceUid: string }) {
   const [role, setRole] = useState("member");
   const [open, setOpen] = useState(false);
 
-  const { departments, loading: loadingDepartments } =
-    useDepartments(workspaceUid);
-
+  const { departments } = useDepartments(workspaceUid);
   const [departmentId, setDepartmentId] = useState<string | null>(null);
 
   const handleInvite = async () => {
-    if (!email) return;
+    if (!email) {
+      toast.error("Ingresa un correo válido");
+      return;
+    }
 
     try {
-      await inviteMember(email, role, departmentId); // ✅ ahora sí
+      await inviteMember(email, role, departmentId);
 
-      alert("Invitación enviada correctamente ✅");
+      toast.success("Invitación enviada correctamente");
 
       setEmail("");
       setRole("member");
-      setDepartmentId(null); // ✅ reset también
+      setDepartmentId(null);
       setOpen(false);
     } catch (err: any) {
-      alert(err?.message ?? "Error al invitar usuario");
+      toast.error(
+        err?.message ??
+          "Ocurrió un error al enviar la invitación"
+      );
     }
   };
 
@@ -78,12 +83,13 @@ export function InviteMemberModal({ workspaceUid }: { workspaceUid: string }) {
               <SelectValue placeholder="Selecciona rol" />
             </SelectTrigger>
 
-            <SelectContent className="w-full">
+            <SelectContent>
               <SelectItem value="member">Miembro</SelectItem>
               <SelectItem value="admin">Administrador</SelectItem>
             </SelectContent>
           </Select>
 
+          {/* Departamento */}
           <Select
             value={departmentId ?? ""}
             onValueChange={(val) => setDepartmentId(val)}
@@ -92,7 +98,7 @@ export function InviteMemberModal({ workspaceUid }: { workspaceUid: string }) {
               <SelectValue placeholder="Asignar departamento (opcional)" />
             </SelectTrigger>
 
-            <SelectContent className="w-full">
+            <SelectContent>
               {departments.map((dep) => (
                 <SelectItem key={dep.id} value={String(dep.id)}>
                   {dep.name}
@@ -100,8 +106,13 @@ export function InviteMemberModal({ workspaceUid }: { workspaceUid: string }) {
               ))}
             </SelectContent>
           </Select>
+
           {/* Button */}
-          <Button className="w-full" onClick={handleInvite} disabled={loading}>
+          <Button
+            className="w-full"
+            onClick={handleInvite}
+            disabled={loading}
+          >
             {loading ? "Enviando..." : "Enviar invitación"}
           </Button>
         </div>

@@ -15,7 +15,7 @@ export default function InviteClient() {
     // guardar token para registro
     localStorage.setItem("invite_token", token);
 
-    router.push(`/signup?token=${token}`);
+    router.push(`/signup/invite?token=${token}`);
   }, [params, router]);
 
   return <p>Procesando invitación...</p>;
