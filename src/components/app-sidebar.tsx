@@ -28,6 +28,7 @@ import {
   Clipboard,
   Link2,
   Link2Icon,
+  Calendar1,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -45,6 +46,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       title: "Departamentos",
       url: workspace ? `/dashboard/${workspace.uid}/departments` : "#",
       icon: FolderTree, // Equivalente a IconFolder
+    },
+      {
+      title: "Calendario",
+      url: workspace ? `/dashboard/${workspace.uid}/calendar` : "#",
+      icon: Calendar1,
     },
     {
       title: "Avisos",
