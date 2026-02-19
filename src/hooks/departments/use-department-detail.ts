@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DepartmentService } from "@/services/department/department.service";
+import { DepartmentService } from "@/services/org_department/org-area.service";
 
 export function useDepartment(departmentUid: string) {
   const [department, setDepartment] = useState<any>(null);

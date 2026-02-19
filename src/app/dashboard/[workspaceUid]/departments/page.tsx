@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useDepartments } from "@/hooks/departments/use-departments";
 import { DepartmentCard } from "@/components/department/department-card";
 import { DepartmentDialog } from "@/components/department/department-dialog";
-import { DepartmentService } from "@/services/department/department.service";
+import { DepartmentService } from "@/services/org_department/org-area.service";
 
 export default function DepartmentsPage() {
   const router = useRouter();

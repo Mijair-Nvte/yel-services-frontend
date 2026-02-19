@@ -10,6 +10,8 @@ import {
 
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -51,6 +53,7 @@ export function NavUser({
     await logout();
     router.push("/login");
   };
+  const { workspaceUid } = useParams<{ workspaceUid: string }>();
 
   return (
     <SidebarMenu>
@@ -72,7 +75,9 @@ export function NavUser({
               </Avatar>
 
               <div className="grid flex-1 text-left text-sm leading-tight ">
-                <span className="truncate font-medium text-white hover:text-black">{shortName}</span>
+                <span className="truncate font-medium text-white hover:text-black">
+                  {shortName}
+                </span>
 
                 <span className="text-muted-foreground truncate text-xs">
                   {user.email}
@@ -113,19 +118,11 @@ export function NavUser({
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle className="mr-2 size-4" />
-                Mi cuenta
-              </DropdownMenuItem>
-
-              <DropdownMenuItem>
-                <IconCreditCard className="mr-2 size-4" />
-                Facturación
-              </DropdownMenuItem>
-
-              <DropdownMenuItem>
-                <IconNotification className="mr-2 size-4" />
-                Notificaciones
+              <DropdownMenuItem asChild>
+                <Link href={`/dashboard/${workspaceUid}/account`}>
+                  <IconUserCircle className="mr-2 size-4" />
+                  Mi cuenta
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
 

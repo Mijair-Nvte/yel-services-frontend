@@ -11,26 +11,24 @@ export default function TeamPage() {
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const load = async () => {
     if (!workspaceUid) return;
 
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = await OrgCompanyService.team(workspaceUid);
-        setMembers(data);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    try {
+      const data = await OrgCompanyService.team(workspaceUid);
+      setMembers(data);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     load();
   }, [workspaceUid]);
 
   return (
     <div className="space-y-6">
-     
-
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Equipo</h1>
@@ -46,7 +44,7 @@ export default function TeamPage() {
       {loading ? (
         <div className="text-sm text-muted-foreground">Cargando equipo…</div>
       ) : (
-        <TeamGrid members={members} />
+        <TeamGrid members={members} workspaceUid={workspaceUid} reload={load} />
       )}
     </div>
   );
