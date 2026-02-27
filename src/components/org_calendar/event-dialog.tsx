@@ -151,8 +151,8 @@ export function EventDialog({ open, onOpenChange, onSubmit, onDelete, eventToEdi
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Ubicación</Label>
-              <Input placeholder="Ej: Oficina central" value={location} onChange={(e) => setLocation(e.target.value)} />
+              <Label>Modalidad</Label>
+              <Input placeholder="Ej: En linea, presencial" value={location} onChange={(e) => setLocation(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Link de reunión</Label>
