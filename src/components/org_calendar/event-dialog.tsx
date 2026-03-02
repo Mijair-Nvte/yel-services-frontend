@@ -2,14 +2,24 @@
 
 import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns"; // 🔥 IMPORTANTE
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { EVENT_COLORS, CalendarColorKey, DEFAULT_EVENT_COLOR } from "@/lib/calendar-colors";
+import {
+  EVENT_COLORS,
+  CalendarColorKey,
+  DEFAULT_EVENT_COLOR,
+} from "@/lib/calendar-colors";
 import { cn } from "@/lib/utils";
 import { Trash2 } from "lucide-react"; // Para el botón de borrar
 
@@ -22,7 +32,14 @@ interface Props {
   defaultDate?: Date;
 }
 
-export function EventDialog({ open, onOpenChange, onSubmit, onDelete, eventToEdit, defaultDate }: Props) {
+export function EventDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  onDelete,
+  eventToEdit,
+  defaultDate,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -30,6 +47,7 @@ export function EventDialog({ open, onOpenChange, onSubmit, onDelete, eventToEdi
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [meetingUrl, setMeetingUrl] = useState("");
+  const [externalUrl, setExternalUrl] = useState("");
   const [isAllDay, setIsAllDay] = useState(false);
   const [color, setColor] = useState<CalendarColorKey>(DEFAULT_EVENT_COLOR);
   const [startDate, setStartDate] = useState("");
@@ -45,21 +63,33 @@ export function EventDialog({ open, onOpenChange, onSubmit, onDelete, eventToEdi
         setDescription(eventToEdit.description || "");
         setLocation(eventToEdit.location || "");
         setMeetingUrl(eventToEdit.meeting_url || "");
+        setExternalUrl(eventToEdit.external_url || "");
         setIsAllDay(eventToEdit.is_all_day);
-        setColor((eventToEdit.color as CalendarColorKey) || DEFAULT_EVENT_COLOR);
-        
+        setColor(
+          (eventToEdit.color as CalendarColorKey) || DEFAULT_EVENT_COLOR,
+        );
+
         // Formateo especial para el input type="datetime-local" (yyyy-MM-ddThh:mm)
-        setStartDate(format(parseISO(eventToEdit.starts_at), "yyyy-MM-dd'T'HH:mm"));
-        setEndDate(eventToEdit.ends_at ? format(parseISO(eventToEdit.ends_at), "yyyy-MM-dd'T'HH:mm") : "");
+        setStartDate(
+          format(parseISO(eventToEdit.starts_at), "yyyy-MM-dd'T'HH:mm"),
+        );
+        setEndDate(
+          eventToEdit.ends_at
+            ? format(parseISO(eventToEdit.ends_at), "yyyy-MM-dd'T'HH:mm")
+            : "",
+        );
       } else {
         // Reset para Nuevo Evento
         setTitle("");
         setDescription("");
         setLocation("");
         setMeetingUrl("");
+        setExternalUrl("");
         setIsAllDay(false);
         setColor(DEFAULT_EVENT_COLOR);
-        setStartDate(defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : "");
+        setStartDate(
+          defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : "",
+        );
         setEndDate("");
       }
     }
@@ -83,6 +113,7 @@ export function EventDialog({ open, onOpenChange, onSubmit, onDelete, eventToEdi
         location,
         color,
         meeting_url: meetingUrl || null,
+        external_url: externalUrl || null,
         starts_at: new Date(startDate).toISOString(),
         ends_at: endDate ? new Date(endDate).toISOString() : null,
         is_all_day: isAllDay,
@@ -100,7 +131,7 @@ export function EventDialog({ open, onOpenChange, onSubmit, onDelete, eventToEdi
   const handleDeleteClick = async () => {
     if (!onDelete) return;
     if (!confirm("¿Estás seguro de que deseas eliminar este evento?")) return;
-    
+
     try {
       setIsDeleting(true);
       await onDelete();
@@ -116,47 +147,75 @@ export function EventDialog({ open, onOpenChange, onSubmit, onDelete, eventToEdi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Editar Evento" : "Nuevo Evento"}</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Editar Evento" : "Nuevo Evento"}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5 py-2">
-           {/* ... TODOS TUS CAMPOS DEL FORMULARIO SE QUEDAN EXACTAMENTE IGUAL ... */}
-           <div className="space-y-2">
+          {/* ... TODOS TUS CAMPOS DEL FORMULARIO SE QUEDAN EXACTAMENTE IGUAL ... */}
+          <div className="space-y-2">
             <Label>Título</Label>
-            <Input placeholder="Ej: Seminario de inversión" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Input
+              placeholder="Ej: Seminario de inversión"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
-             <Label>Color del evento</Label>
-             <div className="flex gap-2">
-                {(Object.keys(EVENT_COLORS) as CalendarColorKey[]).map((c) => (
-                    <button
-                        key={c}
-                        type="button"
-                        onClick={() => setColor(c)}
-                        className={cn(
-                            "w-6 h-6 rounded-full transition-all ring-offset-2 ring-offset-background",
-                            EVENT_COLORS[c].picker,
-                            color === c ? "ring-2 scale-110" : "opacity-70 hover:opacity-100"
-                        )}
-                    />
-                ))}
-             </div>
+            <Label>Color del evento</Label>
+            <div className="flex gap-2">
+              {(Object.keys(EVENT_COLORS) as CalendarColorKey[]).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={cn(
+                    "w-6 h-6 rounded-full transition-all ring-offset-2 ring-offset-background",
+                    EVENT_COLORS[c].picker,
+                    color === c
+                      ? "ring-2 scale-110"
+                      : "opacity-70 hover:opacity-100",
+                  )}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label>Descripción</Label>
-            <Textarea placeholder="Detalles del evento..." value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Textarea
+              placeholder="Detalles del evento..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Modalidad</Label>
-              <Input placeholder="Ej: En linea, presencial" value={location} onChange={(e) => setLocation(e.target.value)} />
+              <Input
+                placeholder="Ej: En linea, presencial"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label>Link de reunión</Label>
-              <Input placeholder="https://meet.google.com/..." value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} />
+              <Input
+                placeholder="https://meet.google.com/..."
+                value={meetingUrl}
+                onChange={(e) => setMeetingUrl(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Link Registro</Label>
+              <Input
+                placeholder="https://tusitio.com/evento"
+                value={externalUrl}
+                onChange={(e) => setExternalUrl(e.target.value)}
+              />
             </div>
           </div>
 
@@ -168,12 +227,20 @@ export function EventDialog({ open, onOpenChange, onSubmit, onDelete, eventToEdi
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Inicio</Label>
-              <Input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Input
+                type="datetime-local"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
             </div>
             {!isAllDay && (
               <div className="space-y-2">
                 <Label>Fin</Label>
-                <Input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                <Input
+                  type="datetime-local"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
               </div>
             )}
           </div>
@@ -181,19 +248,28 @@ export function EventDialog({ open, onOpenChange, onSubmit, onDelete, eventToEdi
 
         <DialogFooter className="flex justify-between sm:justify-between w-full">
           {isEditing && onDelete ? (
-            <Button variant="destructive" size="icon" onClick={handleDeleteClick} disabled={loading || isDeleting}>
-                <Trash2 className="h-4 w-4" />
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={handleDeleteClick}
+              disabled={loading || isDeleting}
+            >
+              <Trash2 className="h-4 w-4" />
             </Button>
           ) : (
-             <div /> // Espaciador para mantener el layout flex-between
+            <div /> // Espaciador para mantener el layout flex-between
           )}
-          
+
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading || isDeleting}>
-                Cancelar
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={loading || isDeleting}
+            >
+              Cancelar
             </Button>
             <Button onClick={handleSubmit} disabled={loading || isDeleting}>
-                {loading ? "Guardando..." : "Guardar Cambios"}
+              {loading ? "Guardando..." : "Guardar Cambios"}
             </Button>
           </div>
         </DialogFooter>
