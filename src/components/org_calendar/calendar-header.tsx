@@ -13,6 +13,12 @@ interface Props {
   onOpenCreate?: () => void;
 }
 
+  const VIEW_LABELS: Record<CalendarView, string> = {
+  day: "Día",
+  week: "Semana",
+  month: "Mes",
+};
+
 export function CalendarHeader({
   view,
   setView,
@@ -20,6 +26,9 @@ export function CalendarHeader({
   setCurrentDate,
   onOpenCreate,
 }: Props) {
+
+
+
   const handlePrev = () => {
     const newDate = new Date(currentDate);
 
@@ -74,15 +83,13 @@ export function CalendarHeader({
             variant={view === v ? "default" : "outline"}
             size="sm"
             onClick={() => setView(v)}
-            className="capitalize"
+          
           >
-            {v}
+            {VIEW_LABELS[v]}
           </Button>
         ))}
       </div>
-      {/* Separador visual */}
-        <Separator orientation="vertical" className="h-6 mx-2" />
-
+   
         {/* 🔥 Botón de Nuevo Evento */}
         <Button onClick={onOpenCreate} size="sm" className="h-9">
           <Plus className="mr-2 h-4 w-4" />
