@@ -59,18 +59,49 @@ export function useResourceBrowser(params: {
   };
 
   // ➕ subir documento
-  const uploadDocument = async (file: File) => {
+  const uploadDocument = async (
+    file: File,
+    onProgress: (p: number) => void
+  ) => {
     if (!currentFolder) return;
 
-    await DocumentService.upload({
+    // 1️⃣ Presign
+    const presign = await DocumentService.presign({
       file,
       folderUid: currentFolder.uid,
     });
 
-    // refrescar documentos
+    // 2️⃣ Upload con progreso REAL
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          onProgress(percent);
+        }
+      };
+
+      xhr.onload = () =>
+        xhr.status < 300 ? resolve() : reject(new Error("Upload failed"));
+      xhr.onerror = () => reject(new Error("Upload error"));
+
+      xhr.open("PUT", presign.upload_url);
+      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.send(file);
+    });
+
+    // 3️⃣ Confirmar
+    await DocumentService.confirm({
+      folder_uid: currentFolder.uid,
+      original_name: file.name,
+      mime_type: file.type,
+      file_size: file.size,
+      key: presign.key,
+    });
+
     await openFolder(currentFolder);
   };
-
   // 🗑️ eliminar documento
   const deleteDocument = async (doc: any) => {
     await DocumentService.delete(doc.uid);

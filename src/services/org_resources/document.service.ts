@@ -2,31 +2,29 @@
 import { apiFetch } from "@/services/http";
 
 export const DocumentService = {
-  upload: async (params: { file: File; folderUid: string }) => {
-    const form = new FormData();
-    form.append("file", params.file);
-    form.append("folder_uid", params.folderUid);
-
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents`, {
+  presign: (params: { file: File; folderUid: string }) =>
+    apiFetch("/documents/presign", {
       method: "POST",
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
+      body: JSON.stringify({
+        folder_uid: params.folderUid,
+        file_name: params.file.name,
+        mime_type: params.file.type,
+        file_size: params.file.size,
+      }),
+    }),
 
-      },
-      body: form,
-    });
+  confirm: (payload: {
+    folder_uid: string;
+    original_name: string;
+    mime_type: string;
+    file_size: number;
+    key: string;
+  }) =>
+    apiFetch("/documents/confirm", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw data;
-    }
-
-    return data;
-  },
-
-  delete: (uid: string) => apiFetch(`/documents/${uid}`, { method: "DELETE" }),
+  delete: (uid: string) =>
+    apiFetch(`/documents/${uid}`, { method: "DELETE" }),
 };
