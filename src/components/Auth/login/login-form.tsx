@@ -134,21 +134,9 @@ export function LoginForm({
                 </Button>
               </Field>
 
-              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                O continuar con
-              </FieldSeparator>
+           
 
-              <div className="grid grid-cols-3 gap-4">
-                <Button variant="outline" type="button">
-                  Apple
-                </Button>
-                <Button variant="outline" type="button">
-                  Google
-                </Button>
-                <Button variant="outline" type="button">
-                  Meta
-                </Button>
-              </div>
+           
             </FieldGroup>
           </form>
 
