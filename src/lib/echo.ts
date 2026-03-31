@@ -1,15 +1,32 @@
-"use client";
-
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 
-let echo: Echo | null = null;
+declare global {
+  interface Window {
+    Pusher: typeof Pusher;
+  }
+}
+
+let echo: Echo<any> | null = null;
+let currentToken: string | null = null;
 
 export function getEcho() {
-  if (!echo && typeof window !== "undefined") {
-    window.Pusher = Pusher;
+  if (typeof window === "undefined") return null;
 
-    const token = localStorage.getItem("auth_token");
+  const token = localStorage.getItem("auth_token");
+
+  if (!token) return null;
+
+  // 🔥 SI CAMBIA TOKEN → RECREAR ECHO
+  if (echo && currentToken !== token) {
+    echo.disconnect();
+    echo = null;
+  }
+
+  if (!echo) {
+    currentToken = token;
+
+    window.Pusher = Pusher;
 
     echo = new Echo({
       broadcaster: "pusher",
@@ -17,13 +34,32 @@ export function getEcho() {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
       forceTLS: true,
 
-      authEndpoint: `${process.env.NEXT_PUBLIC_APP_URL}/broadcasting/auth`,
+      authorizer: (channel: any) => {
+        return {
+          authorize: async (socketId: string, callback: any) => {
+            try {
+              const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
-      // ✅ FIX: evitar token null
-      auth: {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
+              const res = await fetch(`${API_URL}/broadcasting/auth`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                  Accept: "application/json",
+                },
+                body: JSON.stringify({
+                  socket_id: socketId,
+                  channel_name: channel.name,
+                }),
+              });
+
+              const data = await res.json();
+              callback(false, data);
+            } catch (error) {
+              callback(true, error);
+            }
+          },
+        };
       },
     });
   }
