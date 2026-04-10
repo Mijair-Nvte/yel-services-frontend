@@ -29,13 +29,14 @@ import {
   Link2,
   Link2Icon,
   Calendar1,
+  BadgeDollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { workspace } = useWorkspaceStore();
- const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user);
   const navMain = [
     {
       title: "Dashboard",
@@ -47,7 +48,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       url: workspace ? `/dashboard/${workspace.uid}/departments` : "#",
       icon: FolderTree, // Equivalente a IconFolder
     },
-      {
+    {
       title: "Calendario",
       url: workspace ? `/dashboard/${workspace.uid}/calendar` : "#",
       icon: Calendar1,
@@ -71,6 +72,16 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       title: "Equipo",
       url: workspace ? `/dashboard/${workspace.uid}/team` : "#",
       icon: Users, // Equivalente a IconUsers
+    },
+    {
+      title: "Ventas y Comisiones",
+      url: workspace ? `/dashboard/${workspace.uid}/sales` : "#",
+      icon: BadgeDollarSign, // Equivalente a IconUsers
+    },
+    {
+      title: "Mapeo de Enlaces",
+      url: workspace ? `/dashboard/${workspace.uid}/link-mappings` : "#",
+      icon: Link2, // Usa Link2 de lucide-react
     },
   ];
 
