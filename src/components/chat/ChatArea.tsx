@@ -30,9 +30,9 @@ export function ChatArea({ activeUser }: ChatAreaProps) {
 
   return (
     <div className="flex h-full flex-col bg-background">
-      <ChatHeader user={activeUser} />
+      <ChatHeader  />
       {/* Pasamos los mensajes al MessageList */}
-      <MessageList messages={messages} />
+      <MessageList  />
       {/* Le pasamos la función para enviar al input */}
       <MessageInput onSend={handleSendMessage} />
     </div>
