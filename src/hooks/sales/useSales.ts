@@ -18,25 +18,27 @@ export function useSales(workspaceUid: string) {
     }, [workspaceUid]);
 
     useEffect(() => {
-        if (workspaceUid) {
-            fetchSales();
-        }
+        if (workspaceUid) fetchSales();
     }, [workspaceUid, fetchSales]);
 
-    const updateStatus = async (saleId: number, newStatus: string) => {
+    const updateStatus = async (saleId: number, newStatus: string, payoutDate: string | null, commissionAmount: number) => {
         try {
-            // Actualización visual instantánea (Optimistic update)
+            await SalesService.updateCommissionStatus(workspaceUid, saleId, newStatus, payoutDate, commissionAmount);
+            
+            // Actualizamos localmente para reflejar el cambio en la tabla
             setSales((prev) =>
                 prev.map((s) =>
-                    s.id === saleId ? { ...s, commission_status: newStatus } : s
+                    s.id === saleId ? { 
+                        ...s, 
+                        commission_status: newStatus, 
+                        seller_payout_date: payoutDate,
+                        commission_amount: commissionAmount 
+                    } : s
                 )
             );
-
-            // Petición real al servidor
-            await SalesService.updateCommissionStatus(workspaceUid, saleId, newStatus);
         } catch (err) {
-            console.error("Error al actualizar estatus", err);
-            fetchSales(); // Revertimos si hay error
+            console.error("Error al actualizar", err);
+            fetchSales();
         }
     };
 

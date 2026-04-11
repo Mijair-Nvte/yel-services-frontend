@@ -1,6 +1,13 @@
 "use client";
 
-import { Eye, Store, Link as LinkIcon, User, DollarSign, Calendar } from "lucide-react";
+import {
+  Eye,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  CircleAlert,
+  User,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,103 +18,186 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 const formatMoney = (amount: number) => {
+  const safeAmount = isNaN(amount) ? 0 : amount;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(amount);
+  }).format(safeAmount);
 };
 
-const getStatusBadge = (status: string) => {
-  if (status === "paid")
-    return (
-      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-        Pagada
-      </Badge>
-    );
-  if (status === "pending")
-    return (
-      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full">
-        <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
-        Pendiente
-      </Badge>
-    );
-  return (
-    <Badge variant="outline" className="bg-slate-50 text-slate-500 border-slate-200 px-2.5 py-0.5 rounded-full">
-      No aplica
-    </Badge>
-  );
-};
+export function SalesTable({
+  sales,
+  onViewDetail,
+}: {
+  sales: any[];
+  onViewDetail: (s: any) => void;
+}) {
+  const getLocalDate = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    const cleanDate = dateStr.split("T")[0];
+    return new Date(cleanDate + "T12:00:00");
+  };
 
-export function SalesTable({ sales, onViewDetail }: { sales: any[]; onViewDetail: (s: any) => void }) {
+  const renderStatus = (sale: any) => {
+    const status = sale.commission_status;
+    const payoutDate = getLocalDate(sale.seller_payout_date);
+
+    if (status === "paid") {
+      return (
+        <div className="flex flex-col items-start gap-1">
+          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100/50 shadow-none font-semibold px-2 py-0.5 rounded-md flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            Pagada
+          </Badge>
+          {payoutDate && (
+            <span className="text-[10px] text-slate-400 font-medium tracking-tight ml-0.5">
+              {payoutDate.toLocaleDateString("es-MX", { day: '2-digit', month: 'short',year: 'numeric'  })}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    if (status === "pending") {
+      return (
+        <div className="flex flex-col items-start gap-1">
+          <Badge className="bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100/50 shadow-none font-semibold px-2 py-0.5 rounded-md flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Pendiente
+          </Badge>
+          {payoutDate && (
+            <span className="text-[10px] text-indigo-500 font-semibold ml-0.5 flex items-center gap-1">
+              Pagar el: {payoutDate.toLocaleDateString("es-MX", { day: '2-digit', month: 'short' })}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Badge className="bg-slate-50 text-slate-400 border-slate-100 shadow-none font-medium px-2 py-0.5 rounded-md">
+        N/A
+      </Badge>
+    );
+  };
+
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="relative rounded-2xl border border-slate-200/60 bg-white/50 backdrop-blur-sm shadow-[0_4px_20px_rgb(0,0,0,0.03)] overflow-hidden">
       <Table>
-        <TableHeader className="bg-slate-50/80 backdrop-blur-sm">
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-[120px] font-bold text-slate-600">Fecha</TableHead>
-            <TableHead className="font-bold text-slate-600">Cliente / Servicio</TableHead>
-            <TableHead className="font-bold text-slate-600">Origen</TableHead>
-            <TableHead className="font-bold text-slate-600">Monto Bruto</TableHead>
-            <TableHead className="font-bold text-slate-600">Vendedor</TableHead>
-            <TableHead className="font-bold text-slate-600">Comisión</TableHead>
-            <TableHead className="font-bold text-slate-600">Estatus</TableHead>
-            <TableHead className="text-right font-bold text-slate-600">Acción</TableHead>
+        <TableHeader>
+          <TableRow className="bg-slate-50/40 border-b border-slate-100 hover:bg-transparent">
+            <TableHead className="py-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Fecha</TableHead>
+            <TableHead className="py-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Cliente / Servicio</TableHead>
+            <TableHead className="py-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Monto Bruto</TableHead>
+            <TableHead className="py-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Vendedor</TableHead>
+            <TableHead className="py-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Comisión</TableHead>
+            <TableHead className="py-4 font-semibold text-slate-500 text-xs uppercase tracking-wider">Estatus</TableHead>
+            <TableHead className="py-4 text-right"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sales.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="text-center py-12 text-slate-400 italic">No hay ventas registradas.</TableCell>
+              <TableCell colSpan={7} className="text-center py-20 text-slate-400 font-light italic">
+                No hay ventas registradas.
+              </TableCell>
             </TableRow>
           ) : (
             sales.map((sale) => {
               const isLink = sale.source_type === "payment_link";
+              const commissionVal = parseFloat(sale.commission_amount) || 0;
+
               return (
-                <TableRow key={sale.id} className={`group transition-colors hover:bg-slate-50/50 ${!isLink ? "opacity-70 bg-slate-50/30" : ""}`}>
-                  <TableCell className="text-sm text-slate-500 font-medium">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                      {new Date(sale.created_at).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
+                <TableRow
+                  key={sale.id}
+                  className={cn(
+                    "group transition-all hover:bg-indigo-50/30 border-b border-slate-50",
+                    !isLink && "bg-slate-50/20 opacity-60"
+                  )}
+                >
+                  {/* FECHA */}
+                  <TableCell className="py-4">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-slate-700">
+                        {new Date(sale.created_at).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}
+                      </span>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-tighter">
+                        {new Date(sale.created_at).getFullYear()}
+                      </span>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-9 w-9 border border-white shadow-sm ring-1 ring-slate-200">
-                        <AvatarFallback className="bg-slate-900 text-white text-xs font-bold">{sale.customer_name?.charAt(0) || "C"}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-slate-900 text-sm">{sale.customer_name || "Desconocido"}</span>
-                        <span className="text-[11px] text-slate-500 font-medium">{sale.product_name}</span>
-                      </div>
+
+                  {/* CLIENTE */}
+                  <TableCell className="py-4">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-900 text-sm tracking-tight group-hover:text-indigo-600 transition-colors">
+                        {sale.customer_name || "Cliente Final"}
+                      </span>
+                      <span className="text-xs text-slate-500 line-clamp-1 max-w-[150px]">
+                        {sale.product_name}
+                      </span>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      {isLink ? <LinkIcon className="h-3.5 w-3.5 text-blue-600" /> : <Store className="h-3.5 w-3.5 text-slate-600" />}
-                      <span className="text-xs font-bold">{isLink ? "Link" : "Store"}</span>
-                    </div>
+
+                  {/* MONTO BRUTO */}
+                  <TableCell className="py-4">
+                    <span className="font-bold text-slate-900 text-[15px]">
+                      {formatMoney(parseFloat(sale.total_amount) || 0)}
+                    </span>
                   </TableCell>
-                  <TableCell className="font-black text-slate-900 text-sm">{formatMoney(Number(sale.total_amount))}</TableCell>
-                  <TableCell>
+
+                  {/* VENDEDOR */}
+                  <TableCell className="py-4">
                     {isLink && sale.seller ? (
-                      <span className="text-sm font-semibold text-slate-700">{sale.seller.name}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] text-indigo-700 font-bold border border-indigo-200/50">
+                          {sale.seller.name.charAt(0)}
+                        </div>
+                        <span className="text-sm font-medium text-slate-600">
+                          {sale.seller.name}
+                        </span>
+                      </div>
                     ) : isLink ? (
-                      <Badge variant="secondary" className="bg-red-50 text-red-600 border-red-100 text-[10px] font-bold">⚠️ Sin Mapear</Badge>
-                    ) : <span className="text-xs text-slate-400 italic">Venta Directa</span>}
+                      <div className="flex items-center gap-1.5 text-rose-500 bg-rose-50 px-2 py-1 rounded-md w-fit border border-rose-100">
+                        <CircleAlert className="h-3 w-3" />
+                        <span className="text-[10px] font-bold uppercase tracking-tight">Sin Mapear</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400 italic font-light">Directo</span>
+                    )}
                   </TableCell>
-                  <TableCell>
+
+                  {/* COMISIÓN */}
+                  <TableCell className="py-4">
                     {isLink ? (
-                      <div className="text-emerald-700 font-black text-sm">{formatMoney(Number(sale.commission_amount))}</div>
-                    ) : <span className="text-slate-300">—</span>}
+                      commissionVal <= 0 ? (
+                        <span className="inline-flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+                      ) : (
+                        <span className="text-emerald-600 font-bold text-sm bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
+                          {formatMoney(commissionVal)}
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-slate-300">—</span>
+                    )}
                   </TableCell>
-                  <TableCell>{getStatusBadge(sale.commission_status)}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm" onClick={() => onViewDetail(sale)} disabled={!isLink} className="h-8 border-slate-200 hover:bg-slate-900 hover:text-white transition-all">
-                      <Eye className="h-3.5 w-3.5 mr-1.5" /> Detalle
+
+                  {/* ESTATUS */}
+                  <TableCell className="py-4">{renderStatus(sale)}</TableCell>
+
+                  {/* ACCIÓN */}
+                  <TableCell className="py-4 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onViewDetail(sale)}
+                      disabled={!isLink}
+                      className="h-9 w-9 rounded-full p-0 hover:bg-slate-900 hover:text-white transition-all border border-slate-100 shadow-sm"
+                    >
+                      <Eye className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>

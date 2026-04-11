@@ -6,7 +6,7 @@ import { SalesHeader } from "@/components/sales/sales-header";
 import { SalesTable } from "@/components/sales/sales-table";
 import { SaleSheet } from "@/components/sales/sale-sheet";
 import { useSales } from "@/hooks/sales/useSales";
-
+import { format } from "date-fns";
 export default function SalesPage() {
   const params = useParams();
   const workspaceUid = params.workspaceUid as string;
@@ -19,11 +19,21 @@ export default function SalesPage() {
   const handleUpdateCommissionStatus = async (
     saleId: number,
     newStatus: string,
+    date: Date | null,
+    amount: number, // <--- AGREGAR ESTE PARÁMETRO
   ) => {
-    await updateStatus(saleId, newStatus);
+    const formattedDate = date ? format(date, "yyyy-MM-dd") : null;
+
+    // Pasamos el amount al hook
+    await updateStatus(saleId, newStatus, formattedDate, amount);
 
     if (selectedSale && selectedSale.id === saleId) {
-      setSelectedSale({ ...selectedSale, commission_status: newStatus });
+      setSelectedSale({
+        ...selectedSale,
+        commission_status: newStatus,
+        seller_payout_date: formattedDate,
+        commission_amount: amount, // <--- ACTUALIZAR TAMBIÉN EL ESTADO LOCAL
+      });
     }
   };
 

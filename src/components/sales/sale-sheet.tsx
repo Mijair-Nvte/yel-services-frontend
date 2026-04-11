@@ -1,19 +1,23 @@
 "use client";
 
+import React from "react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import {
   HandCoins,
-  FileText,
   ClipboardList,
-  Calendar,
+  Calendar as CalendarIcon,
   Package,
-  Percent,
   CheckCircle2,
   Clock,
+  Save,
 } from "lucide-react";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -28,6 +32,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 export function SaleSheet({
   open,
@@ -35,55 +46,106 @@ export function SaleSheet({
   onClose,
   onUpdateCommissionStatus,
 }: any) {
+  // --- ESTADOS LOCALES (FORMULARIO) ---
+  const [payoutDate, setPayoutDate] = React.useState<Date | undefined>(
+    undefined,
+  );
+
+  type CommissionStatus = "pending" | "paid" | "not_applicable";
+
+  const [commPercent, setCommPercent] = React.useState(0);
+  const [status, setStatus] = React.useState<CommissionStatus>("pending");
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    if (open && sale) {
+      setStatus(sale.commission_status);
+      const initialPercent =
+        sale.total_amount > 0
+          ? (sale.commission_amount / sale.total_amount) * 100
+          : 0;
+      setCommPercent(Number(initialPercent.toFixed(2)));
+
+      if (sale.seller_payout_date) {
+        setPayoutDate(
+          new Date(sale.seller_payout_date.split("T")[0] + "T12:00:00"),
+        );
+      } else {
+        setPayoutDate(undefined);
+      }
+    }
+  }, [open, sale]);
+
   if (!sale) return null;
 
-  const isPaid = sale.commission_status === "paid";
+  // --- MANEJADORES DE CAMBIO LOCAL ---
+const handleStatusChange = (newVal: CommissionStatus) => {
+  setStatus(newVal);
+  if (newVal === "paid" && !payoutDate) {
+    setPayoutDate(new Date());
+  }
+};
 
-  // Cálculo dinámico del porcentaje de comisión (ej: 0.08 -> 8%)
-  const commissionPercentage =
-    sale.total_amount > 0
-      ? Math.round((sale.commission_amount / sale.total_amount) * 100)
-      : 0;
+  // --- FUNCIÓN PARA GUARDAR (EL BOTÓN) ---
+  const handleConfirmChanges = async () => {
+    setIsSaving(true);
+    const calculatedAmount = (commPercent / 100) * sale.total_amount;
+
+    // Llamamos a la función del padre (Page.tsx)
+    await onUpdateCommissionStatus(
+      sale.id,
+      status,
+      payoutDate,
+      calculatedAmount,
+    );
+
+    setIsSaving(false);
+    onClose(); // Cerramos el sheet tras guardar
+  };
+
+  const statusStyles: Record<CommissionStatus | "default", string> = {
+    pending: "bg-amber-100 text-amber-700 border-amber-200",
+    paid: "bg-green-100 text-green-700 border-green-200",
+    not_applicable: "bg-slate-100 text-slate-700 border-slate-200",
+    default: "bg-white border-slate-200 text-slate-900",
+  };
 
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <SheetContent className="sm:max-w-md overflow-y-auto p-0 flex flex-col bg-white">
-        <div className="bg-white p-6 border-b shadow-sm">
-          <SheetHeader className="space-y-1">
-            <div className="flex items-center justify-between mb-2">
-              <Badge
-                variant="secondary"
-                className="bg-indigo-50 text-indigo-600 border-indigo-100 text-[10px] font-bold px-2 py-0"
-              >
-                GHL SYNC
-              </Badge>
-              <span className="text-[11px] text-slate-400 font-mono tracking-tighter">
-                REF_{sale.id}
-              </span>
-            </div>
-            <SheetTitle className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              Detalle de Operación
-            </SheetTitle>
-            <SheetDescription className="text-slate-500 text-sm italic">
-              ID Externo: {sale.source_id}
-            </SheetDescription>
-          </SheetHeader>
-        </div>
+      <SheetContent className="sm:max-w-md overflow-y-auto p-0 flex flex-col bg-white border-l shadow-2xl">
+        <SheetHeader className="space-y-1 border-b">
+          <div className="flex items-center justify-between mb-2">
+            <Badge
+              variant="secondary"
+              className="bg-indigo-100 text-indigo-700 border-indigo-200 text-[10px]  px-2 py-0"
+            >
+              GHL SYNC
+            </Badge>
+            <span className="text-[11px] text-slate-400 font-mono tracking-tighter">
+              REF_{sale.id}
+            </span>
+          </div>
+          <SheetTitle className="text-xl  ">Detalle de Operación</SheetTitle>
+          <SheetDescription className="text-slate-500 text-xs font-medium ">
+            ID Externo: {sale.source_id}
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="p-6 space-y-6 flex-1">
-          <section className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div className="p-3 space-y-6 flex-1 bg-white">
+          {/* INFO CLIENTE */}
+          <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
             <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12 border border-slate-100">
-                <AvatarFallback className="bg-slate-100 text-slate-600 font-bold">
-                  {sale.customer_name?.charAt(0) || "C"}
+              <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                <AvatarFallback className="bg-slate-900 text-white font-bold">
+                  {sale.customer_name?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h4 className="font-bold text-slate-900 leading-tight">
                   {sale.customer_name}
                 </h4>
-                <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-medium">
-                  <Calendar className="h-3 w-3" /> Registrado el{" "}
+                <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-semibold">
+                  <CalendarIcon className="h-3 w-3 text-indigo-500" /> Venta:{" "}
                   {new Date(sale.created_at).toLocaleDateString()}
                 </p>
               </div>
@@ -91,139 +153,152 @@ export function SaleSheet({
             <Separator className="bg-slate-100" />
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest block">
+                <p className="text-xs font-medium text-green-700 block">
                   Producto
-                </label>
-                <p className="font-semibold text-slate-700 flex items-center gap-1.5 leading-none">
-                  <Package className="h-3.5 w-3.5 text-blue-500" />{" "}
+                </p>
+                <p className="font-bold text-slate-700 text-xs leading-tight">
+                  <Package className="h-3 w-3 inline mr-1 text-blue-500" />
                   {sale.product_name}
                 </p>
               </div>
               <div className="space-y-1 text-right">
-                <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest block">
-                  Venta Bruta
-                </label>
-                <p className="text-xl font-black text-slate-900 tabular-nums leading-none">
+                <label className="text-xs   block">Total</label>
+                <p className="text-xl font-black text-green-700">
                   ${Number(sale.total_amount).toFixed(2)}
                 </p>
               </div>
             </div>
           </section>
 
-          <section className="space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <ClipboardList className="h-4 w-4 text-slate-400" /> Liquidación
-              </h4>
-              <div
-                className={cn(
-                  "flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border",
-                  isPaid
-                    ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-                    : "bg-yellow-100 text-yellow-700 border-yellow-200",
-                )}
-              >
-                <Percent className="h-3 w-3" /> {commissionPercentage}% Comisión
-              </div>
-            </div>
-
+          {/* CALCULADORA DE COMISIÓN */}
+          <section className="space-y-4">
             <div
               className={cn(
-                "rounded-2xl p-6 text-white shadow-xl relative overflow-hidden transition-all duration-500",
-                isPaid
+                "rounded-xl p-6 text-white  relative overflow-hidden transition-all duration-500",
+                status === "paid"
                   ? "bg-emerald-600 shadow-emerald-900/20"
-                  : "bg-amber-500 shadow-amber-900/20",
+                  : "bg-amber-400 shadow-slate-900/20",
               )}
             >
-              <div className="absolute -right-4 -bottom-4 opacity-10">
-                {isPaid ? (
-                  <CheckCircle2 className="h-24 w-24" />
-                ) : (
-                  <HandCoins className="h-24 w-24" />
-                )}
-              </div>
-              <div className="relative z-10 flex justify-between items-end">
-                <div className="space-y-1">
-                  <span className="text-[10px] uppercase font-bold opacity-70 tracking-widest">
-                    Vendedor
-                  </span>
-                  <p className="text-lg font-bold tracking-tight">
-                    {sale.seller?.name || "Sin Asignar"}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-bold opacity-70 tracking-widest block mb-1">
-                    Monto de Comisión
-                  </span>
-                  <p className="text-4xl font-black tabular-nums tracking-tighter leading-none">
-                    ${Number(sale.commission_amount).toFixed(2)}
-                  </p>
+              <div className="relative z-10 space-y-4">
+                <div className="flex justify-between items-center">
+                  <div className="space-y-1">
+                    <span className=" uppercase font-bold">
+                      Porcentaje de Comisión
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        value={commPercent}
+                        onChange={(e) =>
+                          setCommPercent(parseFloat(e.target.value) || 0)
+                        }
+                        className="bg-white/40  border text-black text-3xl font-bold w-20 focus:outline-none focus:border-white transition-all tabular-nums rounded px-1"
+                      />
+                      <span className="text-2xl font-bold ">%</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs block mb-1">Monto en USD</span>
+                    <p className="text-3xl font-bold tabular-nums tracking-tighter">
+                      ${((commPercent / 100) * sale.total_amount).toFixed(2)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 flex items-center justify-between shadow-sm">
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "h-10 w-10 rounded-xl flex items-center justify-center border transition-colors",
-                    isPaid
-                      ? "bg-emerald-50 border-emerald-100"
-                      : "bg-yellow-50 border-yellow-100",
-                  )}
-                >
-                  {isPaid ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  ) : (
-                    <Clock className="h-5 w-5 text-yellow-600" />
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900 leading-none">
-                    Estado del Pago
-                  </p>
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    {isPaid ? "Comisión liquidada" : "Pendiente de procesar"}
-                  </p>
-                </div>
+            {/* SELECTOR DE STATUS Y FECHA */}
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-4 ">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-xs font-bold  uppercase ">
+                  Estado de pago:
+                </span>
+                <Select value={status} onValueChange={handleStatusChange}>
+                  <SelectTrigger
+                    className={` h-9 text-xs font-medium border rounded-md transition-colors ${statusStyles[status] || statusStyles.default}`}
+                  >
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="pending">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-amber-500" />{" "}
+                        Pendiente
+                      </span>
+                    </SelectItem>
+
+                    <SelectItem value="paid">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-green-500" />{" "}
+                        Pagada
+                      </span>
+                    </SelectItem>
+
+                    <SelectItem value="not_applicable">
+                      <span className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-slate-400" />{" "}
+                        No Aplica
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Select
-                defaultValue={sale.commission_status}
-                onValueChange={(val) => onUpdateCommissionStatus(sale.id, val)}
-              >
-                <SelectTrigger
-                  className={cn(
-                    "w-[140px] h-10 font-bold border-slate-200 rounded-xl",
-                    isPaid ? "text-emerald-700" : "text-yellow-700",
-                  )}
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="pending">
-                    <span className="flex items-center gap-2 font-medium text-yellow-600">
-                      <span className="h-2 w-2 rounded-full bg-yellow-500" />{" "}
-                      Pendiente
-                    </span>
-                  </SelectItem>
-                  <SelectItem value="paid">
-                    <span className="flex items-center gap-2 font-medium text-emerald-600">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500" />{" "}
-                      Pagada
-                    </span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+
+              <Separator className="bg-slate-200/50" />
+
+              <div className="space-y-2">
+                <span className="text-xs  block ml-1">Fecha Programada</span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-bold h-11  border-slate-200 bg-white",
+                        !payoutDate && "text-slate-400",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 text-indigo-500" />
+                      {payoutDate
+                        ? format(payoutDate, "PPP", { locale: es })
+                        : "Asignar fecha"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-auto p-0 rounded-2xl border-none shadow-2xl"
+                    align="center"
+                  >
+                    <Calendar
+                      mode="single"
+                      selected={payoutDate}
+                      onSelect={setPayoutDate}
+                      locale={es}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </section>
         </div>
 
-        <div className="p-6 bg-white border-t mt-auto">
-          <div className="flex justify-center items-center gap-2 text-[10px] text-slate-300 uppercase font-black tracking-[0.2em]">
-            <div className="h-px w-8 bg-slate-100" /> Yel Services Admin{" "}
-            <div className="h-px w-8 bg-slate-100" />
-          </div>
-        </div>
+        <SheetFooter>
+          <Button onClick={handleConfirmChanges} disabled={isSaving}>
+            {isSaving ? (
+              "Guardando..."
+            ) : (
+              <>
+                <Save className="h-5 w-5" /> Confirmar Cambios
+              </>
+            )}
+          </Button>
+          <SheetClose asChild>
+            <Button variant="outline" onClick={onClose}>
+              Descartar
+            </Button>
+          </SheetClose>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

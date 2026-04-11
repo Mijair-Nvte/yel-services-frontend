@@ -1,6 +1,6 @@
 "use client";
 
-import { HandCoins, TrendingUp, AlertCircle } from "lucide-react";
+import { HandCoins, TrendingUp, Clock3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function SalesHeader({ sales = [] }: { sales?: any[] }) {
@@ -12,73 +12,89 @@ export function SalesHeader({ sales = [] }: { sales?: any[] }) {
     .filter((s) => s.commission_status === "pending")
     .reduce((acc, sale) => acc + Number(sale.commission_amount || 0), 0);
 
-  const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+  const formatCurrency = (val: number) => 
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-1 border-b pb-6">
-        <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+    <div className="space-y-10 py-4">
+      {/* Header Section */}
+      <div className="flex flex-col gap-2">
+       
+        <h2 className="text-4xl font-bold tracking-tight text-slate-900 bg-clip-text">
           Ventas y Comisiones
         </h2>
-        <p className="text-sm text-slate-500 max-w-2xl">
-          Sincronización automatizada vía webhook de transacciones de Go High Level.
+        <p className="text-base text-slate-500 max-w-2xl font-light">
+          Sincronización automatizada vía <span className="font-medium text-slate-700 underline underline-offset-4 decoration-indigo-200">webhooks de Go High Level</span>.
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Tarjeta Ventas Brutas */}
-        <Card className="rounded-xl border-slate-200/60 shadow-sm transition-all hover:shadow-md">
+        
+        {/* Tarjeta Ventas Brutas - Estilo Indigo Pastel */}
+        <Card className="relative overflow-hidden rounded-2xl border-indigo-100/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:shadow-[0_8px_30px_rgb(79,70,229,0.1)]">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-indigo-50/50 blur-3xl" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">
-              Ventas Brutas Comisionables
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-indigo-500/80">
+              Ventas Brutas
             </CardTitle>
-            <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-blue-600" />
+            <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
+              <TrendingUp className="h-5 w-5 text-indigo-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-slate-900 tabular-nums">
+            <div className="text-3xl font-extrabold tracking-tight text-slate-900 tabular-nums">
               {formatCurrency(totalGross)}
             </div>
-            <p className="text-xs text-slate-400 mt-2">Ingreso generado por links de pago</p>
+            <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-400" />
+              Links de pago activos
+            </p>
           </CardContent>
         </Card>
 
-        {/* Tarjeta Comisiones */}
-        <Card className="rounded-xl border-slate-200/60 shadow-sm transition-all hover:shadow-md">
+        {/* Tarjeta Comisiones - Estilo Emerald Pastel */}
+        <Card className="relative overflow-hidden rounded-2xl border-emerald-100/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:shadow-[0_8px_30px_rgb(16,185,129,0.1)]">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-emerald-50/50 blur-3xl" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">
-              Comisión Generada (8%)
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-emerald-600/80">
+              Comisión (8%)
             </CardTitle>
-            <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center">
-              <HandCoins className="h-4 w-4 text-emerald-600" />
+            <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100/50">
+              <HandCoins className="h-5 w-5 text-emerald-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-emerald-600 tabular-nums">
+            <div className="text-3xl font-extrabold tracking-tight text-emerald-600 tabular-nums">
               {formatCurrency(totalCommissions)}
             </div>
-            <p className="text-xs text-slate-400 mt-2">Histórico de comisiones a vendedores</p>
+            <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
+               <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+               Histórico acumulado
+            </p>
           </CardContent>
         </Card>
 
-        {/* Tarjeta Pendientes */}
-        <Card className="rounded-xl border-amber-200/60 bg-amber-50/30 shadow-sm transition-all hover:shadow-md">
+        {/* Tarjeta Pendientes - Estilo Rose/Amber Pastel */}
+        <Card className="relative overflow-hidden rounded-2xl border-rose-100/80 bg-rose-50/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:shadow-[0_8px_30px_rgb(244,63,94,0.08)]">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-rose-100/40 blur-3xl" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-amber-700">
-              Pendiente de Liquidar
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-rose-500/80">
+              Por Liquidar
             </CardTitle>
-            <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
+            <div className="h-10 w-10 rounded-xl bg-rose-100 flex items-center justify-center border border-rose-200/50">
+              <Clock3 className="h-5 w-5 text-rose-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-amber-700 tabular-nums">
+            <div className="text-3xl font-extrabold tracking-tight text-rose-600 tabular-nums">
               {formatCurrency(pendingAmount)}
             </div>
-            <p className="text-xs text-amber-600/70 mt-2">Comisiones aún no pagadas</p>
+            <div className="mt-2 inline-flex items-center rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 uppercase">
+              Acción Requerida
+            </div>
           </CardContent>
         </Card>
+
       </div>
     </div>
   );
