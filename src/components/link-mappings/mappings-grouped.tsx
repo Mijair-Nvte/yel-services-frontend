@@ -103,9 +103,7 @@ export function MappingsGrouped({ groupedData, onEdit, onDelete }: any) {
                     </h4>
 
                     <div className="flex items-center gap-2 mb-3">
-                      <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none text-[10px] font-bold px-2 py-0">
-                        8% COMISIÓN
-                      </Badge>
+                     
                       {!link.is_active && (
                         <Badge
                           variant="outline"

@@ -64,17 +64,17 @@ export default function LinkMappingsPage() {
     <div className="space-y-6 p-1">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-            <Users2 className="h-8 w-8 text-indigo-600" />
+          <h1 className="text-2xl font-bold text-slate-900  flex items-center gap-3">
+           
             Gestión de Enlaces
           </h1>
-          <p className="text-slate-500 text-sm font-medium">
+          <p className="text-slate-500 text-sm ">
             Organiza y asigna enlaces de pago de GoHighLevel a tu equipo.
           </p>
         </div>
         <Button
           onClick={() => { setSelectedMapping(null); setIsDialogOpen(true); }}
-          className="bg-indigo-600 hover:bg-indigo-700 shadow-md h-11 px-6 rounded-xl transition-all font-bold"
+
         >
           <Plus className="h-4 w-4 mr-2" /> Nuevo Enlace
         </Button>

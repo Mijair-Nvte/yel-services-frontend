@@ -70,7 +70,7 @@ export function SalesTable({
           </Badge>
           {payoutDate && (
             <span className="text-[10px] text-indigo-500 font-semibold ml-0.5 flex items-center gap-1">
-              Pagar el: {payoutDate.toLocaleDateString("es-MX", { day: '2-digit', month: 'short' })}
+              Pagar el: {payoutDate.toLocaleDateString("es-MX", { day: '2-digit', month: 'short',year: 'numeric' })}
             </span>
           )}
         </div>
