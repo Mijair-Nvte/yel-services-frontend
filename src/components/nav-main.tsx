@@ -19,6 +19,7 @@ export function NavMain({
     title: string;
     url: string;
     icon?: LucideIcon;
+    badge?: boolean; // 🔥 Añadimos badge a la definición del tipo
   }[];
 }) {
   return (
@@ -50,13 +51,22 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title} className="py-2">
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild className="relative">
                 <Link
                   href={item.url}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-full"
                 >
                   {item.icon && <item.icon className="h-4 w-4" />}
                   <span>{item.title}</span>
+
+                  {/* 🔥 INDICADOR DE MENSAJE NUEVO (BADGE) */}
+                  {item.badge && (
+                    <span className="absolute right-2 flex h-2 w-2">
+                      {/* Efecto de pulso para llamar la atención suavemente */}
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.8)]"></span>
+                    </span>
+                  )}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

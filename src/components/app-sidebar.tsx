@@ -4,6 +4,7 @@ import * as React from "react";
 
 import { useWorkspaceStore } from "@/store/workspace.store";
 import { NavMain } from "@/components/nav-main";
+import { useChatNotificationsStore } from "@/store/chat-notifications.store";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -30,6 +31,7 @@ import {
   Link2Icon,
   Calendar1,
   BadgeDollarSign,
+  MessageCircleMore,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -37,6 +39,8 @@ import { useAuthStore } from "@/store/auth.store";
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { workspace } = useWorkspaceStore();
  const user = useAuthStore((state) => state.user);
+ const { hasUnreadMessages } = useChatNotificationsStore();
+
   const navMain = [
     {
       title: "Dashboard",
@@ -62,6 +66,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       title: "Links", // Corregido el typo de "Ventos"
       url: workspace ? `/dashboard/${workspace.uid}/links` : "#",
       icon: Link2Icon,
+    },
+   {
+      title: "Chats",
+      url: workspace ? `/dashboard/${workspace.uid}/chat` : "#",
+      icon: MessageCircleMore,
+      badge: hasUnreadMessages, 
     },
     {
       title: "Archivos",

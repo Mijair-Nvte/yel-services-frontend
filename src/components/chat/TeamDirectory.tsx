@@ -3,6 +3,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth.store"; // 🔥 Importamos el store
 
 interface TeamDirectoryProps {
   searchTerm: string;
@@ -13,22 +14,30 @@ interface TeamDirectoryProps {
 }
 
 export function TeamDirectory({ searchTerm, members, loading, activeUser, onSelectUser }: TeamDirectoryProps) {
+  const { user: currentUser } = useAuthStore(); // 🔥 Obtenemos el usuario logueado
+
   const filteredMembers = members.filter((member) => {
+    const memberUser = member.user;
+    if (!memberUser) return false;
+
+    // 1. 🔥 EXCLUIR NUESTRO PROPIO USUARIO
+    if (memberUser.id === currentUser?.id) return false;
+
+    // 2. Filtrar por término de búsqueda
     if (!searchTerm) return true;
-    const user = member.user;
-    if (!user) return false;
-
     const term = searchTerm.toLowerCase();
-    const email = user.email?.toLowerCase() || "";
-    const name = user.name?.toLowerCase() || ""; 
-
-    return email.includes(term) || name.includes(term);
+    return (
+      memberUser.email?.toLowerCase().includes(term) || 
+      memberUser.name?.toLowerCase().includes(term)
+    );
   });
 
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center p-4">
-        <span className="text-sm text-muted-foreground">Cargando directorio...</span>
+        <span className="text-sm text-blue-600 animate-pulse font-medium">
+          Cargando directorio...
+        </span>
       </div>
     );
   }
@@ -36,32 +45,50 @@ export function TeamDirectory({ searchTerm, members, loading, activeUser, onSele
   return (
     <ScrollArea className="flex-1">
       <div className="flex flex-col gap-1 p-2">
-        {filteredMembers.map((member) => {
-          const user = member.user;
-          if (!user) return null; 
+        {filteredMembers.length > 0 ? (
+          filteredMembers.map((member) => {
+            const user = member.user;
+            const isActive = activeUser?.id === user.id;
+            const initials = user.name?.substring(0, 2).toUpperCase() || "U";
 
-          const isActive = activeUser?.id === user.id;
-
-          return (
-            <button
-              key={member.id}
-              onClick={() => onSelectUser(user)}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-muted/50",
-                isActive && "bg-muted"
-              )}
-            >
-              <Avatar>
-                <AvatarImage src={user.avatar_url || ""} alt={user.name} />
-                <AvatarFallback>{user.name?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 overflow-hidden">
-                <span className="block truncate text-sm font-medium">{user.name}</span>
-                <span className="block truncate text-xs text-muted-foreground">{user.email}</span>
-              </div>
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={member.id}
+                onClick={() => onSelectUser(user)}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg p-3 text-left transition-all",
+                  isActive ? "bg-blue-50 border-blue-100 shadow-sm" : "hover:bg-muted/50"
+                )}
+              >
+                <Avatar className="h-10 w-10">
+                  <AvatarImage 
+                    src={user.avatar_url || user.avatar || ""} 
+                    alt={user.name} 
+                    className="object-cover" 
+                  />
+                  <AvatarFallback className="bg-blue-100 text-blue-700 font-medium text-xs">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 overflow-hidden">
+                  <span className={cn(
+                    "block truncate text-sm font-medium", 
+                    isActive ? "text-blue-900" : "text-foreground"
+                  )}>
+                    {user.name}
+                  </span>
+                  <span className="block truncate text-[11px] text-muted-foreground">
+                    {user.email}
+                  </span>
+                </div>
+              </button>
+            );
+          })
+        ) : (
+          <p className="text-center text-xs text-muted-foreground mt-4">
+            No se encontraron otros miembros
+          </p>
+        )}
       </div>
     </ScrollArea>
   );
