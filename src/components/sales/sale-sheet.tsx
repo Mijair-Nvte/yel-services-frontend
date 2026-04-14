@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -11,6 +11,11 @@ import {
   CheckCircle2,
   Clock,
   Save,
+  Mail,
+  Phone,
+  Check,
+  Copy,
+  UserCheck,
 } from "lucide-react";
 import {
   Sheet,
@@ -79,12 +84,12 @@ export function SaleSheet({
   if (!sale) return null;
 
   // --- MANEJADORES DE CAMBIO LOCAL ---
-const handleStatusChange = (newVal: CommissionStatus) => {
-  setStatus(newVal);
-  if (newVal === "paid" && !payoutDate) {
-    setPayoutDate(new Date());
-  }
-};
+  const handleStatusChange = (newVal: CommissionStatus) => {
+    setStatus(newVal);
+    if (newVal === "paid" && !payoutDate) {
+      setPayoutDate(new Date());
+    }
+  };
 
   // --- FUNCIÓN PARA GUARDAR (EL BOTÓN) ---
   const handleConfirmChanges = async () => {
@@ -110,6 +115,30 @@ const handleStatusChange = (newVal: CommissionStatus) => {
     default: "bg-white border-slate-200 text-slate-900",
   };
 
+  const CopyButton = ({ text }: { text: string }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+      <button
+        onClick={handleCopy}
+        className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-indigo-600 transition-colors"
+        title="Copiar"
+      >
+        {copied ? (
+          <Check className="h-3.5 w-3.5 text-green-500" />
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </button>
+    );
+  };
+
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <SheetContent className="sm:max-w-md overflow-y-auto p-0 flex flex-col bg-white border-l shadow-2xl">
@@ -127,29 +156,82 @@ const handleStatusChange = (newVal: CommissionStatus) => {
           </div>
           <SheetTitle className="text-xl  ">Detalle de Operación</SheetTitle>
           <SheetDescription className="text-slate-500 text-xs font-medium ">
-            ID Externo: {sale.source_id}
+            <div className="flex  gap-4">
+              <div>ID Externo: {sale.source_id}</div>
+              <div>Origen: {sale.source_type}</div>
+            </div>
           </SheetDescription>
         </SheetHeader>
 
         <div className="p-3 space-y-6 flex-1 bg-white">
           {/* INFO CLIENTE */}
           <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                <AvatarFallback className="bg-slate-900 text-white font-bold">
+            <div className="flex items-start gap-4">
+              <Avatar className="h-14 w-14 border-2 border-white shadow-lg ring-1 ring-slate-100">
+                <AvatarFallback className="bg-slate-900 text-white text-lg font-bold">
                   {sale.customer_name?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h4 className="font-bold text-slate-900 leading-tight">
+
+              <div className="flex-1 space-y-1">
+                <h4 className="font-bold text-slate-900 text-lg leading-tight tracking-tight">
                   {sale.customer_name}
                 </h4>
-                <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1 font-semibold">
-                  <CalendarIcon className="h-3 w-3 text-indigo-500" /> Venta:{" "}
-                  {new Date(sale.created_at).toLocaleDateString()}
-                </p>
+
+                {/* Email Row */}
+                <div className="flex items-center gap-2 group">
+                  <div className="flex items-center gap-1.5 text-slate-500 text-sm">
+                    <Mail className="h-3.5 w-3.5 text-slate-400" />
+                    <span className="truncate max-w-[180px]">
+                      {sale.customer_email}
+                    </span>
+                  </div>
+                  <CopyButton text={sale.customer_email} />
+                </div>
+
+                {/* Phone Row */}
+                <div className="flex items-center gap-2 group">
+                  <div className="flex items-center gap-1.5 text-slate-500 text-sm">
+                    <Phone className="h-3.5 w-3.5 text-slate-400" />
+                    <span>{sale.customer_phone}</span>
+                  </div>
+                  <CopyButton text={sale.customer_phone} />
+                </div>
+
+                <div className="pt-2">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-[10px] text-indigo-700 font-bold uppercase tracking-wider">
+                    <CalendarIcon className="h-3 w-3" />
+                    Venta: {new Date(sale.created_at).toLocaleDateString()}
+                  </span>
+                </div>
               </div>
             </div>
+
+            {sale.seller && (
+              <div className="mt-2 pt-3 border-t border-dashed border-slate-200">
+                <div className="flex items-center justify-between bg-slate-50/80 rounded-lg p-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-white p-1.5 rounded-full shadow-sm">
+                      <UserCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">
+                        Vendedor
+                      </p>
+                      <p className="text-xs font-semibold text-slate-700">
+                        {sale.seller.name}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-slate-400 italic">
+                      {sale.seller.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <Separator className="bg-slate-100" />
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-1">

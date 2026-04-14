@@ -107,16 +107,13 @@ export function SalesTable({
             </TableRow>
           ) : (
             sales.map((sale) => {
-              const isLink = sale.source_type === "payment_link";
               const commissionVal = parseFloat(sale.commission_amount) || 0;
 
               return (
                 <TableRow
                   key={sale.id}
-                  className={cn(
-                    "group transition-all hover:bg-indigo-50/30 border-b border-slate-50",
-                    !isLink && "bg-slate-50/20 opacity-60"
-                  )}
+                  // QUITAMOS LA LÓGICA DE OPACIDAD: Ahora todas las filas se ven activas
+                  className="group transition-all hover:bg-indigo-50/30 border-b border-slate-50"
                 >
                   {/* FECHA */}
                   <TableCell className="py-4">
@@ -151,7 +148,7 @@ export function SalesTable({
 
                   {/* VENDEDOR */}
                   <TableCell className="py-4">
-                    {isLink && sale.seller ? (
+                    {sale.seller ? (
                       <div className="flex items-center gap-2">
                         <div className="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] text-indigo-700 font-bold border border-indigo-200/50">
                           {sale.seller.name.charAt(0)}
@@ -160,28 +157,22 @@ export function SalesTable({
                           {sale.seller.name}
                         </span>
                       </div>
-                    ) : isLink ? (
+                    ) : (
                       <div className="flex items-center gap-1.5 text-rose-500 bg-rose-50 px-2 py-1 rounded-md w-fit border border-rose-100">
                         <CircleAlert className="h-3 w-3" />
-                        <span className="text-[10px] font-bold uppercase tracking-tight">Sin Mapear</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tight">Sin Asignar</span>
                       </div>
-                    ) : (
-                      <span className="text-xs text-slate-400 italic font-light">Directo</span>
                     )}
                   </TableCell>
 
                   {/* COMISIÓN */}
                   <TableCell className="py-4">
-                    {isLink ? (
-                      commissionVal <= 0 ? (
-                        <span className="inline-flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                      ) : (
-                        <span className="text-emerald-600 font-bold text-sm bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
-                          {formatMoney(commissionVal)}
-                        </span>
-                      )
+                    {commissionVal <= 0 ? (
+                      <span className="text-slate-400 text-sm font-medium">$0.00</span>
                     ) : (
-                      <span className="text-slate-300">—</span>
+                      <span className="text-emerald-600 font-bold text-sm bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
+                        {formatMoney(commissionVal)}
+                      </span>
                     )}
                   </TableCell>
 
@@ -194,7 +185,7 @@ export function SalesTable({
                       variant="ghost"
                       size="sm"
                       onClick={() => onViewDetail(sale)}
-                      disabled={!isLink}
+                      // QUITAMOS EL DISABLED: Ahora todos los botones funcionan
                       className="h-9 w-9 rounded-full p-0 hover:bg-slate-900 hover:text-white transition-all border border-slate-100 shadow-sm"
                     >
                       <Eye className="h-4 w-4" />
