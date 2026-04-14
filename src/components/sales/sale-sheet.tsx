@@ -16,6 +16,8 @@ import {
   Check,
   Copy,
   UserCheck,
+  Percent,
+  DollarSign,
 } from "lucide-react";
 import {
   Sheet,
@@ -52,24 +54,45 @@ export function SaleSheet({
   onUpdateCommissionStatus,
 }: any) {
   // --- ESTADOS LOCALES (FORMULARIO) ---
+
+  type CommissionStatus = "pending" | "paid" | "not_applicable";
+  type CalcMode = "percent" | "fixed";
+
+  const [commPercent, setCommPercent] = React.useState(0);
   const [payoutDate, setPayoutDate] = React.useState<Date | undefined>(
     undefined,
   );
-
-  type CommissionStatus = "pending" | "paid" | "not_applicable";
-
-  const [commPercent, setCommPercent] = React.useState(0);
   const [status, setStatus] = React.useState<CommissionStatus>("pending");
   const [isSaving, setIsSaving] = React.useState(false);
+
+  const [calcMode, setCalcMode] = React.useState<CalcMode>("percent");
+
+  const [fixedAmount, setFixedAmount] = React.useState(0);
 
   React.useEffect(() => {
     if (open && sale) {
       setStatus(sale.commission_status);
-      const initialPercent =
-        sale.total_amount > 0
-          ? (sale.commission_amount / sale.total_amount) * 100
-          : 0;
-      setCommPercent(Number(initialPercent.toFixed(2)));
+
+      const currentAmount = Number(sale.commission_amount) || 0;
+      const totalAmount = Number(sale.total_amount) || 0;
+
+      setFixedAmount(currentAmount);
+
+      if (totalAmount > 0) {
+        const pct = (currentAmount / totalAmount) * 100;
+        setCommPercent(Number(pct.toFixed(2)));
+
+        // Inteligencia visual: Si el porcentaje no es un número entero exacto (ej. 6.333%),
+        // asumimos que el usuario lo guardó como Monto Fijo en el pasado.
+        if (currentAmount > 0 && pct % 1 !== 0) {
+          setCalcMode("fixed");
+        } else {
+          setCalcMode("percent");
+        }
+      } else {
+        setCommPercent(0);
+        setCalcMode("fixed"); // Si la venta fue de $0, forzamos a monto fijo
+      }
 
       if (sale.seller_payout_date) {
         setPayoutDate(
@@ -94,18 +117,17 @@ export function SaleSheet({
   // --- FUNCIÓN PARA GUARDAR (EL BOTÓN) ---
   const handleConfirmChanges = async () => {
     setIsSaving(true);
-    const calculatedAmount = (commPercent / 100) * sale.total_amount;
 
-    // Llamamos a la función del padre (Page.tsx)
-    await onUpdateCommissionStatus(
-      sale.id,
-      status,
-      payoutDate,
-      calculatedAmount,
-    );
+    // Obtenemos el monto final a guardar basado en el modo seleccionado
+    const finalAmount =
+      calcMode === "percent"
+        ? (commPercent / 100) * sale.total_amount
+        : fixedAmount;
+
+    await onUpdateCommissionStatus(sale.id, status, payoutDate, finalAmount);
 
     setIsSaving(false);
-    onClose(); // Cerramos el sheet tras guardar
+    onClose();
   };
 
   const statusStyles: Record<CommissionStatus | "default", string> = {
@@ -254,39 +276,81 @@ export function SaleSheet({
 
           {/* CALCULADORA DE COMISIÓN */}
           <section className="space-y-4">
-            <div
-              className={cn(
-                "rounded-xl p-6 text-white  relative overflow-hidden transition-all duration-500",
-                status === "paid"
-                  ? "bg-emerald-600 shadow-emerald-900/20"
-                  : "bg-amber-400 shadow-slate-900/20",
-              )}
-            >
+         <div className={cn(
+              "rounded-xl p-6 text-white relative overflow-hidden transition-all duration-500",
+              status === "paid" ? "bg-emerald-600 shadow-emerald-900/20" : "bg-amber-400 shadow-amber-900/20"
+            )}>
               <div className="relative z-10 space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="space-y-1">
-                    <span className=" uppercase font-bold">
-                      Porcentaje de Comisión
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="number"
-                        value={commPercent}
-                        onChange={(e) =>
-                          setCommPercent(parseFloat(e.target.value) || 0)
-                        }
-                        className="bg-white/40  border text-black text-3xl font-bold w-20 focus:outline-none focus:border-white transition-all tabular-nums rounded px-1"
-                      />
-                      <span className="text-2xl font-bold ">%</span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs block mb-1">Monto en USD</span>
-                    <p className="text-3xl font-bold tabular-nums tracking-tighter">
-                      ${((commPercent / 100) * sale.total_amount).toFixed(2)}
-                    </p>
+                
+                {/* Selector de Modo */}
+                <div className="flex justify-between items-center mb-2">
+                  <span className="uppercase font-bold text-sm tracking-wider opacity-90">Calculadora</span>
+                  <div className="flex bg-black/10 p-1 rounded-lg backdrop-blur-sm">
+                    <button
+                      onClick={() => setCalcMode("percent")}
+                      className={cn(
+                        "px-3 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1",
+                        calcMode === "percent" ? "bg-white text-black shadow-sm" : "text-white/80 hover:text-white"
+                      )}
+                    >
+                      <Percent className="h-3 w-3" /> Porcentaje
+                    </button>
+                    <button
+                      onClick={() => setCalcMode("fixed")}
+                      className={cn(
+                        "px-3 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1",
+                        calcMode === "fixed" ? "bg-white text-black shadow-sm" : "text-white/80 hover:text-white"
+                      )}
+                    >
+                      <DollarSign className="h-3 w-3" /> Fijo
+                    </button>
                   </div>
                 </div>
+
+                {/* Vistas Dinámicas */}
+                {calcMode === "percent" ? (
+                  <div className="flex justify-between items-end border-t border-white/20 pt-4">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block">Asignar Porcentaje</span>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          value={commPercent}
+                          onChange={(e) => setCommPercent(parseFloat(e.target.value) || 0)}
+                          className="bg-white/20 border-transparent text-white placeholder-white/50 text-3xl font-bold w-24 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all tabular-nums rounded px-2 py-1"
+                        />
+                        <span className="text-2xl font-bold opacity-80">%</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block mb-1">Equivale a (USD)</span>
+                      <p className="text-3xl font-bold tabular-nums tracking-tighter">
+                        ${((commPercent / 100) * sale.total_amount).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-end border-t border-white/20 pt-4">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block">Asignar Monto</span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-2xl font-bold opacity-80">$</span>
+                        <input
+                          type="number"
+                          value={fixedAmount}
+                          onChange={(e) => setFixedAmount(parseFloat(e.target.value) || 0)}
+                          className="bg-white/20 border-transparent text-white placeholder-white/50 text-3xl font-bold w-28 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all tabular-nums rounded px-2 py-1"
+                        />
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block mb-1">Equivale a (%)</span>
+                      <p className="text-3xl font-bold tabular-nums tracking-tighter opacity-90">
+                        {sale.total_amount > 0 ? ((fixedAmount / sale.total_amount) * 100).toFixed(1) : 0}%
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
