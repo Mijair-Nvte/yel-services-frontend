@@ -18,6 +18,7 @@ import {
   UserCheck,
   Percent,
   DollarSign,
+  Trash2,
 } from "lucide-react";
 import {
   Sheet,
@@ -52,6 +53,7 @@ export function SaleSheet({
   sale,
   onClose,
   onUpdateCommissionStatus,
+  onDeleteSale,
 }: any) {
   // --- ESTADOS LOCALES (FORMULARIO) ---
 
@@ -176,7 +178,23 @@ export function SaleSheet({
               REF_{sale.id}
             </span>
           </div>
-          <SheetTitle className="text-xl  ">Detalle de Operación</SheetTitle>
+          <SheetTitle className="text-xl flex items-center justify-between">
+            <span>Detalle de Operación</span>
+
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (window.confirm("¿Estás seguro...?")) {
+                  onDeleteSale(sale.id);
+                }
+              }}
+              disabled={isSaving}
+              className="border-0"
+              title="Eliminar registro"
+            >
+              <Trash2 className="h-4 w-4 text-red-500" />
+            </Button>
+          </SheetTitle>
           <SheetDescription className="text-slate-500 text-xs font-medium ">
             <div className="flex  gap-4">
               <div>ID Externo: {sale.source_id}</div>
@@ -276,21 +294,28 @@ export function SaleSheet({
 
           {/* CALCULADORA DE COMISIÓN */}
           <section className="space-y-4">
-         <div className={cn(
-              "rounded-xl p-6 text-white relative overflow-hidden transition-all duration-500",
-              status === "paid" ? "bg-emerald-600 shadow-emerald-900/20" : "bg-amber-400 shadow-amber-900/20"
-            )}>
+            <div
+              className={cn(
+                "rounded-xl p-6 text-white relative overflow-hidden transition-all duration-500",
+                status === "paid"
+                  ? "bg-emerald-600 shadow-emerald-900/20"
+                  : "bg-amber-400 shadow-amber-900/20",
+              )}
+            >
               <div className="relative z-10 space-y-4">
-                
                 {/* Selector de Modo */}
                 <div className="flex justify-between items-center mb-2">
-                  <span className="uppercase font-bold text-sm tracking-wider opacity-90">Calculadora</span>
+                  <span className="uppercase font-bold text-sm tracking-wider opacity-90">
+                    Calculadora
+                  </span>
                   <div className="flex bg-black/10 p-1 rounded-lg backdrop-blur-sm">
                     <button
                       onClick={() => setCalcMode("percent")}
                       className={cn(
                         "px-3 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1",
-                        calcMode === "percent" ? "bg-white text-black shadow-sm" : "text-white/80 hover:text-white"
+                        calcMode === "percent"
+                          ? "bg-white text-black shadow-sm"
+                          : "text-white/80 hover:text-white",
                       )}
                     >
                       <Percent className="h-3 w-3" /> Porcentaje
@@ -299,7 +324,9 @@ export function SaleSheet({
                       onClick={() => setCalcMode("fixed")}
                       className={cn(
                         "px-3 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1",
-                        calcMode === "fixed" ? "bg-white text-black shadow-sm" : "text-white/80 hover:text-white"
+                        calcMode === "fixed"
+                          ? "bg-white text-black shadow-sm"
+                          : "text-white/80 hover:text-white",
                       )}
                     >
                       <DollarSign className="h-3 w-3" /> Fijo
@@ -311,19 +338,25 @@ export function SaleSheet({
                 {calcMode === "percent" ? (
                   <div className="flex justify-between items-end border-t border-white/20 pt-4">
                     <div className="space-y-1">
-                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block">Asignar Porcentaje</span>
+                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block">
+                        Asignar Porcentaje
+                      </span>
                       <div className="flex items-center gap-1">
                         <input
                           type="number"
                           value={commPercent}
-                          onChange={(e) => setCommPercent(parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            setCommPercent(parseFloat(e.target.value) || 0)
+                          }
                           className="bg-white/20 border-transparent text-white placeholder-white/50 text-3xl font-bold w-24 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all tabular-nums rounded px-2 py-1"
                         />
                         <span className="text-2xl font-bold opacity-80">%</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block mb-1">Equivale a (USD)</span>
+                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block mb-1">
+                        Equivale a (USD)
+                      </span>
                       <p className="text-3xl font-bold tabular-nums tracking-tighter">
                         ${((commPercent / 100) * sale.total_amount).toFixed(2)}
                       </p>
@@ -332,21 +365,30 @@ export function SaleSheet({
                 ) : (
                   <div className="flex justify-between items-end border-t border-white/20 pt-4">
                     <div className="space-y-1">
-                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block">Asignar Monto</span>
+                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block">
+                        Asignar Monto
+                      </span>
                       <div className="flex items-center gap-1">
                         <span className="text-2xl font-bold opacity-80">$</span>
                         <input
                           type="number"
                           value={fixedAmount}
-                          onChange={(e) => setFixedAmount(parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            setFixedAmount(parseFloat(e.target.value) || 0)
+                          }
                           className="bg-white/20 border-transparent text-white placeholder-white/50 text-3xl font-bold w-28 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all tabular-nums rounded px-2 py-1"
                         />
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block mb-1">Equivale a (%)</span>
+                      <span className="text-[10px] font-semibold opacity-80 uppercase tracking-widest block mb-1">
+                        Equivale a (%)
+                      </span>
                       <p className="text-3xl font-bold tabular-nums tracking-tighter opacity-90">
-                        {sale.total_amount > 0 ? ((fixedAmount / sale.total_amount) * 100).toFixed(1) : 0}%
+                        {sale.total_amount > 0
+                          ? ((fixedAmount / sale.total_amount) * 100).toFixed(1)
+                          : 0}
+                        %
                       </p>
                     </div>
                   </div>

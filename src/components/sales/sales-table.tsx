@@ -6,6 +6,7 @@ import {
   Clock,
   CheckCircle2,
   CircleAlert,
+  Pencil,
   User,
 } from "lucide-react";
 import {
@@ -31,9 +32,11 @@ const formatMoney = (amount: number) => {
 export function SalesTable({
   sales,
   onViewDetail,
+  onEditDetail,
 }: {
   sales: any[];
   onViewDetail: (s: any) => void;
+  onEditDetail: (s: any) => void;
 }) {
   const getLocalDate = (dateStr: string | null) => {
     if (!dateStr) return null;
@@ -181,6 +184,15 @@ export function SalesTable({
 
                   {/* ACCIÓN */}
                   <TableCell className="py-4 text-right">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEditDetail(sale)}
+                        className="h-8 w-8 rounded-full p-0 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-100"
+                        title="Editar Datos Generales"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
                     <Button
                       variant="ghost"
                       size="sm"

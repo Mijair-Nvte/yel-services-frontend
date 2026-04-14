@@ -7,6 +7,7 @@ import { SalesTable } from "@/components/sales/sales-table";
 import { SaleSheet } from "@/components/sales/sale-sheet";
 import { useSales } from "@/hooks/sales/useSales";
 import { format, isWithinInterval, parseISO } from "date-fns";
+import { EditSaleSheet } from "@/components/sales/edit-sale-sheet";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
 import {
@@ -24,7 +25,7 @@ export default function SalesPage() {
   const params = useParams();
   const workspaceUid = params.workspaceUid as string;
 
-  const { sales, isLoading, updateStatus } = useSales(workspaceUid);
+  const { sales, isLoading, updateStatus,removeSale,editSaleDetails } = useSales(workspaceUid);
 
   const [selectedSale, setSelectedSale] = useState<any>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -35,6 +36,11 @@ export default function SalesPage() {
 
   const [isExporting, setIsExporting] = useState(false);
 
+
+  const [editSaleTarget, setEditSaleTarget] = useState<any>(null);
+  const [editSheetOpen, setEditSheetOpen] = useState(false);
+
+  
   const handleExportPDF = async () => {
     if (filteredSales.length === 0) return; // No exportar si no hay nada en la tabla
 
@@ -78,6 +84,13 @@ export default function SalesPage() {
     });
     return Array.from(sellersMap.entries()).map(([id, name]) => ({ id, name }));
   }, [sales]);
+
+
+  const handleDeleteSale = async (saleId: number) => {
+  await removeSale(saleId);
+  setSheetOpen(false);
+  setSelectedSale(null);
+};
 
   // --- LÓGICA DE FILTRADO ---
   const filteredSales = useMemo(() => {
@@ -226,6 +239,11 @@ export default function SalesPage() {
           onViewDetail={(sale: any) => {
             setSelectedSale(sale);
             setSheetOpen(true);
+            
+          }}
+          onEditDetail={(sale: any) => {
+            setEditSaleTarget(sale);
+            setEditSheetOpen(true);
           }}
         />
       </div>
@@ -238,7 +256,22 @@ export default function SalesPage() {
           setSelectedSale(null);
         }}
         onUpdateCommissionStatus={handleUpdateCommissionStatus}
+        onDeleteSale={handleDeleteSale}
       />
+
+
+
+      <EditSaleSheet
+        open={editSheetOpen}
+        sale={editSaleTarget}
+        onClose={() => {
+          setEditSheetOpen(false);
+          setEditSaleTarget(null);
+        }}
+        onEditSaleDetails={editSaleDetails}
+        workspaceUid={workspaceUid}
+      />
+      
     </div>
   );
 }

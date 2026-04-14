@@ -51,4 +51,36 @@ export const SalesService = {
         const blob = await response.blob();
         return blob;
     },
+
+    deleteSale: async (workspaceUid: string, saleId: number) => {
+        const response = await apiFetch(
+            `/org-companies/${workspaceUid}/sales/${saleId}`,
+            { method: "DELETE" }
+        );
+        return response;
+    },
+
+
+    updateSaleDetails: async (
+        workspaceUid: string,
+        saleId: number,
+        payload: {
+            customer_name: string;
+            customer_email: string;
+            customer_phone: string;
+            product_name: string;
+            total_amount: number;
+            seller_id?: number | null;
+        }
+    ) => {
+        const response = await apiFetch(
+            `/org-companies/${workspaceUid}/sales/${saleId}`,
+            {
+                method: "PUT",
+                body: JSON.stringify(payload),
+            }
+        );
+        return response.data;
+    },
+
 };

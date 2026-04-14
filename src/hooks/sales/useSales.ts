@@ -42,5 +42,31 @@ export function useSales(workspaceUid: string) {
         }
     };
 
-    return { sales, isLoading, updateStatus, refreshSales: fetchSales };
+
+    const removeSale = async (saleId: number) => {
+        try {
+            await SalesService.deleteSale(workspaceUid, saleId);
+            // Quitamos la venta del estado visual automáticamente
+            setSales((prev) => prev.filter((s) => s.id !== saleId));
+        } catch (err) {
+            console.error("Error al eliminar", err);
+            fetchSales(); // Si falla, recargamos la lista por seguridad
+        }
+    };
+
+
+    const editSaleDetails = async (saleId: number, payload: any) => {
+        try {
+            const updatedSale = await SalesService.updateSaleDetails(workspaceUid, saleId, payload);
+            setSales((prev) =>
+                prev.map((s) => (s.id === saleId ? updatedSale : s))
+            );
+            return updatedSale;
+        } catch (err) {
+            console.error("Error al actualizar detalles", err);
+            throw err;
+        }
+    };
+
+    return { sales, isLoading, updateStatus,removeSale,editSaleDetails, refreshSales: fetchSales };
 }
