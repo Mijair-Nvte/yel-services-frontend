@@ -119,6 +119,7 @@ const audioRef = useRef<HTMLAudioElement | null>(null);
 
   return (
     <SidebarProvider
+    defaultOpen={false}
       style={
         {
           "--sidebar-width": "calc(var(--spacing) * 72)",

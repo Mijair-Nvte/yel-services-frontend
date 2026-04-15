@@ -110,22 +110,21 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   ];
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="!p-1.5">
               <Link href={`/dashboard/${workspace?.uid}`}>
-                <h1 className="text-white text-xl font-semibold">
+                <span  className="text-white text-xl font-semibold">
                   {workspace?.name ?? "Workspace"}
-                </h1>
+                </span >
               </Link>
-            </SidebarMenuButton>
+          
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="text-white">
+      <SidebarContent className="text-white text-xl font-semibold">
         <NavMain items={navMain} />
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
