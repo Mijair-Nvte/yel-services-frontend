@@ -4,11 +4,20 @@ import { HandCoins, TrendingUp, Clock3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function SalesHeader({ sales = [] }: { sales?: any[] }) {
-  const comissionableSales = sales.filter((s) => s.source_type === "payment_link");
+  // --- LÓGICA DE CÁLCULO ACTUALIZADA ---
+  // Ahora tomamos 'sales' directamente para incluir todos los source_type
   
-  const totalGross = comissionableSales.reduce((acc, sale) => acc + Number(sale.total_amount || 0), 0);
-  const totalCommissions = comissionableSales.reduce((acc, sale) => acc + Number(sale.commission_amount || 0), 0);
-  const pendingAmount = comissionableSales
+  const totalGross = sales.reduce(
+    (acc, sale) => acc + Number(sale.total_amount || 0), 
+    0
+  );
+  
+  const totalCommissions = sales.reduce(
+    (acc, sale) => acc + Number(sale.commission_amount || 0), 
+    0
+  );
+  
+  const pendingAmount = sales
     .filter((s) => s.commission_status === "pending")
     .reduce((acc, sale) => acc + Number(sale.commission_amount || 0), 0);
 
@@ -19,23 +28,25 @@ export function SalesHeader({ sales = [] }: { sales?: any[] }) {
     <div className="space-y-10 py-4">
       {/* Header Section */}
       <div className="flex flex-col gap-2">
-       
         <h2 className="text-4xl font-bold tracking-tight text-slate-900 bg-clip-text">
           Ventas y Comisiones
         </h2>
         <p className="text-base text-slate-500 max-w-2xl font-light">
-          Sincronización automatizada vía <span className="font-medium text-slate-700 underline underline-offset-4 decoration-indigo-200">webhooks de Go High Level</span>.
+          Resumen consolidado de ingresos y comisiones. Sincronización automatizada vía 
+          <span className="font-medium text-slate-700 underline underline-offset-4 decoration-indigo-200 ml-1">
+            webhooks de Go High Level
+          </span>.
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         
-        {/* Tarjeta Ventas Brutas - Estilo Indigo Pastel */}
+        {/* Tarjeta Ventas Brutas */}
         <Card className="relative overflow-hidden rounded-2xl border-indigo-100/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:shadow-[0_8px_30px_rgb(79,70,229,0.1)]">
           <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-indigo-50/50 blur-3xl" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-indigo-500/80">
-              Ventas Brutas
+              Ventas Brutas Totales
             </CardTitle>
             <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50">
               <TrendingUp className="h-5 w-5 text-indigo-600" />
@@ -47,17 +58,17 @@ export function SalesHeader({ sales = [] }: { sales?: any[] }) {
             </div>
             <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-400" />
-              Links de pago activos
+              Ingresos totales de la compañía
             </p>
           </CardContent>
         </Card>
 
-        {/* Tarjeta Comisiones - Estilo Emerald Pastel */}
+        {/* Tarjeta Comisiones Totales */}
         <Card className="relative overflow-hidden rounded-2xl border-emerald-100/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:shadow-[0_8px_30px_rgb(16,185,129,0.1)]">
           <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-emerald-50/50 blur-3xl" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-bold uppercase tracking-wider text-emerald-600/80">
-              Comisión (8%)
+              Comisiones Totales
             </CardTitle>
             <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100/50">
               <HandCoins className="h-5 w-5 text-emerald-600" />
@@ -69,12 +80,12 @@ export function SalesHeader({ sales = [] }: { sales?: any[] }) {
             </div>
             <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-               Histórico acumulado
+               Monto acumulado a procesar
             </p>
           </CardContent>
         </Card>
 
-        {/* Tarjeta Pendientes - Estilo Rose/Amber Pastel */}
+        {/* Tarjeta Por Liquidar */}
         <Card className="relative overflow-hidden rounded-2xl border-rose-100/80 bg-rose-50/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:shadow-[0_8px_30px_rgb(244,63,94,0.08)]">
           <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-rose-100/40 blur-3xl" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
