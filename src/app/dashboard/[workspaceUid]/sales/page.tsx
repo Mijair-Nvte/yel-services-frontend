@@ -166,7 +166,7 @@ export default function SalesPage() {
 
   return (
     <div className="space-y-8 p-1">
-      <SalesHeader sales={sales} />
+      <SalesHeader sales={filteredSales} />
 
       <div className="space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
