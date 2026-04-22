@@ -84,7 +84,7 @@ export function InviteMemberModal({ workspaceUid }: { workspaceUid: string }) {
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="member">Miembro</SelectItem>
+              <SelectItem value="user">Usuario</SelectItem>
               <SelectItem value="admin">Administrador</SelectItem>
             </SelectContent>
           </Select>

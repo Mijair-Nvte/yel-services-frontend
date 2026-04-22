@@ -9,12 +9,17 @@ export const WorkspaceService = {
       body: JSON.stringify(payload),
     }),
 
-get: (uid: string) =>
-  apiFetch(`/org-companies/${uid}`),
+  get: (uid: string) =>
+    apiFetch(`/org-companies/${uid}`),
 
   update: (id: number, payload: any) =>
     apiFetch(`/org-companies/${id}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
+
+    getMyPermissions: (companyUid: string) => 
+    apiFetch(`/org-companies/${companyUid}/my-permissions`),
+    
 };
+
