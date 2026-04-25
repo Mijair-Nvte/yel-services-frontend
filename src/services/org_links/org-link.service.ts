@@ -1,7 +1,7 @@
 import { apiFetch } from "@/services/http";
 
 export const OrgLinkService = {
-  // LIST LINKS
+  // LIST
   list: (workspaceUid: string) =>
     apiFetch(`/org-companies/${workspaceUid}/links`),
 
@@ -12,16 +12,16 @@ export const OrgLinkService = {
       body: JSON.stringify(payload),
     }),
 
-  // UPDATE
-  update: (uid: string, payload: any) =>
-    apiFetch(`/org-company-links/${uid}`, {
+  // UPDATE (Normalizado con workspaceUid)
+  update: (workspaceUid: string, linkUid: string, payload: any) =>
+    apiFetch(`/org-companies/${workspaceUid}/links/${linkUid}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
 
-  // DELETE
-  delete: (uid: string) =>
-    apiFetch(`/org-company-links/${uid}`, {
+  // DELETE (Normalizado con workspaceUid)
+  delete: (workspaceUid: string, linkUid: string) =>
+    apiFetch(`/org-companies/${workspaceUid}/links/${linkUid}`, {
       method: "DELETE",
     }),
 };

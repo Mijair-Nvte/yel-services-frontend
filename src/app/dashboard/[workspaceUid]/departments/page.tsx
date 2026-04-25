@@ -1,4 +1,4 @@
-// C:\YEL\yel-services-frontend\src\app\dashboard\[workspaceUid]\departments\page.tsx
+
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -73,7 +73,7 @@ export default function DepartmentsPage() {
 
                   if (!confirmed) return;
 
-                  await DepartmentService.delete(dep.uid);
+                  await DepartmentService.delete(workspaceUid, dep.uid);
                   reload();
                 }}
               />
@@ -93,7 +93,7 @@ export default function DepartmentsPage() {
         initialData={editing}
         onSubmit={async (data) => {
           if (editing) {
-            await DepartmentService.update(editing.uid, data);
+            await DepartmentService.update(workspaceUid,editing.uid, data);
           } else {
             await DepartmentService.create(workspaceUid, data);
           }

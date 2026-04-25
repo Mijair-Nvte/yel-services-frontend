@@ -39,7 +39,7 @@ export function useOrgNotices(
   // ✅ DELETE NOTICE
   // ===============================
   const removeNotice = async (uid: string) => {
-    await OrgNoticeService.delete(uid);
+    await OrgNoticeService.delete(workspaceUid, uid);
     await loadNotices(); // refresca lista
   };
 

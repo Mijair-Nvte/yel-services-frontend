@@ -40,9 +40,9 @@ export default function NoticesPage() {
           }}
           onTogglePin={async (notice) => {
             if (notice.is_pinned) {
-              await OrgNoticeService.unpin(notice.uid);
+              await OrgNoticeService.unpin(workspaceUid, notice.uid);
             } else {
-              await OrgNoticeService.pin(notice.uid);
+              await OrgNoticeService.pin(workspaceUid,notice.uid);
             }
 
             await reload();
@@ -60,7 +60,7 @@ export default function NoticesPage() {
         onSubmit={async (data) => {
           if (editingNotice) {
             // ✏️ UPDATE
-            await OrgNoticeService.update(editingNotice.uid, data);
+            await OrgNoticeService.update(workspaceUid,editingNotice.uid, data);
           } else {
             // ➕ CREATE
             await OrgNoticeService.create(workspaceUid, data);

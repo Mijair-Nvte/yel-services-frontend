@@ -43,7 +43,7 @@ export function useChat(workspaceUid: string) {
             // Paginación de Laravel viene ordenada desc, la volteamos para el chat
             setMessages(res.messages.data.reverse());
 
-            await ChatService.markAsRead(res.conversation.id);
+            await ChatService.markAsRead(workspaceUid,res.conversation.id);
             loadConversations();
         } catch (error) {
             console.error("Error abriendo chat", error);
@@ -75,7 +75,7 @@ export function useChat(workspaceUid: string) {
             setMessages((prev) => [...prev, tempMsg]);
 
             // Enviamos a la API
-            const realMsg = await ChatService.sendMessage(activeConversation.id, text);
+            const realMsg = await ChatService.sendMessage(workspaceUid,activeConversation.id, text);
 
             // Reemplazamos el temporal con el real de la BD
             setMessages((prev) => prev.map(m => m.id === tempId ? realMsg : m));
@@ -90,7 +90,7 @@ export function useChat(workspaceUid: string) {
     const clearChat = async () => {
         if (!activeConversation) return;
         try {
-            await ChatService.clearConversation(activeConversation.id);
+            await ChatService.clearConversation(workspaceUid,activeConversation.id);
             setMessages([]); // Limpiamos la UI
             loadConversations();
         } catch (error) {
@@ -105,7 +105,7 @@ export function useChat(workspaceUid: string) {
         try {
             // Optimistic delete
             setMessages((prev) => prev.filter(m => m.id !== messageId));
-            await ChatService.deleteMessage(messageId);
+            await ChatService.deleteMessage(workspaceUid,messageId);
             loadConversations();
         } catch (error) {
             console.error("Error eliminando mensaje", error);
@@ -123,7 +123,7 @@ export function useChat(workspaceUid: string) {
                 prev.map(m => m.id === messageId ? { ...m, body: newText, updated_at: new Date().toISOString() } : m)
             );
 
-            const updatedMsg = await ChatService.updateMessage(messageId, newText);
+            const updatedMsg = await ChatService.updateMessage(workspaceUid, messageId, newText);
 
             // Confirmamos con el dato de la BD
             setMessages((prev) =>
@@ -157,7 +157,7 @@ export function useChat(workspaceUid: string) {
             // Si el mensaje lo envié yo en otra pestaña, o si es del otro usuario
             if (e.message.sender_id !== user?.id) {
                 setMessages((prev) => [...prev, e.message]);
-                ChatService.markAsRead(activeConversation.id);
+                ChatService.markAsRead(workspaceUid, activeConversation.id);
                 loadConversations(); // Para subirlo en la lista de la sidebar
             }
         });

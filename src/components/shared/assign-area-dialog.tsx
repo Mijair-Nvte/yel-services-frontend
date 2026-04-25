@@ -77,7 +77,7 @@ export function AssignAreaDialog({
     try {
       setLoading(true);
 
-      await OrgAssignmentService.assign({
+      await OrgAssignmentService.assign(workspaceUid,{
         user_id: userId,
         org_area_id: Number(areaId),
         org_role_id: Number(positionId),

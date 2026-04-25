@@ -27,7 +27,7 @@ export function useOrgLinks(workspaceUid: string) {
   // ✅ DELETE LINK
   // ===============================
   const removeLink = async (uid: string) => {
-    await OrgLinkService.delete(uid);
+    await OrgLinkService.delete(workspaceUid,uid);
     await loadLinks();
   };
 

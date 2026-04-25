@@ -95,7 +95,7 @@ export default function LinksPage() {
         }}
         onSubmit={async (data) => {
           if (editingLink) {
-            await OrgLinkService.update(editingLink.uid, data);
+            await OrgLinkService.update(workspaceUid,editingLink.uid, data);
           } else {
             await OrgLinkService.create(workspaceUid, data);
           }

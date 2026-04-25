@@ -1,27 +1,35 @@
 import { apiFetch } from "@/services/http";
 
 export const DepartmentService = {
+  // LIST
   list: (workspaceUid: string) =>
     apiFetch(`/org-companies/${workspaceUid}/areas`),
 
+  // CREATE
   create: (workspaceUid: string, payload: any) =>
     apiFetch(`/org-companies/${workspaceUid}/areas`, {
       method: "POST",
       body: JSON.stringify(payload),
     }),
 
-  update: (departmentUid: string, payload: any) =>
-    apiFetch(`/org-areas/${departmentUid}`, {
+  // UPDATE (Normalizado)
+  update: (workspaceUid: string, areaUid: string, payload: any) =>
+    apiFetch(`/org-companies/${workspaceUid}/areas/${areaUid}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
 
-  delete: (departmentUid: string) =>
-    apiFetch(`/org-areas/${departmentUid}`, {
+  // DELETE (Normalizado)
+  delete: (workspaceUid: string, areaUid: string) =>
+    apiFetch(`/org-companies/${workspaceUid}/areas/${areaUid}`, {
       method: "DELETE",
     }),
 
-  get: (departmentUid: string) => apiFetch(`/org-areas/${departmentUid}`),
+  // GET SINGLE (Normalizado)
+  get: (workspaceUid: string, areaUid: string) =>
+    apiFetch(`/org-companies/${workspaceUid}/areas/${areaUid}`),
 
-  team: (departmentUid: string) => apiFetch(`/org-areas/${departmentUid}/team`),
+  // TEAM BY AREA (Normalizado)
+  team: (workspaceUid: string, areaUid: string) =>
+    apiFetch(`/org-companies/${workspaceUid}/areas/${areaUid}/team`),
 };

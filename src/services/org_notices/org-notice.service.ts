@@ -1,4 +1,3 @@
-// src/services/org_notices/org-notice.service.ts
 import { apiFetch } from "@/services/http";
 
 export const OrgNoticeService = {
@@ -14,36 +13,27 @@ export const OrgNoticeService = {
       body: JSON.stringify(payload),
     }),
 
-  createForArea: (workspaceUid: string, areaUid: string, payload: any) =>
-    apiFetch(`/org-companies/${workspaceUid}/notices`, {
-      method: "POST",
-      body: JSON.stringify({
-        ...payload,
-        org_area_uid: areaUid,
-      }),
-    }),
-
-  update: (uid: string, payload: any) =>
-    apiFetch(`/org-company-notices/${uid}`, {
+  // 🔥 UPDATE NORMALIZADO
+  update: (workspaceUid: string, noticeUid: string, payload: any) =>
+    apiFetch(`/org-companies/${workspaceUid}/notices/${noticeUid}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
 
-  delete: (uid: string) =>
-    apiFetch(`/org-company-notices/${uid}`, {
+  // 🔥 DELETE NORMALIZADO
+  delete: (workspaceUid: string, noticeUid: string) =>
+    apiFetch(`/org-companies/${workspaceUid}/notices/${noticeUid}`, {
       method: "DELETE",
     }),
 
-  pin: (uid: string) =>
-    apiFetch(`/org-company-notices/${uid}`, {
-      method: "PUT",
-      body: JSON.stringify({ is_pinned: true }),
+  pin: (workspaceUid: string, noticeUid: string) =>
+    apiFetch(`/org-companies/${workspaceUid}/notices/${noticeUid}/pin`, {
+      method: "POST",
     }),
 
-  unpin: (uid: string) =>
-    apiFetch(`/org-company-notices/${uid}`, {
-      method: "PUT",
-      body: JSON.stringify({ is_pinned: false }),
+  unpin: (workspaceUid: string, noticeUid: string) =>
+    apiFetch(`/org-companies/${workspaceUid}/notices/${noticeUid}/unpin`, {
+      method: "POST",
     }),
 
   levels: () => apiFetch(`/notice-levels`),

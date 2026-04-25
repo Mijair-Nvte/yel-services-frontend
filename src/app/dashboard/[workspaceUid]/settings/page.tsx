@@ -14,7 +14,7 @@ import {
   User as UserIcon,
   Settings2,
 } from "lucide-react";
-
+import { Plus } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -95,7 +95,10 @@ export default function SettingsTeamPage() {
           </p>
         </div>
 
-        <InviteMemberModal workspaceUid={workspaceUid} />
+       <Button onClick={() => router.push(`/dashboard/${workspaceUid}/settings/team/invite`)}>
+  <Plus className="w-4 h-4 mr-2" />
+  Invitar Nuevo Miembro
+</Button>
       </div>
 
       <Card className="shadow-sm">

@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { TeamGrid } from "@/components/org_team/team-grid";
 import { OrgCompanyService } from "@/services/org_company/org-company.service";
-import { InviteMemberModal } from "@/components/org_team/invite-member-modal";
+
 
 export default function TeamPage() {
   const { workspaceUid } = useParams<{ workspaceUid: string }>();
@@ -37,8 +37,7 @@ export default function TeamPage() {
           </p>
         </div>
 
-        {/* ✅ Invite Button */}
-        <InviteMemberModal workspaceUid={workspaceUid} />
+      
       </div>
 
       {loading ? (

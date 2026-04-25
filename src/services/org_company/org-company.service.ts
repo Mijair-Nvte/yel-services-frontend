@@ -7,18 +7,7 @@ export const OrgCompanyService = {
   getMember: (workspaceUid: string, memberId: string | number) =>
     apiFetch(`/org-companies/${workspaceUid}/team/${memberId}`),
 
-  invite: (
-    workspaceUid: string,
-    payload: {
-      email: string;
-      role: string;
-      org_area_id?: number | null;
-    },
-  ) =>
-    apiFetch(`/org-companies/${workspaceUid}/invitations`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }),
+
 
 
   updateMember: (workspaceUid: string, memberId: string | number, payload: any) =>
