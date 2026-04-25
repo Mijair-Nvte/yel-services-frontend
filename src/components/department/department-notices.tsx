@@ -51,9 +51,9 @@ export function DepartmentNotices({
           }}
           onTogglePin={async (notice) => {
             if (notice.is_pinned) {
-              await OrgNoticeService.unpin(notice.uid);
+              await OrgNoticeService.unpin(workspaceUid, notice.uid);
             } else {
-              await OrgNoticeService.pin(notice.uid);
+              await OrgNoticeService.pin(workspaceUid, notice.uid);
             }
 
             await reload();
@@ -72,14 +72,17 @@ export function DepartmentNotices({
         onSubmit={async (data) => {
           if (editingNotice) {
             // ✏️ UPDATE normal
-            await OrgNoticeService.update(editingNotice.uid, data);
-          } else {
-            // ➕ CREATE para departamento (área)
-            await OrgNoticeService.createForArea(
+            await OrgNoticeService.update(
               workspaceUid,
-              departmentUid,
+              editingNotice.uid,
               data,
             );
+          } else {
+            // ➕ CREATE para departamento (área)
+            await OrgNoticeService.create(workspaceUid, {
+              ...data,
+              org_area_uid: departmentUid,
+            });
           }
 
           await reload();

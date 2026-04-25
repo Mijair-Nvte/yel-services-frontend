@@ -7,7 +7,14 @@ export const OrgNoticeService = {
   listByArea: (workspaceUid: string, areaUid: string) =>
     apiFetch(`/org-companies/${workspaceUid}/areas/${areaUid}/notices`),
 
-  create: (workspaceUid: string, payload: any) =>
+  create: (workspaceUid: string, payload: {
+    title: string;
+    body: string;
+    notice_level_id: number;
+    org_area_uid?: string; // Opcional: si viene, Laravel lo asigna al área
+    published_at?: string;
+    is_pinned?: boolean;
+  }) =>
     apiFetch(`/org-companies/${workspaceUid}/notices`, {
       method: "POST",
       body: JSON.stringify(payload),
