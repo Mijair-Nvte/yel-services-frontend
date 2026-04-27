@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { OrgTeamInviteService } from "@/services/org_settings/team/org-team-invite.service";
+import { OrgTeamInviteService } from "@/services/org_settings/users/org-team-invite.service";
 
 export function useOrgInvitations(workspaceUid: string) {
   const [loading, setLoading] = useState(false);

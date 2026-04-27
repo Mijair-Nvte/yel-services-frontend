@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState } from "react";
@@ -17,12 +16,48 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const pastelColors = [
-  { bg: "bg-rose-50/50", text: "text-rose-700", border: "border-rose-200", icon: "bg-rose-100", hover: "hover:border-rose-400" },
-  { bg: "bg-blue-50/50", text: "text-blue-700", border: "border-blue-200", icon: "bg-blue-100", hover: "hover:border-blue-400" },
-  { bg: "bg-emerald-50/50", text: "text-emerald-700", border: "border-emerald-200", icon: "bg-emerald-100", hover: "hover:border-emerald-400" },
-  { bg: "bg-purple-50/50", text: "text-purple-700", border: "border-purple-200", icon: "bg-purple-100", hover: "hover:border-purple-400" },
-  { bg: "bg-amber-50/50", text: "text-amber-700", border: "border-amber-200", icon: "bg-amber-100", hover: "hover:border-amber-400" },
-  { bg: "bg-cyan-50/50", text: "text-cyan-700", border: "border-cyan-200", icon: "bg-cyan-100", hover: "hover:border-cyan-400" },
+  {
+    bg: "bg-rose-50/50",
+    text: "text-rose-700",
+    border: "border-rose-200",
+    icon: "bg-rose-100",
+    hover: "hover:border-rose-400",
+  },
+  {
+    bg: "bg-blue-50/50",
+    text: "text-blue-700",
+    border: "border-blue-200",
+    icon: "bg-blue-100",
+    hover: "hover:border-blue-400",
+  },
+  {
+    bg: "bg-emerald-50/50",
+    text: "text-emerald-700",
+    border: "border-emerald-200",
+    icon: "bg-emerald-100",
+    hover: "hover:border-emerald-400",
+  },
+  {
+    bg: "bg-purple-50/50",
+    text: "text-purple-700",
+    border: "border-purple-200",
+    icon: "bg-purple-100",
+    hover: "hover:border-purple-400",
+  },
+  {
+    bg: "bg-amber-50/50",
+    text: "text-amber-700",
+    border: "border-amber-200",
+    icon: "bg-amber-100",
+    hover: "hover:border-amber-400",
+  },
+  {
+    bg: "bg-cyan-50/50",
+    text: "text-cyan-700",
+    border: "border-cyan-200",
+    icon: "bg-cyan-100",
+    hover: "hover:border-cyan-400",
+  },
 ];
 
 function getMemberStyle(value: string) {
@@ -43,14 +78,22 @@ export function TeamCard({
   workspaceUid: string;
   reloadTeam: () => void;
 }) {
-  const user = member.user;
+  // 🔥 CORRECCIÓN: Como los datos vienen planos desde /directory, 'member' ya contiene todo.
+  const user = member;
   const [assignOpen, setAssignOpen] = useState(false);
 
   // Estilo estable basado en el nombre del usuario
-  const style = useMemo(() => getMemberStyle(user?.name || "default"), [user?.name]);
+  const style = useMemo(
+    () => getMemberStyle(user?.name || "default"),
+    [user?.name],
+  );
 
   const initials = useMemo(() => {
-    return user?.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2);
+    return user?.name
+      ?.split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .slice(0, 2);
   }, [user?.name]);
 
   const areaAssignments = user?.area_assignments ?? [];
@@ -69,25 +112,44 @@ export function TeamCard({
 
   return (
     <>
-      <Card className={cn(
-        "group relative overflow-hidden rounded-3xl border-2 border-transparent transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/5",
-        style.bg,
-        style.hover
-      )}>
+      <Card
+        className={cn(
+          "group relative overflow-hidden rounded-3xl border-2 border-transparent transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/5",
+          style.bg,
+          style.hover,
+        )}
+      >
         {/* Decorative Top Accent */}
-        <div className={cn("absolute top-0 left-0 w-full h-1.5 opacity-40", style.icon.replace('bg', 'bg'))} />
+        <div
+          className={cn(
+            "absolute top-0 left-0 w-full h-1.5 opacity-40",
+            style.icon.replace("bg", "bg"),
+          )}
+        />
 
         <CardContent className="p-8 flex flex-col items-center">
           {/* Actions Menu */}
           <div className="absolute right-4 top-5">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-background/50">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-background/50"
+                >
                   <MoreVertical className="h-4 w-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 shadow-xl border-border/50">
-                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setAssignOpen(true); }}>
+              <DropdownMenuContent
+                align="end"
+                className="w-48 shadow-xl border-border/50"
+              >
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setAssignOpen(true);
+                  }}
+                >
                   <UserCog className="mr-2 h-4 w-4" />
                   Asignar área
                 </DropdownMenuItem>
@@ -98,8 +160,12 @@ export function TeamCard({
           {/* Avatar Section */}
           <div className="relative mb-6">
             <Avatar className="h-28 w-28 rounded-full ring-4 ring-white shadow-xl dark:ring-slate-900">
-              {user?.avatar_url && <AvatarImage src={user.avatar_url} className="object-cover" />}
-              <AvatarFallback className={cn("text-2xl font-black", style.icon, style.text)}>
+              {user?.avatar_url && (
+                <AvatarImage src={user.avatar_url} className="object-cover" />
+              )}
+              <AvatarFallback
+                className={cn("text-2xl font-black", style.icon, style.text)}
+              >
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -122,11 +188,16 @@ export function TeamCard({
           </div>
 
           {/* Role Badge */}
-          <Badge className={cn(
-            "mb-6 font-bold uppercase tracking-widest text-[10px] px-4 py-1",
-            member.role === "owner" ? "bg-amber-500 text-white" : 
-            member.role === "admin" ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-600 dark:bg-slate-800"
-          )}>
+          <Badge
+            className={cn(
+              "mb-6 font-bold uppercase tracking-widest text-[10px] px-4 py-1",
+              member.role === "owner"
+                ? "bg-amber-500 text-white"
+                : member.role === "admin"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-200 text-slate-600 dark:bg-slate-800",
+            )}
+          >
             {member.role}
           </Badge>
 

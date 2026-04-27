@@ -3,8 +3,8 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { TeamGrid } from "@/components/org_team/team-grid";
-import { OrgCompanyService } from "@/services/org_company/org-company.service";
 
+import { OrgUserService } from "@/services/org_settings/users/org-user.service";
 
 export default function TeamPage() {
   const { workspaceUid } = useParams<{ workspaceUid: string }>();
@@ -16,8 +16,11 @@ export default function TeamPage() {
 
     setLoading(true);
     try {
-      const data = await OrgCompanyService.team(workspaceUid);
+    
+      const data = await OrgUserService.getDirectory(workspaceUid);
       setMembers(data);
+    } catch (error) {
+      console.error("Error cargando el directorio", error);
     } finally {
       setLoading(false);
     }
@@ -36,8 +39,6 @@ export default function TeamPage() {
             Personas que forman parte de esta compañía
           </p>
         </div>
-
-      
       </div>
 
       {loading ? (

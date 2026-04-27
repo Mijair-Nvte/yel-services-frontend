@@ -103,10 +103,6 @@ export default function WorkspacesPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Espacios de trabajo</h2>
 
-            <Button onClick={() => router.push("/workspaces/new")}>
-              <Plus className="mr-2 h-4 w-4" />
-              Crear
-            </Button>
           </div>
 
           <Separator />

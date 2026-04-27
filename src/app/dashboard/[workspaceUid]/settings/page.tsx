@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { OrgMemberService } from "@/services/org_team/org-member.service"; // CORREGIDO
-import { InviteMemberModal } from "@/components/org_team/invite-member-modal";
+import { OrgUserService } from "@/services/org_settings/users/org-user.service"; // CORREGIDO
+
 import { EditMemberPanel } from "@/components/org_team/edit-member-panel";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -53,7 +53,7 @@ export default function SettingsTeamPage() {
     if (!workspaceUid) return;
     setLoading(true);
     try {
-      const data = await OrgMemberService.getAll(workspaceUid); // CORREGIDO
+      const data = await OrgUserService.getAll(workspaceUid); // CORREGIDO
       setMembers(data);
     } catch (error) {
       toast.error("Error al cargar el equipo");
@@ -75,7 +75,7 @@ export default function SettingsTeamPage() {
       return;
 
     try {
-      await OrgMemberService.remove(workspaceUid, member.id); // CORREGIDO
+      await OrgUserService.remove(workspaceUid, member.id); // CORREGIDO
       toast.success("Usuario eliminado del equipo");
       loadTeam();
     } catch (error: any) {
@@ -95,10 +95,14 @@ export default function SettingsTeamPage() {
           </p>
         </div>
 
-       <Button onClick={() => router.push(`/dashboard/${workspaceUid}/settings/team/invite`)}>
-  <Plus className="w-4 h-4 mr-2" />
-  Invitar Nuevo Miembro
-</Button>
+        <Button
+          onClick={() =>
+            router.push(`/dashboard/${workspaceUid}/settings/users/invite`)
+          }
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Invitar Nuevo Miembro
+        </Button>
       </div>
 
       <Card className="shadow-sm">
@@ -179,7 +183,7 @@ export default function SettingsTeamPage() {
                               <DropdownMenuItem
                                 onClick={() =>
                                   router.push(
-                                    `/dashboard/${workspaceUid}/settings/team/${member.id}`,
+                                    `/dashboard/${workspaceUid}/settings/users/${member.id}`,
                                   )
                                 }
                                 className="cursor-pointer"
