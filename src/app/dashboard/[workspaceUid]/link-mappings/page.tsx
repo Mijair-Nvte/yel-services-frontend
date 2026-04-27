@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { LinkMappingService } from "@/services/org_sales/link-mappings.service";
-import { OrgCompanyService } from "@/services/org_company/org-company.service"; 
+import { OrgUserService } from "@/services/org_settings/users/org-user.service";
 import { Button } from "@/components/ui/button";
 import { Plus, Search, Loader2, Users2 } from "lucide-react";
 import { MappingsGrouped } from "@/components/link-mappings/mappings-grouped"; // Nuevo componente
@@ -26,9 +26,9 @@ export default function LinkMappingsPage() {
     try {
       setIsLoading(true);
       const mappingsRes = await LinkMappingService.getAll(workspaceUid);
-      const teamRes = await OrgCompanyService.team(workspaceUid);
+      const teamRes = await OrgUserService.getDirectory(workspaceUid);
       setMappings(mappingsRes || []);
-      setSellers(teamRes.data || teamRes || []); 
+      setSellers(Array.isArray(teamRes) ? teamRes : teamRes.data || []);
     } catch (error) {
       toast.error("Error al sincronizar con el servidor");
     } finally {
@@ -36,14 +36,17 @@ export default function LinkMappingsPage() {
     }
   }, [workspaceUid]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // --- LÓGICA DE AGRUPAMIENTO PRO ---
   const groupedData = useMemo(() => {
-    const filtered = mappings.filter(m => 
-      m.service_name?.toLowerCase().includes(search.toLowerCase()) ||
-      m.seller?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      m.ghl_payment_link_id?.toLowerCase().includes(search.toLowerCase())
+    const filtered = mappings.filter(
+      (m) =>
+        m.service_name?.toLowerCase().includes(search.toLowerCase()) ||
+        m.seller?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        m.ghl_payment_link_id?.toLowerCase().includes(search.toLowerCase()),
     );
 
     // Agrupamos por el nombre del vendedor
@@ -52,7 +55,7 @@ export default function LinkMappingsPage() {
       if (!acc[sellerName]) {
         acc[sellerName] = {
           seller: current.seller,
-          links: []
+          links: [],
         };
       }
       acc[sellerName].links.push(current);
@@ -65,7 +68,6 @@ export default function LinkMappingsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900  flex items-center gap-3">
-           
             Gestión de Enlaces
           </h1>
           <p className="text-slate-500 text-sm ">
@@ -73,15 +75,19 @@ export default function LinkMappingsPage() {
           </p>
         </div>
         <Button
-          onClick={() => { setSelectedMapping(null); setIsDialogOpen(true); }}
-
+          onClick={() => {
+            setSelectedMapping(null);
+            setIsDialogOpen(true);
+          }}
         >
           <Plus className="h-4 w-4 mr-2" /> Nuevo Enlace
         </Button>
       </div>
 
       <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm ring-1 ring-slate-100">
-        <div className="p-2"><Search className="h-4 w-4 text-slate-400" /></div>
+        <div className="p-2">
+          <Search className="h-4 w-4 text-slate-400" />
+        </div>
         <Input
           placeholder="Buscar por vendedor, servicio o ID..."
           className="border-none focus-visible:ring-0 text-sm placeholder:text-slate-400"
@@ -93,17 +99,22 @@ export default function LinkMappingsPage() {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 space-y-4">
           <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
-          <p className="text-slate-400 text-sm font-medium">Cargando organización...</p>
+          <p className="text-slate-400 text-sm font-medium">
+            Cargando organización...
+          </p>
         </div>
       ) : (
-        <MappingsGrouped 
-          groupedData={groupedData} 
-          onEdit={(m: any) => { setSelectedMapping(m); setIsDialogOpen(true); }} 
+        <MappingsGrouped
+          groupedData={groupedData}
+          onEdit={(m: any) => {
+            setSelectedMapping(m);
+            setIsDialogOpen(true);
+          }}
           onDelete={async (uid: string) => {
-             if(confirm("¿Eliminar?")) {
-               await LinkMappingService.delete(workspaceUid, uid);
-               loadData();
-             }
+            if (confirm("¿Eliminar?")) {
+              await LinkMappingService.delete(workspaceUid, uid);
+              loadData();
+            }
           }}
         />
       )}
