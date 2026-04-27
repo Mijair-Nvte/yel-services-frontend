@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Save, User, Mail, Phone, Package, DollarSign, UserCheck, Loader2 } from "lucide-react";
+import {
+  Save,
+  User,
+  Mail,
+  Phone,
+  Package,
+  DollarSign,
+  UserCheck,
+  Loader2,
+} from "lucide-react";
 import {
   Sheet,
   SheetClose,
@@ -19,7 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { OrgCompanyService } from "@/services/org_company/org-company.service";
+import { OrgUserService } from "@/services/org_settings/users/org-user.service";
 
 export function EditSaleSheet({
   open,
@@ -45,9 +54,9 @@ export function EditSaleSheet({
   useEffect(() => {
     if (open && workspaceUid) {
       setIsLoadingTeam(true);
-      OrgCompanyService.team(workspaceUid)
+      // 🔥 1. Usamos getDirectory en lugar de team
+      OrgUserService.getDirectory(workspaceUid)
         .then((res: any) => {
-          // Tu API puede devolver el array directo o dentro de res.data
           const teamData = res.data || res;
           setTeamMembers(Array.isArray(teamData) ? teamData : []);
         })
@@ -76,7 +85,8 @@ export function EditSaleSheet({
     try {
       const payload = {
         ...editForm,
-        seller_id: editForm.seller_id === "none" ? null : Number(editForm.seller_id),
+        seller_id:
+          editForm.seller_id === "none" ? null : Number(editForm.seller_id),
       };
 
       await onEditSaleDetails(sale.id, payload);
@@ -101,66 +111,95 @@ export function EditSaleSheet({
         <div className="p-6 space-y-6 flex-1">
           {/* SECCIÓN CLIENTE */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-800 border-b pb-2">Información del Cliente</h3>
-            
+            <h3 className="text-sm font-bold text-slate-800 border-b pb-2">
+              Información del Cliente
+            </h3>
+
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> Nombre</label>
-              <input 
-                type="text" 
-                className="w-full text-sm text-slate-900 border rounded-lg px-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
-                value={editForm.customer_name} 
-                onChange={e => setEditForm({...editForm, customer_name: e.target.value})} 
-                placeholder="Nombre completo" 
+              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5" /> Nombre
+              </label>
+              <input
+                type="text"
+                className="w-full text-sm text-slate-900 border rounded-lg px-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                value={editForm.customer_name}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, customer_name: e.target.value })
+                }
+                placeholder="Nombre completo"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> Correo Electrónico</label>
-              <input 
-                type="email" 
-                className="w-full text-sm text-slate-900 border rounded-lg px-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
-                value={editForm.customer_email} 
-                onChange={e => setEditForm({...editForm, customer_email: e.target.value})} 
-                placeholder="correo@ejemplo.com" 
+              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" /> Correo Electrónico
+              </label>
+              <input
+                type="email"
+                className="w-full text-sm text-slate-900 border rounded-lg px-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                value={editForm.customer_email}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, customer_email: e.target.value })
+                }
+                placeholder="correo@ejemplo.com"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> Teléfono</label>
-              <input 
-                type="text" 
-                className="w-full text-sm text-slate-900 border rounded-lg px-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
-                value={editForm.customer_phone} 
-                onChange={e => setEditForm({...editForm, customer_phone: e.target.value})} 
-                placeholder="+1 234 567 8900" 
+              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5" /> Teléfono
+              </label>
+              <input
+                type="text"
+                className="w-full text-sm text-slate-900 border rounded-lg px-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                value={editForm.customer_phone}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, customer_phone: e.target.value })
+                }
+                placeholder="+1 234 567 8900"
               />
             </div>
           </div>
 
           {/* SECCIÓN SERVICIO Y ASIGNACIÓN */}
           <div className="space-y-4 pt-2">
-            <h3 className="text-sm font-bold text-slate-800 border-b pb-2">Detalles del Servicio</h3>
+            <h3 className="text-sm font-bold text-slate-800 border-b pb-2">
+              Detalles del Servicio
+            </h3>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5"><Package className="h-3.5 w-3.5" /> Producto / Servicio</label>
-              <input 
-                type="text" 
-                className="w-full text-sm text-slate-900 border rounded-lg px-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
-                value={editForm.product_name} 
-                onChange={e => setEditForm({...editForm, product_name: e.target.value})} 
-                placeholder="Nombre del servicio" 
+              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                <Package className="h-3.5 w-3.5" /> Producto / Servicio
+              </label>
+              <input
+                type="text"
+                className="w-full text-sm text-slate-900 border rounded-lg px-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                value={editForm.product_name}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, product_name: e.target.value })
+                }
+                placeholder="Nombre del servicio"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5"><DollarSign className="h-3.5 w-3.5" /> Monto Cobrado (Bruto)</label>
+              <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                <DollarSign className="h-3.5 w-3.5" /> Monto Cobrado (Bruto)
+              </label>
               <div className="relative">
-                <span className="absolute left-3 top-2.5 text-slate-500 font-medium">$</span>
-                <input 
-                  type="number" 
-                  className="w-full text-sm font-bold text-slate-900 border rounded-lg pl-7 pr-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all" 
-                  value={editForm.total_amount} 
-                  onChange={e => setEditForm({...editForm, total_amount: parseFloat(e.target.value) || 0})} 
+                <span className="absolute left-3 top-2.5 text-slate-500 font-medium">
+                  $
+                </span>
+                <input
+                  type="number"
+                  className="w-full text-sm font-bold text-slate-900 border rounded-lg pl-7 pr-3 py-2 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                  value={editForm.total_amount}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      total_amount: parseFloat(e.target.value) || 0,
+                    })
+                  }
                 />
               </div>
             </div>
@@ -168,17 +207,21 @@ export function EditSaleSheet({
             {/* SELECCIÓN DE VENDEDOR - CORREGIDO PARA TU JSON */}
             <div className="space-y-2 pt-2">
               <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-                <UserCheck className="h-3.5 w-3.5 text-indigo-500" /> Asignar Vendedor
+                <UserCheck className="h-3.5 w-3.5 text-indigo-500" /> Asignar
+                Vendedor
               </label>
-              
+
               {isLoadingTeam ? (
                 <div className="h-10 border rounded-lg bg-slate-50 flex items-center px-3 text-sm text-slate-500">
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando equipo...
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Cargando
+                  equipo...
                 </div>
               ) : (
-                <Select 
-                  value={editForm.seller_id} 
-                  onValueChange={(val) => setEditForm({...editForm, seller_id: val})}
+                <Select
+                  value={editForm.seller_id}
+                  onValueChange={(val) =>
+                    setEditForm({ ...editForm, seller_id: val })
+                  }
                 >
                   <SelectTrigger className="w-full h-10 bg-slate-50 focus:bg-white focus:ring-indigo-500">
                     <SelectValue placeholder="Selecciona un vendedor" />
@@ -187,40 +230,48 @@ export function EditSaleSheet({
                     <SelectItem value="none" className="text-slate-500 italic">
                       Sin asignar
                     </SelectItem>
-                    
-                    {/* Aquí iteramos sobre teamMembers pero accedemos a member.user */}
+
+                    {/* 🔥 2. Iteramos directo sobre member porque los datos vienen planos */}
                     {teamMembers.map((member: any) => {
-                      const u = member.user; // <-- Extraemos el objeto user anidado
-                      if (!u) return null; // Previene errores si por alguna razón viene vacío
+                      if (!member) return null;
 
                       return (
-                        <SelectItem key={member.id} value={String(u.id)}>
+                        <SelectItem key={member.id} value={String(member.id)}>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{u.name}</span>
-                            <span className="text-xs text-slate-400">({u.email})</span>
+                            <span className="font-medium">{member.name}</span>
+                            <span className="text-xs text-slate-400">
+                              ({member.email})
+                            </span>
                           </div>
                         </SelectItem>
                       );
                     })}
-
                   </SelectContent>
                 </Select>
               )}
             </div>
-
           </div>
         </div>
 
         <SheetFooter className="">
-          <Button onClick={handleSave} disabled={isSaving} >
-            {isSaving ? "Guardando..." : <><Save className="mr-2 h-4 w-4" /> Guardar Cambios</>}
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              "Guardando..."
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" /> Guardar Cambios
+              </>
+            )}
           </Button>
           <SheetClose asChild>
-            <Button variant="outline" onClick={onClose} className="rounded-xl font-semibold">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="rounded-xl font-semibold"
+            >
               Cancelar
             </Button>
           </SheetClose>
-          
         </SheetFooter>
       </SheetContent>
     </Sheet>

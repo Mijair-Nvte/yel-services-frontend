@@ -5,7 +5,7 @@ import { Search, MessageSquare } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { OrgCompanyService } from "@/services/org_company/org-company.service";
+import { OrgUserService } from "@/services/org_settings/users/org-user.service";
 import { TeamDirectory } from "./TeamDirectory";
 import { ChatItem } from "./ChatItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -33,7 +33,8 @@ export function ChatSidebar({
     if (!workspaceUid) return;
     const loadTeam = async () => {
       try {
-        const data = await OrgCompanyService.team(workspaceUid);
+      
+        const data = await OrgUserService.getDirectory(workspaceUid);
         setTeamMembers(data);
       } catch (error) {
         console.error("Error cargando el equipo:", error);
@@ -146,7 +147,7 @@ export function ChatSidebar({
           value="team"
           className="flex-1 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col"
         >
-          <TeamDirectory
+         <TeamDirectory
             searchTerm={searchTerm}
             members={teamMembers}
             loading={loadingTeam}
