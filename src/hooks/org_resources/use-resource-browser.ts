@@ -6,6 +6,7 @@ import { FolderService } from "@/services/org_resources/folder.service";
 import { DocumentService } from "@/services/org_resources/document.service";
 
 export function useResourceBrowser(params: {
+  companyUid: string;
   folderableType: "company" | "area";
   folderableUid: string;
 }) {
@@ -33,7 +34,7 @@ export function useResourceBrowser(params: {
   const openFolder = async (folder: any) => {
     setLoading(true);
 
-    const data = await FolderService.children(folder.id);
+    const data = await FolderService.children(params.companyUid, folder.id);
 
     setFolders(data.folders);
     setDocuments(data.documents);
@@ -48,7 +49,7 @@ export function useResourceBrowser(params: {
 
     setLoading(true);
 
-    const data = await FolderService.children(target.id);
+    const data = await FolderService.children(params.companyUid, target.id);
 
     setFolders(data.folders);
     setDocuments(data.documents);
@@ -60,13 +61,14 @@ export function useResourceBrowser(params: {
 
   // ➕ subir documento
   const uploadDocument = async (
-    file: File,
+    file: File, // ✅ Corregido: Quitamos el parámetro mal formado
     onProgress: (p: number) => void
   ) => {
     if (!currentFolder) return;
 
     // 1️⃣ Presign
     const presign = await DocumentService.presign({
+      companyUid: params.companyUid,
       file,
       folderUid: currentFolder.uid,
     });
@@ -87,30 +89,33 @@ export function useResourceBrowser(params: {
       xhr.onerror = () => reject(new Error("Upload error"));
 
       xhr.open("PUT", presign.upload_url);
-      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream"); // ✅ También lo protegemos aquí por si acaso
       xhr.send(file);
     });
 
     // 3️⃣ Confirmar
     await DocumentService.confirm({
+      companyUid: params.companyUid,
       folder_uid: currentFolder.uid,
       original_name: file.name,
-      mime_type: file.type,
+      mime_type: file.type || "application/octet-stream", // ✅ Corregido: Agregada la protección
       file_size: file.size,
       key: presign.key,
     });
 
     await openFolder(currentFolder);
   };
+  
   // 🗑️ eliminar documento
   const deleteDocument = async (doc: any) => {
-    await DocumentService.delete(doc.uid);
+    await DocumentService.delete(params.companyUid, doc.uid);
     await openFolder(currentFolder);
   };
 
   // ➕ crear carpeta (raíz o hija)
   const createFolder = async (name: string) => {
     await FolderService.create({
+      companyUid: params.companyUid,
       name,
       parent_id: currentFolder?.id ?? null,
       folderableType: params.folderableType,
@@ -126,13 +131,13 @@ export function useResourceBrowser(params: {
   };
 
   const renameFolder = async (folder: any, name: string) => {
-    await FolderService.rename(folder.id, name);
+    await FolderService.rename(params.companyUid, folder.id, name);
 
     currentFolder ? openFolder(currentFolder) : loadRoots();
   };
 
   const deleteFolder = async (folder: any) => {
-    await FolderService.remove(folder.id);
+    await FolderService.remove(params.companyUid, folder.id);
 
     // Si borras la carpeta actual o una anterior → root
     if (folderStack.find((f) => f.id === folder.id)) {

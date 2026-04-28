@@ -17,6 +17,7 @@ import {
   DollarSign,
   Link2,
   User,
+  FolderCheck,
 } from "lucide-react";
 
 export const PERMISSION_GROUPS = [
@@ -60,6 +61,14 @@ export const PERMISSION_GROUPS = [
     permissions: [
       { key: "view_areas", label: "Ver Áreas y Departamentos" },
       { key: "manage_areas", label: "Gestionar (Crear/Editar) Áreas" },
+    ],
+  },
+   {
+    category: "Folder / Documentos",
+    icon: <FolderCheck className="w-4 h-4" />,
+    permissions: [
+      { key: "view_documents", label: "Ver folder y Documentos" },
+      { key: "manage_documents", label: "Gestionar (Crear/Editar) Documentos" },
     ],
   },
   {

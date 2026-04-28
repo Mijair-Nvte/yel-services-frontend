@@ -9,7 +9,8 @@ export default function CompanyResourcesPage() {
   const { workspaceUid } = useParams<{ workspaceUid: string }>();
 
   const browser = useResourceBrowser({
-    folderableType: "company",
+    companyUid: workspaceUid,
+    folderableType: "company",  
     folderableUid: workspaceUid,
   });
 
