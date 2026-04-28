@@ -7,8 +7,9 @@ import { ChatArea } from "./ChatArea";
 import { MessageSquare } from "lucide-react";
 import { useChat } from "@/hooks/chat/use-chat";
 import { useAuthStore } from "@/store/auth.store";
+import { cn } from "@/lib/utils";
 
-export function ChatLayout() {
+export function ChatLayout({ isSheet = false }: { isSheet?: boolean }){
   const { workspaceUid } = useParams<{ workspaceUid: string }>();
   const { user } = useAuthStore();
   const [activeUser, setActiveUser] = useState<any | null>(null);
@@ -30,7 +31,10 @@ export function ChatLayout() {
   };
 
   return (
-    <div className="flex h-full w-full overflow-hidden rounded-xl border bg-background shadow-sm">
+   <div className={cn(
+        "flex h-full w-full overflow-hidden bg-background",
+        !isSheet && "rounded-xl border shadow-sm" // Solo bordes si NO es sheet
+    )}>
       <ChatSidebar 
         activeUser={activeUser} 
         onSelectUser={handleSelectUser} 
