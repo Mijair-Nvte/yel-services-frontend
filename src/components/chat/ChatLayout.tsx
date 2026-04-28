@@ -34,8 +34,8 @@ export function ChatLayout() {
       <ChatSidebar 
         activeUser={activeUser} 
         onSelectUser={handleSelectUser} 
-        conversations={conversations} // 🔥 Pasamos los chats reales
-        currentUser={user} // 🔥 Pasamos el usuario para lógica de "vistos"
+        conversations={conversations} 
+        currentUser={user} 
       />
       
       <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">

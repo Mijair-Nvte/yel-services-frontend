@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { OrgUserService } from "@/services/org_settings/users/org-user.service"; // CORREGIDO
+import { OrgUserService } from "@/services/org_settings/users/org-user.service"; 
 
 import { EditMemberPanel } from "@/components/org_team/edit-member-panel";
 import { toast } from "sonner";
