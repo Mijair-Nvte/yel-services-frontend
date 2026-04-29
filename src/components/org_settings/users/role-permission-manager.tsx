@@ -18,6 +18,7 @@ import {
   Link2,
   User,
   FolderCheck,
+  Clock,
 } from "lucide-react";
 
 export const PERMISSION_GROUPS = [
@@ -107,6 +108,21 @@ export const PERMISSION_GROUPS = [
       },
     ],
   },
+    {
+    category: "Gestión de Time Tracking",
+    icon: <Clock className="w-4 h-4" />,
+    permissions: [
+      {
+        key: "view_time_tracking",
+        label: "Ver entrada y tiempo de los usuarios",
+      },
+      {
+        key: "manage_time_tracking",
+        label: "Administrar (Tiempo) Usuarios",
+      },
+    ],
+  },
+
 ];
 
 // 🔥 Extraemos TODAS las keys dinámicamente para pre-seleccionarlas al invitar

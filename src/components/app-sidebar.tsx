@@ -29,6 +29,7 @@ import {
   Calendar1,
   BadgeDollarSign,
   MessageCircleMore,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -44,10 +45,8 @@ const getInitials = (name?: string) => {
 };
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-
   const { workspace, hasPermission } = useWorkspaceStore();
   const user = useAuthStore((state) => state.user);
-  
 
   // ✅ 2. Agregamos "requiredPermission" a cada item
   const rawNavMain = [
@@ -81,7 +80,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: Link2Icon,
       requiredPermission: "view_company_links",
     },
-   
+
     {
       title: "Archivos",
       url: workspace ? `/dashboard/${workspace.uid}/resources` : "#",
@@ -106,6 +105,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: Link2,
       requiredPermission: "view_payment_links",
     },
+    {
+      title: "Control de Tiempo",
+      url: workspace ? `/dashboard/${workspace.uid}/time-tracking` : "#",
+      icon: Clock,
+      requiredPermission: "view_time_tracking",
+    },
   ];
 
   const rawNavSecondary = [
@@ -124,7 +129,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       // Al no tener requiredPermission, siempre se mostrará
     },
   ];
-
 
   const navMain = rawNavMain.filter(
     (item) =>
@@ -166,9 +170,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
 
-      <SidebarFooter>
-        
-      </SidebarFooter>
+      <SidebarFooter></SidebarFooter>
     </Sidebar>
   );
 }

@@ -11,7 +11,7 @@ import { useChatNotificationsStore } from "@/store/chat-notifications.store";
 import { useAuthStore } from "@/store/auth.store";
 import { ChatSheet } from "@/components/chat/chat-sheet";
 import { cn } from "@/lib/utils";
-
+import { TimeTrackingWidget } from "@/components/time_tracking/time-tracking-widget";
 export function SiteHeader() {
   const { workspace } = useWorkspaceStore();
   const { hasUnreadMessages } = useChatNotificationsStore();
@@ -34,6 +34,9 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-3 ">
+
+          <TimeTrackingWidget />
+          
           {/* Icono de CHAT */}
          <ChatSheet />
 
