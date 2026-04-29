@@ -21,7 +21,7 @@ type WorkspaceState = {
   workspace: Workspace | null;
   loading: boolean;
 
-  // Nuevas propiedades para permisos
+  isOwner: boolean;
   roles: string[];
   permissions: string[];
   loadingPermissions: boolean;
@@ -34,7 +34,7 @@ type WorkspaceState = {
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   workspace: null,
   loading: true,
-
+  isOwner: false,
   roles: [],
   permissions: [],
   loadingPermissions: true,
@@ -51,6 +51,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
       set({
         workspace: workspaceData,
+        isOwner: permissionsData.is_owner || false,
         roles: permissionsData.roles || [],
         permissions: permissionsData.permissions || []
       });
@@ -64,6 +65,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   clearWorkspace: () => set({
     workspace: null,
+    isOwner: false,
     roles: [],
     permissions: [],
     loadingPermissions: false
@@ -71,6 +73,15 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   // Función ayudante que usarás en tus vistas
   hasPermission: (permission: string) => {
-    return get().permissions.includes(permission);
+    const state = get();
+
+    // ✅ LA MAGIA: Si el usuario es el Owner, tiene acceso total a todo.
+    // Ignora el arreglo de permisos de Spatie y retorna true.
+    if (state.isOwner) {
+      return true;
+    }
+
+    // Si no es owner, verifica sus permisos normales
+    return state.permissions.includes(permission);
   },
 }));

@@ -122,7 +122,7 @@ export function ChatSidebar({
 
       <Tabs
         defaultValue="chats"
-        className="flex flex-1 flex-col overflow-hidden"
+        className="flex flex-1 flex-col "
       >
         <div className="px-4 pt-2 shrink-0">
           <TabsList className="grid w-full grid-cols-2">
@@ -133,11 +133,11 @@ export function ChatSidebar({
 
         <TabsContent
           value="chats"
-          className="flex-1 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col"
+          className="flex-1  data-[state=active]:flex data-[state=active]:flex-col"
         >
           <ScrollArea className="flex-1">
             <div className="flex flex-col gap-1 p-2">
-              {/* 🔥 Aquí llamamos a la función que pinta los reales */}
+              
               {renderConversations()}
             </div>
           </ScrollArea>
