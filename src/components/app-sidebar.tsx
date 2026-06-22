@@ -29,7 +29,9 @@ import {
   Calendar1,
   BadgeDollarSign,
   MessageCircleMore,
+  Package,
   Clock,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -98,6 +100,17 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       url: workspace ? `/dashboard/${workspace.uid}/sales` : "#",
       icon: BadgeDollarSign,
       requiredPermission: "view_sales",
+    },
+    {
+      title: "Servicios",
+      url: workspace ? `/dashboard/${workspace.uid}/services` : "#",
+      icon: Package,
+      requiredPermission: "view_services", 
+    },
+      {
+      title: "Seguros",
+      url: workspace ? `/dashboard/${workspace.uid}/insurance` : "#",
+      icon: ShieldCheck, // Icono de protección/seguro
     },
     {
       title: "Mapeo de Enlaces",

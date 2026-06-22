@@ -47,7 +47,7 @@ export function DashboardEvents({ events }: Props) {
                     {event.title}
                   </p>
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
-                    {new Date(event.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Presencial
+                    {new Date(event.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {event.location}
                   </p>
                 </div>
 

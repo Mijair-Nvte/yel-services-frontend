@@ -65,18 +65,23 @@ export function EditSaleSheet({
     }
   }, [open, workspaceUid]);
 
-  useEffect(() => {
-    if (open && sale) {
-      setEditForm({
-        customer_name: sale.customer_name || "",
-        customer_email: sale.customer_email || "",
-        customer_phone: sale.customer_phone || "",
-        product_name: sale.product_name || "",
-        total_amount: Number(sale.total_amount) || 0,
-        seller_id: sale.seller?.id ? String(sale.seller.id) : "none",
-      });
-    }
-  }, [open, sale]);
+useEffect(() => {
+  if (open && sale) {
+    // Extraemos los datos del nuevo objeto customer
+    const fullName = sale.customer 
+      ? `${sale.customer.first_name || ""} ${sale.customer.last_name || ""}`.trim() 
+      : "";
+
+    setEditForm({
+      customer_name: fullName,
+      customer_email: sale.customer?.email || "",
+      customer_phone: sale.customer?.phone || "",
+      product_name: sale.product_name || "",
+      total_amount: Number(sale.total_amount) || 0,
+      seller_id: sale.seller?.id ? String(sale.seller.id) : "none",
+    });
+  }
+}, [open, sale]);
 
   if (!sale) return null;
 

@@ -131,16 +131,17 @@ export function SalesTable({
                   </TableCell>
 
                   {/* CLIENTE */}
-                  <TableCell className="py-4">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-slate-900 text-sm tracking-tight group-hover:text-indigo-600 transition-colors">
-                        {sale.customer_name || "Cliente Final"}
-                      </span>
-                      <span className="text-xs text-slate-500 line-clamp-1 max-w-[150px]">
-                        {sale.product_name}
-                      </span>
-                    </div>
-                  </TableCell>
+               {/* CLIENTE */}
+<TableCell className="py-4">
+  <div className="flex flex-col">
+    <span className="font-bold text-slate-900 text-sm tracking-tight group-hover:text-indigo-600 transition-colors">
+      {sale.customer ? `${sale.customer.first_name || ""} ${sale.customer.last_name || ""}`.trim() : "Cliente Final"}
+    </span>
+    <span className="text-xs text-slate-500 line-clamp-1 max-w-[150px]">
+      {sale.product_name}
+    </span>
+  </div>
+</TableCell>
 
                   {/* MONTO BRUTO */}
                   <TableCell className="py-4">

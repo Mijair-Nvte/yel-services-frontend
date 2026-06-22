@@ -205,47 +205,47 @@ export function SaleSheet({
 
         <div className="p-3 space-y-6 flex-1 bg-white">
           {/* INFO CLIENTE */}
-          <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-            <div className="flex items-start gap-4">
-              <Avatar className="h-14 w-14 border-2 border-white shadow-lg ring-1 ring-slate-100">
-                <AvatarFallback className="bg-slate-900 text-white text-lg font-bold">
-                  {sale.customer_name?.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
+        <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+  <div className="flex items-start gap-4">
+    <Avatar className="h-14 w-14 border-2 border-white shadow-lg ring-1 ring-slate-100">
+      <AvatarFallback className="bg-slate-900 text-white text-lg font-bold">
+        {sale.customer?.first_name?.charAt(0) || "C"}
+      </AvatarFallback>
+    </Avatar>
 
-              <div className="flex-1 space-y-1">
-                <h4 className="font-bold text-slate-900 text-lg leading-tight tracking-tight">
-                  {sale.customer_name}
-                </h4>
+    <div className="flex-1 space-y-1">
+      <h4 className="font-bold text-slate-900 text-lg leading-tight tracking-tight">
+        {sale.customer ? `${sale.customer.first_name || ""} ${sale.customer.last_name || ""}`.trim() : "Cliente Desconocido"}
+      </h4>
 
-                {/* Email Row */}
-                <div className="flex items-center gap-2 group">
-                  <div className="flex items-center gap-1.5 text-slate-500 text-sm">
-                    <Mail className="h-3.5 w-3.5 text-slate-400" />
-                    <span className="truncate max-w-[180px]">
-                      {sale.customer_email}
-                    </span>
-                  </div>
-                  <CopyButton text={sale.customer_email} />
-                </div>
+      {/* Email Row */}
+      <div className="flex items-center gap-2 group">
+        <div className="flex items-center gap-1.5 text-slate-500 text-sm">
+          <Mail className="h-3.5 w-3.5 text-slate-400" />
+          <span className="truncate max-w-[180px]">
+            {sale.customer?.email || "Sin correo"}
+          </span>
+        </div>
+        {sale.customer?.email && <CopyButton text={sale.customer.email} />}
+      </div>
 
-                {/* Phone Row */}
-                <div className="flex items-center gap-2 group">
-                  <div className="flex items-center gap-1.5 text-slate-500 text-sm">
-                    <Phone className="h-3.5 w-3.5 text-slate-400" />
-                    <span>{sale.customer_phone}</span>
-                  </div>
-                  <CopyButton text={sale.customer_phone} />
-                </div>
+      {/* Phone Row */}
+      <div className="flex items-center gap-2 group">
+        <div className="flex items-center gap-1.5 text-slate-500 text-sm">
+          <Phone className="h-3.5 w-3.5 text-slate-400" />
+          <span>{sale.customer?.phone || "Sin teléfono"}</span>
+        </div>
+        {sale.customer?.phone && <CopyButton text={sale.customer.phone} />}
+      </div>
 
-                <div className="pt-2">
-                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-[10px] text-indigo-700 font-bold uppercase tracking-wider">
-                    <CalendarIcon className="h-3 w-3" />
-                    Venta: {new Date(sale.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            </div>
+      <div className="pt-2">
+        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-[10px] text-indigo-700 font-bold uppercase tracking-wider">
+          <CalendarIcon className="h-3 w-3" />
+          Venta: {new Date(sale.created_at).toLocaleDateString()}
+        </span>
+      </div>
+    </div>
+  </div>
 
             {sale.seller && (
               <div className="mt-2 pt-3 border-t border-dashed border-slate-200">

@@ -18,6 +18,7 @@ import {
   Link2,
   User,
   FolderCheck,
+  Package,
   Clock,
 } from "lucide-react";
 
@@ -64,7 +65,7 @@ export const PERMISSION_GROUPS = [
       { key: "manage_areas", label: "Gestionar (Crear/Editar) Áreas" },
     ],
   },
-   {
+  {
     category: "Folder / Documentos",
     icon: <FolderCheck className="w-4 h-4" />,
     permissions: [
@@ -80,6 +81,17 @@ export const PERMISSION_GROUPS = [
       {
         key: "manage_sales",
         label: "Gestionar Comisiones y Exportar Reportes",
+      },
+    ],
+  },
+  {
+    category: "Servicios y Productos",
+    icon: <Package className="w-4 h-4" />,
+    permissions: [
+      { key: "view_services", label: "Ver Servicios y Reglas de Comisión" },
+      {
+        key: "manage_services",
+        label: "Gestionar (Crear/Editar) Servicios",
       },
     ],
   },
@@ -108,7 +120,7 @@ export const PERMISSION_GROUPS = [
       },
     ],
   },
-    {
+  {
     category: "Gestión de Time Tracking",
     icon: <Clock className="w-4 h-4" />,
     permissions: [
@@ -122,7 +134,6 @@ export const PERMISSION_GROUPS = [
       },
     ],
   },
-
 ];
 
 // 🔥 Extraemos TODAS las keys dinámicamente para pre-seleccionarlas al invitar
