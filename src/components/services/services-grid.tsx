@@ -70,6 +70,10 @@ export function ServicesGrid({ services, onEdit, onDelete }: any) {
                         ? "%"
                         : "USD"}
                     </span>
+                      <span className="text-xs text-slate-500 flex items-center font-medium bg-green-100 px-2 py-0.5 rounded-md">
+                      <DollarSign className="h-3 w-3 mr-1" />{service.price}
+  
+                    </span>
                   </div>
                 </div>
               </div>

@@ -35,6 +35,7 @@ export function ServiceDialog({
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    price: "",
     stripe_product_id: "",
     stripe_price_id: "",
     default_commission_type: "percentage",
@@ -49,6 +50,7 @@ export function ServiceDialog({
       setFormData({
         name: service.name,
         description: service.description || "",
+        price: service.price || "",
         stripe_product_id: service.stripe_product_id || "",
         stripe_price_id: service.stripe_price_id || "",
         default_commission_type:
@@ -62,6 +64,7 @@ export function ServiceDialog({
       setFormData({
         name: "",
         description: "",
+        price: "",
         stripe_product_id: "",
         stripe_price_id: "",
         default_commission_type: "percentage",
@@ -123,6 +126,17 @@ export function ServiceDialog({
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div className="space-y-2 col-span-2 sm:col-span">
+            <Label>Precio</Label>
+            <Input
+              placeholder="Ingresa el valor"
+              value={formData.price}
+              onChange={(e) =>
+                setFormData({ ...formData, price: e.target.value })
               }
               required
             />

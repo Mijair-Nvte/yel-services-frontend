@@ -18,6 +18,18 @@ export const AuthService = {
       body: JSON.stringify(payload),
     }),
 
+  verifyOtp: (payload: { user_id: number; otp: string }) =>
+    apiFetch("/login/verify", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  requestVerification: (payload: { email: string }) =>
+    apiFetch("/auth/request-verification", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
   me: () => apiFetch("/me"),
 
   logout: () =>

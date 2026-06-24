@@ -17,6 +17,7 @@ export function SiteHeader() {
   const { hasUnreadMessages } = useChatNotificationsStore();
   const user = useAuthStore((state) => state.user);
 
+  
   return (
       <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16">
 

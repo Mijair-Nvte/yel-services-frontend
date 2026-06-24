@@ -42,7 +42,7 @@ export function NavUser({ user }: NavUserProps) {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-3 px-2 py-1.5 outline-none hover:bg-accent rounded-lg transition-colors">
           <Avatar className="h-9 w-9 border">
-            {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
+            {user.avatar && <AvatarImage className="h-full w-full object-cover" src={user.avatar} alt={user.name} />}
             <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
               {initial}
             </AvatarFallback>
