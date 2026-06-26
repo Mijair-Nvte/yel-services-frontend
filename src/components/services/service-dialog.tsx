@@ -23,6 +23,7 @@ import { StateSelector } from "@/components/ui/state-selector";
 import { OrgServicesService } from "@/services/org_sales/services.service";
 import { toast } from "sonner";
 import { Loader2, MapPin } from "lucide-react";
+import { ImageUploader } from "@/components/ui/image-uploader";
 
 export function ServiceDialog({
   open,
@@ -32,6 +33,8 @@ export function ServiceDialog({
   onSuccess,
 }: any) {
   const [loading, setLoading] = useState(false);
+  
+  // Tu estado original de texto se queda exactamente igual
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -45,6 +48,11 @@ export function ServiceDialog({
     is_active: true,
   });
 
+  // El nuevo estado solo para la imagen
+  const [coverImage, setCoverImage] = useState<File | string | null>(
+    service?.cover_image_url || null,
+  );
+
   useEffect(() => {
     if (service) {
       setFormData({
@@ -53,13 +61,13 @@ export function ServiceDialog({
         price: service.price || "",
         stripe_product_id: service.stripe_product_id || "",
         stripe_price_id: service.stripe_price_id || "",
-        default_commission_type:
-          service.default_commission_type || "percentage",
+        default_commission_type: service.default_commission_type || "percentage",
         default_commission_value: service.default_commission_value || "",
         availability_type: service.availability_type || "all",
         available_states: service.available_states || [],
         is_active: service.is_active,
       });
+      setCoverImage(service.cover_image_url || null);
     } else {
       setFormData({
         name: "",
@@ -73,6 +81,7 @@ export function ServiceDialog({
         available_states: [],
         is_active: true,
       });
+      setCoverImage(null);
     }
   }, [service, open]);
 
@@ -90,17 +99,46 @@ export function ServiceDialog({
     });
   };
 
+  // AQUÍ ESTÁ EL CAMBIO OBLIGATORIO PARA SOPORTAR LA IMAGEN
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log("Estado de coverImage:", coverImage);
     try {
+      // 1. Creamos el empaque especial para archivos
+      const payload = new FormData();
+      
+      // 2. Metemos tus datos de texto uno por uno al empaque
+      payload.append("name", formData.name);
+      payload.append("description", formData.description);
+      payload.append("price", formData.price);
+      payload.append("stripe_product_id", formData.stripe_product_id);
+      payload.append("stripe_price_id", formData.stripe_price_id);
+      payload.append("default_commission_type", formData.default_commission_type);
+      payload.append("default_commission_value", formData.default_commission_value);
+      payload.append("availability_type", formData.availability_type);
+      payload.append("is_active", formData.is_active ? "1" : "0");
+      
+      // Los arrays se deben meter iterando
+      formData.available_states.forEach(state => {
+          payload.append("available_states[]", state);
+      });
+
+      // 3. Metemos la imagen SOLO si el usuario subió una nueva
+      if (coverImage instanceof File) {
+        payload.append("cover_image", coverImage);
+      }
+
+      // 4. Enviamos el "payload" en lugar de "formData"
       if (service) {
-        await OrgServicesService.update(workspaceUid, service.uid, formData);
+        payload.append("_method", "PUT"); // Truco para Laravel cuando editas con archivos
+        await OrgServicesService.update(workspaceUid, service.uid, payload);
         toast.success("Servicio actualizado correctamente");
       } else {
-        await OrgServicesService.create(workspaceUid, formData);
+        await OrgServicesService.create(workspaceUid, payload);
         toast.success("Servicio creado correctamente");
       }
+      
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
@@ -118,7 +156,17 @@ export function ServiceDialog({
             {service ? "Editar Servicio" : "Nuevo Servicio"}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto px-1">
+          
+          {/* NUEVO COMPONENTE DE IMAGEN */}
+          <div className="space-y-2">
+            <ImageUploader 
+              label="Portada del Servicio (Opcional)"
+              value={coverImage}
+              onChange={(file) => setCoverImage(file)}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label>Nombre del Servicio</Label>
             <Input
@@ -190,7 +238,6 @@ export function ServiceDialog({
                 <Label className="text-red-600 font-semibold">
                   Selecciona los estados donde el servicio ESTÁ BLOQUEADO:
                 </Label>
-                {/* AQUI IMPLEMENTAMOS EL COMPONENTE NUEVO */}
                 <StateSelector
                   selectedStates={formData.available_states}
                   onChange={handleStateToggle}

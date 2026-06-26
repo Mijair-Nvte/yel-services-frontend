@@ -36,37 +36,7 @@ export function NavMain({
     <TooltipProvider delayDuration={0}>
       <SidebarGroup>
         <SidebarGroupContent className="flex flex-col gap-5">
-          {/* Quick Create */}
-          <SidebarMenu>
-            <SidebarMenuItem className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarMenuButton
-                    tooltip="Quick Create"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/90 min-w-8 duration-200 ease-linear"
-                  >
-                    <Plus className="hover:text-white"> </Plus>
-                    <span className="hover:text-white">Creador</span>
-                  </SidebarMenuButton>
-                </TooltipTrigger>
-                {/* Solo se muestra si está colapsado */}
-                {isCollapsed && (
-                  <TooltipContent side="right" align="center">
-                    Quick Create
-                  </TooltipContent>
-                )}
-              </Tooltip>
-
-              <Button
-                size="icon"
-                className="size-8 group-data-[collapsible=icon]:hidden transition-all"
-                variant="outline"
-              >
-                <Mail className="text-black" />
-                <span className="sr-only">Inbox</span>
-              </Button>
-            </SidebarMenuItem>
-          </SidebarMenu>
+        
 
           {/* Navigation Links */}
           <SidebarMenu>
