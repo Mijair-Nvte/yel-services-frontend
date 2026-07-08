@@ -52,7 +52,7 @@ export function EventDialog({
   const [color, setColor] = useState<CalendarColorKey>(DEFAULT_EVENT_COLOR);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
+  const [targetPlatform, setTargetPlatform] = useState("yel_services");
   const isEditing = !!eventToEdit;
 
   // 🔥 EFECTO MAGICO: Rellena los datos cuando se abre el modal para editar
@@ -65,6 +65,7 @@ export function EventDialog({
         setMeetingUrl(eventToEdit.meeting_url || "");
         setExternalUrl(eventToEdit.external_url || "");
         setIsAllDay(eventToEdit.is_all_day);
+        setTargetPlatform(eventToEdit.target_platform || "yel_services");
         setColor(
           (eventToEdit.color as CalendarColorKey) || DEFAULT_EVENT_COLOR,
         );
@@ -87,6 +88,7 @@ export function EventDialog({
         setExternalUrl("");
         setIsAllDay(false);
         setColor(DEFAULT_EVENT_COLOR);
+        setTargetPlatform("yel_services");
         setStartDate(
           defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : "",
         );
@@ -112,6 +114,7 @@ export function EventDialog({
         description,
         location,
         color,
+        target_platform: targetPlatform,
         meeting_url: meetingUrl || null,
         external_url: externalUrl || null,
         starts_at: new Date(startDate).toISOString(),
@@ -243,6 +246,18 @@ export function EventDialog({
                 />
               </div>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label>Plataforma donde se mostrará</Label>
+            <select
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={targetPlatform}
+              onChange={(e) => setTargetPlatform(e.target.value)}
+            >
+              <option value="yel_services">Yel Services (Central)</option>
+              <option value="yel_pro">Yel Pro</option>
+              <option value="yel_investor">Yel Investor</option>
+            </select>
           </div>
         </div>
 
