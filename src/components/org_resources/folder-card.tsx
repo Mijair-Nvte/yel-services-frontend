@@ -1,9 +1,9 @@
 // src/components/org_resources/folder-card.tsx
 "use client";
 
-import { Folder, MoreVertical, Pencil, Trash } from "lucide-react";
+import { Folder, MoreVertical, Pencil, Trash, Share2 } from "lucide-react";
 import { FolderDialog } from "./folder-dialog";
-
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,11 +18,13 @@ export function FolderCard({
   onOpen,
   onRename,
   onDelete,
+  onShare,
 }: {
   folder: any;
   onOpen: () => void;
   onRename: (folder: any, name: string) => Promise<void>;
   onDelete: (folder: any) => Promise<void>;
+  onShare: (folder: any, platform: string) => Promise<void>;
 }) {
   return (
     <div
@@ -72,6 +74,21 @@ export function FolderCard({
               </DropdownMenuItem>
             }
           />
+         <DropdownMenuItem
+            onClick={(e) => {
+              e.preventDefault(); // Evita que se cierre el menú abruptamente antes del toast
+              
+              toast.promise(onShare(folder, "yel_pro"), {
+                loading: "Compartiendo carpeta...",
+                success: "Carpeta compartida en YEL Pro exitosamente",
+                error: "Ocurrió un error al compartir la carpeta",
+              });
+            }}
+          >
+            <Share2 className="h-4 w-4 mr-2" />
+            Compartir en YEL Pro
+          </DropdownMenuItem>
+
 
           {/* ELIMINAR */}
           <DropdownMenuItem

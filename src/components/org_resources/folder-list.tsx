@@ -8,11 +8,13 @@ export function FolderList({
   onOpen,
   onRename,
   onDelete,
+  onShare,
 }: {
   folders: any[];
   onOpen: (folder: any) => void;
   onRename: (folder: any, name: string) => Promise<void>;
   onDelete: (folder: any) => Promise<void>;
+  onShare: (folder: any, platform: string) => Promise<void>;
 }) {
   if (!folders.length) {
     return (
@@ -29,6 +31,7 @@ export function FolderList({
           onOpen={() => onOpen(folder)}
           onRename={onRename}
           onDelete={onDelete}
+          onShare={onShare}
         />
       ))}
     </div>

@@ -50,6 +50,7 @@ export function ResourceLayout({ browser }: { browser: any }) {
             onOpen={browser.openFolder}
             onRename={browser.renameFolder}
             onDelete={browser.deleteFolder}
+            onShare={browser.shareFolder}
           />
 
           {/* 📄 DOCUMENTOS (solo dentro de carpeta) */}

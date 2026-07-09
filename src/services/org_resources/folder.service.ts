@@ -48,4 +48,11 @@ export const FolderService = {
     apiFetch(`/org-companies/${companyUid}/folders/${folderId}`, {
       method: "DELETE",
     }),
+
+ 
+  share: (companyUid: string, folderUid: string, platform: string) =>
+    apiFetch(`/org-companies/${companyUid}/folders/${folderUid}/compartir`, {
+      method: "POST",
+      body: JSON.stringify({ platform }),
+    }),
 };

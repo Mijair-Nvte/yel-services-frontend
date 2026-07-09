@@ -105,7 +105,7 @@ export function useResourceBrowser(params: {
 
     await openFolder(currentFolder);
   };
-  
+
   // 🗑️ eliminar documento
   const deleteDocument = async (doc: any) => {
     await DocumentService.delete(params.companyUid, doc.uid);
@@ -149,6 +149,18 @@ export function useResourceBrowser(params: {
     }
   };
 
+  const shareFolder = async (folder: any, platform: string) => {
+   
+    await FolderService.share(params.companyUid, folder.uid, platform);
+
+
+    if (currentFolder) {
+      await openFolder(currentFolder);
+    } else {
+      await loadRoots();
+    }
+  };
+
   useEffect(() => {
     if (params.folderableUid) {
       loadRoots();
@@ -171,5 +183,6 @@ export function useResourceBrowser(params: {
     deleteFolder,
     uploadDocument,
     deleteDocument,
+    shareFolder,
   };
 }
