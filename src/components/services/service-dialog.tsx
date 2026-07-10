@@ -21,10 +21,11 @@ import {
 } from "@/components/ui/select";
 import { StateSelector } from "@/components/ui/state-selector";
 import { OrgServicesService } from "@/services/org_sales/services.service";
+import { OrgUserService } from "@/services/org_settings/users/org-user.service";
 import { toast } from "sonner";
-import { Loader2, MapPin } from "lucide-react";
+import { Loader2, MapPin, Users } from "lucide-react";
 import { ImageUploader } from "@/components/ui/image-uploader";
-
+import { TeamSelector } from "@/components/shared/team-selector";
 export function ServiceDialog({
   open,
   onOpenChange,
@@ -33,7 +34,9 @@ export function ServiceDialog({
   onSuccess,
 }: any) {
   const [loading, setLoading] = useState(false);
-  
+
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+
   // Tu estado original de texto se queda exactamente igual
   const [formData, setFormData] = useState({
     name: "",
@@ -46,12 +49,25 @@ export function ServiceDialog({
     availability_type: "all",
     available_states: [] as string[],
     is_active: true,
+    default_assignee_id: "",
+    default_follower_ids: [] as string[],
   });
 
   // El nuevo estado solo para la imagen
   const [coverImage, setCoverImage] = useState<File | string | null>(
     service?.cover_image_url || null,
   );
+
+  useEffect(() => {
+    if (open && workspaceUid) {
+      OrgUserService.getDirectory(workspaceUid)
+        .then((res) => {
+          // Asumimos que res trae el arreglo del directorio, ajústalo si viene dentro de un { data: ... }
+          setTeamMembers(res || []);
+        })
+        .catch(() => toast.error("Error al cargar el directorio de usuarios"));
+    }
+  }, [open, workspaceUid]);
 
   useEffect(() => {
     if (service) {
@@ -61,11 +77,18 @@ export function ServiceDialog({
         price: service.price || "",
         stripe_product_id: service.stripe_product_id || "",
         stripe_price_id: service.stripe_price_id || "",
-        default_commission_type: service.default_commission_type || "percentage",
+        default_commission_type:
+          service.default_commission_type || "percentage",
         default_commission_value: service.default_commission_value || "",
         availability_type: service.availability_type || "all",
         available_states: service.available_states || [],
         is_active: service.is_active,
+        default_assignee_id: service.default_assignee_id
+          ? String(service.default_assignee_id)
+          : "",
+        default_follower_ids: service.default_followers
+          ? service.default_followers.map((f: any) => String(f.id))
+          : [],
       });
       setCoverImage(service.cover_image_url || null);
     } else {
@@ -80,6 +103,8 @@ export function ServiceDialog({
         availability_type: "all",
         available_states: [],
         is_active: true,
+        default_assignee_id: "",
+        default_follower_ids: [],
       });
       setCoverImage(null);
     }
@@ -99,6 +124,20 @@ export function ServiceDialog({
     });
   };
 
+  const handleFollowerToggle = (userId: string) => {
+    setFormData((prev) => {
+      const currentFollowers = prev.default_follower_ids;
+      if (currentFollowers.includes(userId)) {
+        return {
+          ...prev,
+          default_follower_ids: currentFollowers.filter((id) => id !== userId),
+        };
+      } else {
+        return { ...prev, default_follower_ids: [...currentFollowers, userId] };
+      }
+    });
+  };
+
   // AQUÍ ESTÁ EL CAMBIO OBLIGATORIO PARA SOPORTAR LA IMAGEN
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,21 +146,35 @@ export function ServiceDialog({
     try {
       // 1. Creamos el empaque especial para archivos
       const payload = new FormData();
-      
+
       // 2. Metemos tus datos de texto uno por uno al empaque
       payload.append("name", formData.name);
       payload.append("description", formData.description);
       payload.append("price", formData.price);
       payload.append("stripe_product_id", formData.stripe_product_id);
       payload.append("stripe_price_id", formData.stripe_price_id);
-      payload.append("default_commission_type", formData.default_commission_type);
-      payload.append("default_commission_value", formData.default_commission_value);
+      payload.append(
+        "default_commission_type",
+        formData.default_commission_type,
+      );
+      payload.append(
+        "default_commission_value",
+        formData.default_commission_value,
+      );
       payload.append("availability_type", formData.availability_type);
       payload.append("is_active", formData.is_active ? "1" : "0");
-      
+
       // Los arrays se deben meter iterando
-      formData.available_states.forEach(state => {
-          payload.append("available_states[]", state);
+      formData.available_states.forEach((state) => {
+        payload.append("available_states[]", state);
+      });
+
+      if (formData.default_assignee_id) {
+        payload.append("default_assignee_id", formData.default_assignee_id);
+      }
+
+      formData.default_follower_ids.forEach((id) => {
+        payload.append("default_follower_ids[]", id);
       });
 
       // 3. Metemos la imagen SOLO si el usuario subió una nueva
@@ -138,7 +191,7 @@ export function ServiceDialog({
         await OrgServicesService.create(workspaceUid, payload);
         toast.success("Servicio creado correctamente");
       }
-      
+
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
@@ -156,11 +209,48 @@ export function ServiceDialog({
             {service ? "Editar Servicio" : "Nuevo Servicio"}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto px-1">
-          
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 py-4 max-h-[70vh] overflow-y-auto px-1"
+        >
+          {/* --- NUEVA SECCIÓN DE EQUIPO --- */}
+          <div className="space-y-4 bg-slate-50/50 p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex items-center gap-2 text-slate-800 font-semibold mb-2 border-b border-slate-200 pb-2">
+              <Users className="h-4 w-4 text-indigo-600" />
+              <h3>Asignación de Equipo (Plantilla)</h3>
+            </div>
+
+            <div className="grid gap-6">
+              {/* Single Select para el Owner */}
+              <TeamSelector
+                label="Encargado por defecto (Owner)"
+                placeholder="Selecciona un encargado principal..."
+                members={teamMembers}
+                multiple={false}
+                value={formData.default_assignee_id}
+                onChange={(val) =>
+                  setFormData({ ...formData, default_assignee_id: val || "" })
+                }
+              />
+
+              {/* Multi Select para los Followers */}
+              <TeamSelector
+                label="Equipo de Apoyo (Followers)"
+                placeholder="Añadir seguidores..."
+                members={teamMembers}
+                multiple={true}
+                value={formData.default_follower_ids}
+                onChange={(val) =>
+                  setFormData({ ...formData, default_follower_ids: val || [] })
+                }
+              />
+            </div>
+          </div>
+          {/* --- FIN SECCIÓN DE EQUIPO --- */}
+
           {/* NUEVO COMPONENTE DE IMAGEN */}
           <div className="space-y-2">
-            <ImageUploader 
+            <ImageUploader
               label="Portada del Servicio (Opcional)"
               value={coverImage}
               onChange={(file) => setCoverImage(file)}

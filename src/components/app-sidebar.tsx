@@ -32,6 +32,7 @@ import {
   Package,
   Clock,
   ShieldCheck,
+  KanbanSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -77,6 +78,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       requiredPermission: "view_notices",
     },
     {
+      title: "Pipeline de Servicios",
+      url: workspace ? `/dashboard/${workspace.uid}/service-orders` : "#",
+      icon: KanbanSquare,
+    },
+    {
       title: "Links",
       url: workspace ? `/dashboard/${workspace.uid}/links` : "#",
       icon: Link2Icon,
@@ -105,9 +111,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       title: "Servicios",
       url: workspace ? `/dashboard/${workspace.uid}/services` : "#",
       icon: Package,
-      requiredPermission: "view_services", 
+      requiredPermission: "view_services",
     },
-      {
+    {
       title: "Seguros",
       url: workspace ? `/dashboard/${workspace.uid}/insurance` : "#",
       icon: ShieldCheck, // Icono de protección/seguro
