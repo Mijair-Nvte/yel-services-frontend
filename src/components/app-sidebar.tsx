@@ -33,6 +33,8 @@ import {
   Clock,
   ShieldCheck,
   KanbanSquare,
+  HandCoins,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -107,6 +109,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: BadgeDollarSign,
       requiredPermission: "view_sales",
     },
+     {
+      title: "Afiliados",
+      url: workspace ? `/dashboard/${workspace.uid}/partners` : "#",
+      icon: HandCoins,
+     
+    },
     {
       title: "Servicios",
       url: workspace ? `/dashboard/${workspace.uid}/services` : "#",
@@ -117,6 +125,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       title: "Seguros",
       url: workspace ? `/dashboard/${workspace.uid}/insurance` : "#",
       icon: ShieldCheck, // Icono de protección/seguro
+    },
+     {
+      title: "Prestamos",
+      url: workspace ? `/dashboard/${workspace.uid}/loan` : "#",
+     icon: FileText,
     },
     {
       title: "Mapeo de Enlaces",
