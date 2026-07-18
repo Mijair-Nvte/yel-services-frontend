@@ -42,30 +42,42 @@ export function ServicesGrid({ services, onEdit, onDelete }: any) {
       <Table>
         <TableHeader className="bg-slate-50/80">
           <TableRow className="hover:bg-transparent border-slate-200">
-            <TableHead className="font-semibold text-slate-700">Servicio</TableHead>
-            <TableHead className="font-semibold text-slate-700">Precio</TableHead>
-            <TableHead className="font-semibold text-slate-700">Comisión</TableHead>
-            <TableHead className="font-semibold text-slate-700">Disponibilidad</TableHead>
-            <TableHead className="font-semibold text-slate-700">Stripe IDs</TableHead>
-            <TableHead className="text-right font-semibold text-slate-700">Acciones</TableHead>
+            <TableHead className="font-semibold text-slate-700">
+              Servicio
+            </TableHead>
+            <TableHead className="font-semibold text-slate-700">
+              Precio
+            </TableHead>
+            <TableHead className="font-semibold text-slate-700">
+              Comisión
+            </TableHead>
+            <TableHead className="font-semibold text-slate-700">
+              Disponibilidad
+            </TableHead>
+            <TableHead className="font-semibold text-slate-700">
+              Stripe IDs
+            </TableHead>
+            <TableHead className="text-right font-semibold text-slate-700">
+              Acciones
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {services.map((service: any) => (
-            <TableRow 
-              key={service.uid} 
+            <TableRow
+              key={service.uid}
               className="hover:bg-fuchsia-50/40 transition-colors border-slate-100 group"
             >
               {/* Servicio (Nombre y Estado) */}
-              
-         <TableCell>
+
+              <TableCell>
                 <div className="flex items-center gap-3">
                   {/* Contenedor de la Imagen o el Icono */}
                   {service.cover_image_url ? (
                     <div className="shrink-0 h-11 w-11 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-50">
-                      <img 
-                        src={service.cover_image_url} 
-                        alt={service.name} 
+                      <img
+                        src={service.cover_image_url}
+                        alt={service.name}
                         className="h-full w-full object-cover"
                       />
                     </div>
@@ -80,6 +92,26 @@ export function ServicesGrid({ services, onEdit, onDelete }: any) {
                     <span className="font-bold text-slate-900 leading-tight">
                       {service.name}
                     </span>
+
+                    {/* Service UID */}
+                    <div className="flex items-center gap-1 text-[11px] text-slate-500">
+                      <span
+                        className="font-mono truncate max-w-[170px]"
+                        title={service.uid}
+                      >
+                        {service.uid}
+                      </span>
+
+                      <button
+                        onClick={() =>
+                          copyToClipboard(service.uid, "Service UID")
+                        }
+                        className="hover:text-fuchsia-600 transition-colors"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </button>
+                    </div>
+
                     <div>
                       <Badge
                         variant="outline"
@@ -113,7 +145,9 @@ export function ServicesGrid({ services, onEdit, onDelete }: any) {
                     <DollarSign className="h-3 w-3 mr-1 text-slate-400" />
                   )}
                   {parseFloat(service.default_commission_value)}
-                  {service.default_commission_type === "percentage" ? "%" : " USD"}
+                  {service.default_commission_type === "percentage"
+                    ? "%"
+                    : " USD"}
                 </span>
               </TableCell>
 
@@ -122,7 +156,10 @@ export function ServicesGrid({ services, onEdit, onDelete }: any) {
                 {service.availability_type === "restricted" ? (
                   <div className="flex items-start gap-1.5 text-xs text-amber-600 bg-amber-50 px-2 py-1.5 rounded-lg border border-amber-100 max-w-[180px]">
                     <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                    <span className="line-clamp-2 leading-tight" title={service.available_states?.join(", ")}>
+                    <span
+                      className="line-clamp-2 leading-tight"
+                      title={service.available_states?.join(", ")}
+                    >
                       <span className="font-semibold">Restringido:</span>{" "}
                       {service.available_states?.length > 0
                         ? service.available_states.join(", ")
@@ -141,24 +178,34 @@ export function ServicesGrid({ services, onEdit, onDelete }: any) {
               <TableCell>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100">
-                    <span className="truncate max-w-[100px] font-mono" title={service.stripe_product_id}>
+                    <span
+                      className="truncate max-w-[100px] font-mono"
+                      title={service.stripe_product_id}
+                    >
                       <span className="font-semibold mr-1">PROD:</span>
                       {service.stripe_product_id}
                     </span>
                     <button
-                      onClick={() => copyToClipboard(service.stripe_product_id, "Product ID")}
+                      onClick={() =>
+                        copyToClipboard(service.stripe_product_id, "Product ID")
+                      }
                       className="hover:text-fuchsia-600 transition-colors"
                     >
                       <Copy className="h-3 w-3" />
                     </button>
                   </div>
                   <div className="flex items-center justify-between gap-2 text-[11px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100">
-                    <span className="truncate max-w-[100px] font-mono" title={service.stripe_price_id}>
+                    <span
+                      className="truncate max-w-[100px] font-mono"
+                      title={service.stripe_price_id}
+                    >
                       <span className="font-semibold mr-1">PRIC:</span>
                       {service.stripe_price_id}
                     </span>
                     <button
-                      onClick={() => copyToClipboard(service.stripe_price_id, "Price ID")}
+                      onClick={() =>
+                        copyToClipboard(service.stripe_price_id, "Price ID")
+                      }
                       className="hover:text-fuchsia-600 transition-colors"
                     >
                       <Copy className="h-3 w-3" />

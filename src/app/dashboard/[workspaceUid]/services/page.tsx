@@ -43,6 +43,7 @@ export default function ServicesPage() {
     return services.filter(
       (s) =>
         s.name?.toLowerCase().includes(lowerSearch) ||
+       s.uid?.toLowerCase().includes(lowerSearch) ||
         s.stripe_product_id?.toLowerCase().includes(lowerSearch) ||
         s.stripe_price_id?.toLowerCase().includes(lowerSearch),
     );
