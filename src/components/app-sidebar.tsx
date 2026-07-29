@@ -128,7 +128,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     },
      {
       title: "Prestamos",
-      url: workspace ? `/dashboard/${workspace.uid}/loan` : "#",
+      url: workspace ? `/dashboard/${workspace.uid}/loans` : "#",
      icon: FileText,
     },
     {

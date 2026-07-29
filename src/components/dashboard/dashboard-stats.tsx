@@ -1,4 +1,4 @@
-// C:\YEL\yel-services-frontend\src\components\dashboard\dashboard-stats.tsx
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Calendar, FileText, Folder, Bell, Zap } from "lucide-react";
 

@@ -1,22 +1,27 @@
 import { apiFetch } from "@/services/http";
 
-export interface InsuranceApplication {
+
+
+export interface LoanApplication {
   id: number;
   uid: string;
   org_company_id: number;
+  user_id: number;
+  org_customer_id?: number;
   applicant_name: string;
   applicant_email: string;
   applicant_phone: string;
   applicant_address: string;
-  insurance_type: string;
+  applicant_state: string;
+  loan_type: string;
+  estimated_amount?: number;
   status: "pending" | "reviewing" | "approved" | "rejected" | "completed";
-  // Nuevos campos para comisiones (preparados para la BD)
+  notes?: string;
   commission_amount?: number;
   commission_status?: "pending" | "paid" | "not_applicable";
   seller_payout_date?: string;
   created_at: string;
   updated_at: string;
-  // Relación con cliente
   customer?: {
     id: number;
     uid: string;
@@ -24,38 +29,39 @@ export interface InsuranceApplication {
     last_name: string;
     email: string;
     phone: string;
+    state: string;
   };
 }
 
-export interface UpdateInsuranceDto {
+
+export interface UpdateLoanDto {
   status?: string;
-  insurance_type?: string;
-  // Nuevos campos para actualizar
+  loan_type?: string;
   commission_amount?: number;
   commission_status?: "pending" | "paid" | "not_applicable";
   seller_payout_date?: string;
 }
 
-export const OrgInsuranceService = {
-  getAll: async (workspaceUid: string): Promise<InsuranceApplication[]> => {
-    const response = await apiFetch(`/org-companies/${workspaceUid}/insurance-applications`);
+export const OrgLoanService = {
+  getAll: async (workspaceUid: string): Promise<LoanApplication[]> => {
+    const response = await apiFetch(`/org-companies/${workspaceUid}/loan-applications`);
     return response.data;
   },
 
-  getOne: async (workspaceUid: string, applicationUid: string): Promise<InsuranceApplication> => {
-    const response = await apiFetch(`/org-companies/${workspaceUid}/insurance-applications/${applicationUid}`);
+  getOne: async (workspaceUid: string, applicationUid: string): Promise<LoanApplication> => {
+    const response = await apiFetch(`/org-companies/${workspaceUid}/loan-applications/${applicationUid}`);
     return response.data;
   },
 
-  update: async (workspaceUid: string, applicationUid: string, data: UpdateInsuranceDto) => {
-    return await apiFetch(`/org-companies/${workspaceUid}/insurance-applications/${applicationUid}`, {
+  update: async (workspaceUid: string, applicationUid: string, data: UpdateLoanDto) => {
+    return await apiFetch(`/org-companies/${workspaceUid}/loan-applications/${applicationUid}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
   delete: async (workspaceUid: string, applicationUid: string) => {
-    return await apiFetch(`/org-companies/${workspaceUid}/insurance-applications/${applicationUid}`, {
+    return await apiFetch(`/org-companies/${workspaceUid}/loan-applications/${applicationUid}`, {
       method: "DELETE",
     });
   },

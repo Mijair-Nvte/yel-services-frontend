@@ -1,22 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Loader2, ShieldAlert } from "lucide-react";
+import { Loader2, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InsuranceApplication, UpdateInsuranceDto } from "@/services/insurance/org-insurance.service";
+import { LoanApplication, UpdateLoanDto } from "@/services/org-loan/org-loan.service";
 
-interface InsuranceAdminDialogProps {
+interface LoanDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  application: InsuranceApplication | null;
-  onUpdate: (uid: string, data: UpdateInsuranceDto) => Promise<void>;
+  application: LoanApplication | null;
+  onUpdate: (uid: string, data: UpdateLoanDto) => Promise<void>;
 }
 
-export function InsuranceAdminDialog({ open, onOpenChange, application, onUpdate }: InsuranceAdminDialogProps) {
+export function LoanDialog({ open, onOpenChange, application, onUpdate }: LoanDialogProps) {
   const [status, setStatus] = useState<string>("");
   const [commissionAmount, setCommissionAmount] = useState<string>("");
   const [commissionStatus, setCommissionStatus] = useState<string>("");
@@ -36,7 +36,7 @@ export function InsuranceAdminDialog({ open, onOpenChange, application, onUpdate
 
     setIsSaving(true);
     try {
-      await onUpdate(application.uid, { 
+      await onUpdate(application.uid, {
         status,
         commission_amount: parseFloat(commissionAmount) || 0,
         commission_status: commissionStatus as any,
@@ -51,7 +51,7 @@ export function InsuranceAdminDialog({ open, onOpenChange, application, onUpdate
 
   if (!application) return null;
 
-  // Variables para simplificar lectura
+  // Variables para simplificar la lectura en el JSX
   const displayName = application.customer 
     ? `${application.customer.first_name} ${application.customer.last_name}` 
     : application.applicant_name;
@@ -64,15 +64,15 @@ export function InsuranceAdminDialog({ open, onOpenChange, application, onUpdate
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <ShieldAlert className="h-5 w-5 text-indigo-600" />
-            <DialogTitle>Administrar Solicitud</DialogTitle>
+            <FileText className="h-5 w-5 text-indigo-600" />
+            <DialogTitle>Administrar Solicitud de Préstamo</DialogTitle>
           </div>
           <DialogDescription>
-            Revisa los datos de <strong>{displayName}</strong> y actualiza el estatus y comisiones del trámite.
+            Revisa los datos de <strong>{displayName}</strong> y gestiona su estatus y comisiones.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 my-4 p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm">
+        <div className="space-y-3 my-2 p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm">
           <div className="flex justify-between border-b border-slate-200 pb-2">
             <span className="text-slate-500">Email:</span>
             <span className="font-medium text-slate-900">{displayEmail}</span>
@@ -82,13 +82,13 @@ export function InsuranceAdminDialog({ open, onOpenChange, application, onUpdate
             <span className="font-medium text-slate-900">{displayPhone}</span>
           </div>
           <div className="flex justify-between border-b border-slate-200 pb-2">
-            <span className="text-slate-500">Tipo de Seguro:</span>
-            <span className="font-medium text-slate-900 capitalize">{application.insurance_type || "General"}</span>
+            <span className="text-slate-500">Tipo de Préstamo:</span>
+            <span className="font-medium text-slate-900 capitalize">{application.loan_type}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-500">Dirección:</span>
-            <span className="font-medium text-slate-900 text-right w-2/3 truncate" title={application.applicant_address}>
-              {application.applicant_address || 'No proporcionada'}
+            <span className="text-slate-500">Monto Estimado:</span>
+            <span className="font-medium text-slate-900">
+              {application.estimated_amount ? `$${Number(application.estimated_amount).toLocaleString()}` : "N/D"}
             </span>
           </div>
         </div>
@@ -110,7 +110,6 @@ export function InsuranceAdminDialog({ open, onOpenChange, application, onUpdate
             </Select>
           </div>
 
-          {/* Bloque de Comisiones - Listo para cuando la BD lo soporte */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="commission_amount">Monto de Comisión ($)</Label>
