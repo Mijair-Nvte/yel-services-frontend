@@ -4,18 +4,15 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { OrgPartnerAdminService } from "@/services/org_partners/org-partner-admin.service";
 
-export function useOrgPartnersAdmin(workspaceUid: string, statusFilter: string = "pending") {
+export function useOrgPartnersAdmin(workspaceUid: string, statusFilter: string = "") {
     const [partners, setPartners] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // ===============================
-    // ✅ LOAD PARTNERS
-    // ===============================
     const loadPartners = async () => {
         setLoading(true);
         try {
+            // Pasamos el filtro (si está vacío, el backend traerá todos)
             const res = await OrgPartnerAdminService.list(workspaceUid, statusFilter);
-            // Ajusta esto dependiendo de si tu API devuelve el array directo o dentro de "data"
             setPartners(res.data || res || []);
         } catch (error) {
             toast.error("Error al cargar las solicitudes.");
@@ -24,9 +21,6 @@ export function useOrgPartnersAdmin(workspaceUid: string, statusFilter: string =
         }
     };
 
-    // ===============================
-    // ✅ APPROVE
-    // ===============================
     const approvePartner = async (partnerId: string | number) => {
         try {
             await OrgPartnerAdminService.approve(workspaceUid, partnerId);
@@ -37,9 +31,6 @@ export function useOrgPartnersAdmin(workspaceUid: string, statusFilter: string =
         }
     };
 
-    // ===============================
-    // ✅ REJECT
-    // ===============================
     const rejectPartner = async (partnerId: string | number) => {
         try {
             await OrgPartnerAdminService.reject(workspaceUid, partnerId);
@@ -50,9 +41,6 @@ export function useOrgPartnersAdmin(workspaceUid: string, statusFilter: string =
         }
     };
 
-    // ===============================
-    // ✅ EFFECT (Recarga si cambia el workspace o el filtro de estado)
-    // ===============================
     useEffect(() => {
         if (workspaceUid) {
             loadPartners();

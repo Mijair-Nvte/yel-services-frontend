@@ -14,7 +14,7 @@ export default function ServicesPage() {
   const { workspaceUid } = useParams() as { workspaceUid: string };
   const [services, setServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch] = useState("");
+
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<any>(null);
@@ -36,18 +36,7 @@ export default function ServicesPage() {
     loadData();
   }, [loadData]);
 
-  // Filtrado de búsqueda en tiempo real
-  const filteredServices = useMemo(() => {
-    if (!search) return services;
-    const lowerSearch = search.toLowerCase();
-    return services.filter(
-      (s) =>
-        s.name?.toLowerCase().includes(lowerSearch) ||
-       s.uid?.toLowerCase().includes(lowerSearch) ||
-        s.stripe_product_id?.toLowerCase().includes(lowerSearch) ||
-        s.stripe_price_id?.toLowerCase().includes(lowerSearch),
-    );
-  }, [services, search]);
+
 
   return (
     <div className="space-y-6 p-1">
@@ -67,24 +56,13 @@ export default function ServicesPage() {
             setSelectedService(null);
             setIsDialogOpen(true);
           }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+         
         >
           <Plus className="h-4 w-4 mr-2" /> Nuevo Servicio
         </Button>
       </div>
 
-      {/* Buscador */}
-      <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm ring-1 ring-slate-100">
-        <div className="p-2">
-          <Search className="h-4 w-4 text-slate-400" />
-        </div>
-        <Input
-          placeholder="Buscar por nombre, Product ID o Price ID..."
-          className="border-none focus-visible:ring-0 text-sm placeholder:text-slate-400"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+
 
       {/* Grid de Contenido */}
       {isLoading ? (
@@ -96,7 +74,7 @@ export default function ServicesPage() {
         </div>
       ) : (
         <ServicesGrid
-          services={filteredServices}
+          services={services}
           onEdit={(service: any) => {
             setSelectedService(service);
             setIsDialogOpen(true);

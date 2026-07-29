@@ -137,18 +137,6 @@ export default function PageLoans() {
       {/* Renderizamos las Tarjetas de KPIs Modulares */}
       {!isLoading && <KpiCards items={kpiItems} columns="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" />}
 
-      {/* Buscador */}
-      <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm ring-1 ring-slate-100">
-        <div className="p-2">
-          <Search className="h-4 w-4 text-slate-400" />
-        </div>
-        <Input
-          placeholder="Buscar por nombre, correo electrónico o teléfono..."
-          className="border-none focus-visible:ring-0 text-sm placeholder:text-slate-400"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
 
       {/* Grid de Contenido */}
       {isLoading ? (

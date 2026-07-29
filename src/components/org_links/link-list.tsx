@@ -1,31 +1,33 @@
 "use client";
 
-import { LinkCard } from "./link-card";
+import React, { useMemo } from "react";
+import { DataTable } from "@/components/ui/data-table";
+import { getLinkColumns } from "./link-columns";
 import { LinkEmpty } from "./link-empty";
 
-export function LinkList({
+export function LinkTable({
   links,
   onDelete,
   onEdit,
 }: {
   links: any[];
-  onDelete?: (uid: string) => void;
-  onEdit?: (link: any) => void;
+  onDelete: (uid: string) => void;
+  onEdit: (link: any) => void;
 }) {
+  const columns = useMemo(
+    () => getLinkColumns({ onEdit, onDelete }),
+    [onEdit, onDelete]
+  );
+
   if (links.length === 0) {
     return <LinkEmpty />;
   }
 
   return (
-    <div className="space-y-4">
-      {links.map((link) => (
-        <LinkCard
-          key={link.uid}
-          link={link}
-          onDelete={onDelete}
-          onEdit={() => onEdit?.(link)}
-        />
-      ))}
-    </div>
+    <DataTable
+      columns={columns}
+      data={links}
+    
+    />
   );
 }
