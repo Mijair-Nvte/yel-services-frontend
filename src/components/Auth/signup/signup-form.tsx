@@ -6,7 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Integrationimg from "@/app/assets/integrations.jpg";
+
 import {
   Field,
   FieldDescription,
@@ -153,13 +153,7 @@ export function SignupForm({
             </FieldGroup>
           </form>
 
-          <div className="bg-muted relative hidden md:block">
-            <Image
-              src={Integrationimg}
-              alt="Imagen de integraciones"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2]"
-            />
-          </div>
+       
         </CardContent>
       </Card>
     </div>
