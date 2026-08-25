@@ -187,7 +187,7 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
+        <CardContent className="grid p-0 md:grid-cols-2 ">
           <form className="p-6 md:p-8 flex flex-col justify-center" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
@@ -258,7 +258,7 @@ export function LoginForm({
           </form>
 
           {/* Imagen de fondo (Lado Derecho) */}
-          <div className="relative hidden md:flex items-center justify-center">
+          <div className="relative border-l-1 hidden md:flex items-center justify-center">
             <Image
               src={Loginbg}
               alt="Login background"
