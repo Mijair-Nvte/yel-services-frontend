@@ -121,7 +121,7 @@ export default function InsuranceAdminPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-            <ShieldCheck className="h-7 w-7 text-indigo-600" />
+         
             Gestión de Seguros
           </h1>
           <p className="text-slate-500 text-sm mt-1">

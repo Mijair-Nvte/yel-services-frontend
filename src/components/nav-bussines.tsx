@@ -21,7 +21,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 
-export function NavMain({
+export function NavBussines({
   items,
 }: {
   items: {
@@ -39,7 +39,7 @@ export function NavMain({
   return (
     <TooltipProvider delayDuration={0}>
       <SidebarGroup>
-         <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
+         <SidebarGroupLabel>Business</SidebarGroupLabel>
         <SidebarGroupContent className="flex flex-col gap-5">
           <SidebarMenu>
             {items.map((item) => {

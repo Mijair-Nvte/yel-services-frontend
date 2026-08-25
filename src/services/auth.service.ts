@@ -12,6 +12,12 @@ export const AuthService = {
       body: JSON.stringify(payload),
     }),
 
+  verifyRegisterOtp: (payload: { user_id: number; otp: string; workspace_uid: string }) =>
+    apiFetch("/partner/register/verify", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
   login: (payload: { email: string; password: string }) =>
     apiFetch("/login", {
       method: "POST",
@@ -36,4 +42,23 @@ export const AuthService = {
     apiFetch("/logout", {
       method: "POST",
     }),
+
+    forgotPassword: (payload: { email: string }) =>
+        apiFetch("/forgot-password", {
+            method: "POST",
+            body: JSON.stringify(payload),
+        }),
+
+    resetPassword: (payload: {
+        user_id: number;
+        otp: string;
+        password: string;
+        password_confirmation: string;
+    }) =>
+        apiFetch("/reset-password", {
+            method: "POST",
+            body: JSON.stringify(payload),
+        }),
+
+        
 };

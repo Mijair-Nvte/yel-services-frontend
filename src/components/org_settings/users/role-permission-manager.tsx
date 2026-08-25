@@ -20,6 +20,7 @@ import {
   FolderCheck,
   Package,
   Clock,
+  Cog,
 } from "lucide-react";
 
 export const PERMISSION_GROUPS = [
@@ -117,6 +118,20 @@ export const PERMISSION_GROUPS = [
       {
         key: "manage_users",
         label: "Administrar (Invitar, Editar y Eliminar) Usuarios",
+      },
+    ],
+  },
+  {
+    category: "Gestionar Compania",
+    icon: <Cog className="w-4 h-4" />,
+    permissions: [
+      {
+        key: "view_company_settings",
+        label: "Ver Configuración de la compania",
+      },
+      {
+        key: "manage_company_settings",
+        label: "Administrar compania notificaciones, accesos",
       },
     ],
   },

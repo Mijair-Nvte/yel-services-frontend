@@ -11,7 +11,7 @@ import { useAuthStore } from "@/store/auth.store";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Loginbg from "@/app/assets/loginbg.png";
+import Loginbg from "@/assets/logoytl.png";
 
 import {
   Field,
@@ -167,15 +167,14 @@ export function LoginForm({
               </FieldGroup>
             </form>
 
-            <div className="relative hidden md:block">
-              <Image
-                src={Loginbg}
-                alt="Login background"
-                fill
-                className="object-cover dark:brightness-[0.25]"
-                priority
-              />
-            </div>
+          <div className="relative hidden md:flex items-center justify-center">
+            <Image
+              src={Loginbg}
+              alt="Login background"
+              className="dark:brightness-[0.25]"
+              priority
+            />
+          </div>
           </CardContent>
         </Card>
       </div>
@@ -234,7 +233,10 @@ export function LoginForm({
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Contraseña</FieldLabel>
-                  <Link href="#" className="ml-auto text-sm text-muted-foreground hover:underline">
+                  <Link
+                    href="/forgot-password"
+                    className="ml-auto text-sm text-muted-foreground hover:underline"
+                  >
                     ¿Olvidó su contraseña?
                   </Link>
                 </div>
@@ -256,12 +258,11 @@ export function LoginForm({
           </form>
 
           {/* Imagen de fondo (Lado Derecho) */}
-          <div className="relative hidden md:block">
+          <div className="relative hidden md:flex items-center justify-center">
             <Image
               src={Loginbg}
               alt="Login background"
-              fill
-              className="object-cover dark:brightness-[0.25]"
+              className="dark:brightness-[0.25]"
               priority
             />
           </div>

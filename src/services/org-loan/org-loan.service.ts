@@ -31,6 +31,11 @@ export interface LoanApplication {
     phone: string;
     state: string;
   };
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 

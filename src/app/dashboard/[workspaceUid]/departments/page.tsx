@@ -25,9 +25,6 @@ export default function DepartmentsPage() {
       {/* Header - Limpio y con elevación visual */}
       <div className="flex items-center justify-between border-b border-border/40 pb-5">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-primary/10 text-primary">
-            <Building2 className="h-6 w-6" />
-          </div>
           <h1 className="text-2xl font-bold">Departamentos</h1>
         </div>
 

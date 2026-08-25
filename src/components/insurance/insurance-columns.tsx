@@ -61,6 +61,24 @@ export const getInsuranceColumns = ({ onEdit, onDelete }: InsuranceColumnProps):
       );
     },
   },
+   {
+    id: "Referido",
+    header: "Referido",
+    accessorFn: (row) => row.user?.name || "Sin asignar",
+    cell: ({ row }) => {
+      const user = row.original.user;
+      return (
+        <div>
+          <div className="text-sm font-medium text-slate-900">
+            {user?.name || "Sin asignar"}
+          </div>
+          {user?.email && (
+            <div className="text-xs text-slate-500">{user.email}</div>
+          )}
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "status",
     header: "Estatus",

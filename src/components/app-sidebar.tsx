@@ -5,7 +5,7 @@ import * as React from "react";
 
 import { useWorkspaceStore } from "@/store/workspace.store";
 import { NavMain } from "@/components/nav-main";
-
+import Logo from "@/assets/logoytl.png"
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -35,9 +35,13 @@ import {
   KanbanSquare,
   HandCoins,
   FileText,
+  SquareTerminal,
+    BriefcaseBusiness,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
+import Image from "next/image";
+import { NavBussines } from "./nav-bussines";
 
 const getInitials = (name?: string) => {
   if (!name) return "WS"; // Por defecto si no hay nombre
@@ -103,6 +107,18 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: Users,
       requiredPermission: "view_users",
     },
+
+    {
+      title: "Control de Tiempo",
+      url: workspace ? `/dashboard/${workspace.uid}/time-tracking` : "#",
+      icon: Clock,
+      requiredPermission: "view_time_tracking",
+    },
+  ];
+
+  const rawNavBussines = [
+    
+
     {
       title: "Ventas y Comisiones",
       url: workspace ? `/dashboard/${workspace.uid}/sales` : "#",
@@ -137,12 +153,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: Link2,
       requiredPermission: "view_payment_links",
     },
-    {
-      title: "Control de Tiempo",
-      url: workspace ? `/dashboard/${workspace.uid}/time-tracking` : "#",
-      icon: Clock,
-      requiredPermission: "view_time_tracking",
-    },
+
   ];
 
   const rawNavSecondary = [
@@ -183,12 +194,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               className="flex items-center justify-center py-2"
             >
               {/* ✅ TEXTO COMPLETO: Se oculta en modo ícono */}
-              <span className="text-white text-xl font-semibold group-data-[collapsible=icon]:hidden">
-                {workspace?.name ?? "Workspace"}
-              </span>
+           <Image src={Logo} width={200} alt="yaestoylisto">
+
+           </Image>
 
               {/* ✅ INICIALES: Se muestran solo en modo ícono */}
-              <span className="text-white text-xl font-bold hidden group-data-[collapsible=icon]:block truncate">
+              <span className=" text-xl font-bold hidden group-data-[collapsible=icon]:block truncate">
                 {getInitials(workspace?.name)}
               </span>
             </Link>
@@ -196,9 +207,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="text-white text-xl font-semibold">
+      <SidebarContent className=" text-xl font-semibold">
         {/* Renderizamos los arreglos ya filtrados */}
         <NavMain items={navMain} />
+        <NavBussines items={rawNavBussines}></NavBussines>
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
 

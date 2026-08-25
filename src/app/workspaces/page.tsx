@@ -34,7 +34,7 @@ export default function WorkspacesPage() {
     if (!user) {
       router.push("/login");
     }
-  }, [loading, user]);
+  }, [loading, user, router]);
 
   // 📦 Cargar empresas si hay sesión
   useEffect(() => {
@@ -45,16 +45,23 @@ export default function WorkspacesPage() {
 
       try {
         const res = await apiFetch("/org-companies");
+
+        // 🚀 MEJORA: Redirección automática si solo tiene 1 espacio de trabajo activo
+        if (res.length === 1 && res[0].is_active) {
+          router.push(`/dashboard/${res[0].uid}`);
+          return; // Retornamos anticipadamente para mantener el estado de "loading" y evitar parpadeos en la UI
+        }
+
         setCompanies(res);
+        setLoadingCompanies(false); // Apagamos el loading solo si hay 0 o más de 1 empresa
       } catch {
         setCompanies([]);
-      } finally {
         setLoadingCompanies(false);
       }
     };
 
     fetchCompanies();
-  }, [user]);
+  }, [user, router]);
 
   // ⏳ Loading auth
   if (loading) {
@@ -68,7 +75,7 @@ export default function WorkspacesPage() {
   // 🚫 No render si no hay usuario
   if (!user) return null;
 
-  // ⏳ Loading workspaces
+  // ⏳ Loading workspaces (se mantendrá visible si estamos haciendo la redirección automática)
   if (loadingCompanies) {
     return (
       <div className="flex min-h-svh items-center justify-center">
@@ -100,13 +107,14 @@ export default function WorkspacesPage() {
       {/* RIGHT */}
       <div className="flex items-center justify-center p-6">
         <div className="w-full max-w-lg space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Espacios de trabajo</h2>
-
+          
+          <div className="mb-8 text-center md:text-left">
+            <h2 className="text-2xl font-bold tracking-tight">Espacios de trabajo</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Selecciona a qué empresa deseas ingresar.
+            </p>
           </div>
-
-          <Separator />
-
+          
           {companies.length === 0 && (
             <Card>
               <CardContent className="p-8 text-center space-y-4">
@@ -115,6 +123,7 @@ export default function WorkspacesPage() {
                 </h3>
 
                 <Button onClick={() => router.push("/workspaces/new")}>
+                  <Plus className="mr-2 h-4 w-4" />
                   Crear espacio de trabajo
                 </Button>
               </CardContent>
@@ -126,22 +135,30 @@ export default function WorkspacesPage() {
               {companies.map((company) => (
                 <Card
                   key={company.uid}
-                  className="cursor-pointer hover:border-primary transition"
-                  onClick={() => router.push(`/dashboard/${company.uid}`)}
+                  className={`transition ${company.is_active ? 'cursor-pointer hover:border-primary' : 'opacity-60 cursor-not-allowed'}`}
+                  onClick={() => {
+                    if (company.is_active) {
+                      router.push(`/dashboard/${company.uid}`);
+                    }
+                  }}
                 >
-                  <CardContent className="flex justify-between p-4">
+                  <CardContent className="flex items-center justify-between p-4">
                     <div>
                       <h3 className="font-semibold">{company.name}</h3>
                       <p className="text-sm text-muted-foreground">
                         {company.country ?? "—"}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {company.description ?? "—"}
-                      </p>
+                      {company.description && (
+                         <p className="text-sm text-muted-foreground line-clamp-1">
+                           {company.description}
+                         </p>
+                      )}
                     </div>
 
                     {!company.is_active && (
-                      <span className="text-xs text-red-500">Inactiva</span>
+                      <span className="text-xs font-medium text-red-500 bg-red-50 px-2 py-1 rounded-md">
+                        Inactiva
+                      </span>
                     )}
                   </CardContent>
                 </Card>

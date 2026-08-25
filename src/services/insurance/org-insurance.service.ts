@@ -25,6 +25,11 @@ export interface InsuranceApplication {
     email: string;
     phone: string;
   };
+   user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 export interface UpdateInsuranceDto {
