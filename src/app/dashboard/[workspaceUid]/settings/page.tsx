@@ -29,29 +29,52 @@ export default function SettingsPage() {
       {/* TABS DE SHADCN */}
       <Tabs defaultValue="team" className="w-full">
         {/* Scroll horizontal en móviles para que no se rompa el diseño */}
-        <div className="overflow-x-auto pb-2">
-          <TabsList className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
-            <TabsTrigger value="team" className="gap-2">
+        <div className="overflow-x-auto pb-6">
+          <TabsList className="inline-flex h-12 items-center justify-center p-1 text-muted-foreground  border border-border/50">
+
+            <TabsTrigger
+              value="team"
+              className="gap-2  px-4 py-2.5 text-sm font-medium transition-all hover:text-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
+            >
               <Users className="w-4 h-4" />
               Equipo
             </TabsTrigger>
-            <TabsTrigger value="insurance" className="gap-2">
+
+            <TabsTrigger
+              value="insurance"
+              className="gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all hover:text-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
+            >
               <Shield className="w-4 h-4" />
               Seguros
             </TabsTrigger>
-            <TabsTrigger value="loans" className="gap-2">
+
+            <TabsTrigger
+              value="loans"
+              className="gap-2  px-4 py-2.5 text-sm font-medium transition-all hover:text-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
+            >
               <HandCoins className="w-4 h-4" />
               Préstamos
             </TabsTrigger>
-            {/* Las siguientes pestañas las puedes ir activando después */}
-            <TabsTrigger value="properties" className="gap-2" disabled>
+
+            {/* Pestañas deshabilitadas */}
+            <TabsTrigger
+              value="properties"
+              disabled
+              className="gap-2  px-4 py-2.5 text-sm font-medium opacity-50 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            >
               <Building className="w-4 h-4" />
               Propiedades
             </TabsTrigger>
-            <TabsTrigger value="sales" className="gap-2" disabled>
+
+            <TabsTrigger
+              value="sales"
+              disabled
+              className="gap-2 rounded-lg px-4 py-2.5 text-sm font-medium opacity-50 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            >
               <Briefcase className="w-4 h-4" />
               Ventas
             </TabsTrigger>
+
           </TabsList>
         </div>
 

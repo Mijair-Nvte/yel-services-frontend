@@ -17,7 +17,7 @@ interface LoanDialogProps {
 }
 
 export function LoanDialog({ open, onOpenChange, application, onUpdate }: LoanDialogProps) {
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<"Open" | "Lost" | "Won" | "Abandon" | "">("");
   const [commissionAmount, setCommissionAmount] = useState<string>("");
   const [commissionStatus, setCommissionStatus] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
@@ -37,7 +37,7 @@ export function LoanDialog({ open, onOpenChange, application, onUpdate }: LoanDi
     setIsSaving(true);
     try {
       await onUpdate(application.uid, {
-        status,
+        status: status as UpdateLoanDto["status"],
         commission_amount: parseFloat(commissionAmount) || 0,
         commission_status: commissionStatus as any,
       });
@@ -52,10 +52,10 @@ export function LoanDialog({ open, onOpenChange, application, onUpdate }: LoanDi
   if (!application) return null;
 
   // Variables para simplificar la lectura en el JSX
-  const displayName = application.customer 
-    ? `${application.customer.first_name} ${application.customer.last_name}` 
+  const displayName = application.customer
+    ? `${application.customer.first_name} ${application.customer.last_name}`
     : application.applicant_name;
-    
+
   const displayEmail = application.customer?.email || application.applicant_email;
   const displayPhone = application.customer?.phone || application.applicant_phone;
 
@@ -96,16 +96,15 @@ export function LoanDialog({ open, onOpenChange, application, onUpdate }: LoanDi
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="status">Estatus de la Solicitud</Label>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(value) => setStatus(value as any)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona un estatus" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Pendiente</SelectItem>
-                <SelectItem value="reviewing">En Revisión</SelectItem>
-                <SelectItem value="approved">Aprobado</SelectItem>
-                <SelectItem value="rejected">Rechazado</SelectItem>
-                <SelectItem value="completed">Finalizado</SelectItem>
+                <SelectItem value="Open">Open</SelectItem>
+                <SelectItem value="Lost">Lost</SelectItem>
+                <SelectItem value="Won">Won</SelectItem>
+                <SelectItem value="Abandon">Abandon</SelectItem>
               </SelectContent>
             </Select>
           </div>

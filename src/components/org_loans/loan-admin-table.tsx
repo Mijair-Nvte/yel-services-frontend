@@ -24,12 +24,11 @@ export function LoanTable({ applications, onEdit, onDelete }: LoanTableProps) {
       data={applications}
       // Activamos el dropdown nativo de la DataTable para filtrar estatus
       filterColumn="status"
-      filterOptions={[
-        { label: "Pendientes", value: "pending" },
-        { label: "En Revisión", value: "reviewing" },
-        { label: "Aprobados", value: "approved" },
-        { label: "Rechazados", value: "rejected" },
-        { label: "Finalizados", value: "completed" },
+    filterOptions={[
+        { label: "Open", value: "Open" },
+        { label: "Lost", value: "Lost" },
+        { label: "Won", value: "Won" },
+        { label: "Abandon", value: "Abandon" },
       ]}
     />
   );

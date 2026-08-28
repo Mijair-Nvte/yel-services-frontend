@@ -43,8 +43,8 @@ export default function InsuranceAdminPage() {
   // Cálculos de KPIs dinámicos
   const kpiItems: KpiItem[] = useMemo(() => {
     const total = applications.length;
-    const pending = applications.filter(a => a.status === "pending" || a.status === "reviewing").length;
-    const approved = applications.filter(a => a.status === "approved").length;
+    const Open = applications.filter((app) => app.status === "Open").length;
+    const Won = applications.filter(a => a.status === "Won").length;
     
     // Cálculo de comisiones pagadas
     const paidCommissions = applications
@@ -70,7 +70,7 @@ export default function InsuranceAdminPage() {
       },
       {
         label: "En Proceso",
-        value: pending,
+        value: Open,
         icon: Clock,
         color: "text-amber-600",
         iconBg: "bg-amber-100",
@@ -81,7 +81,7 @@ export default function InsuranceAdminPage() {
       },
       {
         label: "Aprobadas",
-        value: approved,
+        value: Won,
         icon: CheckCircle,
         color: "text-emerald-600",
         iconBg: "bg-emerald-100",

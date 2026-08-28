@@ -73,7 +73,7 @@ export function DashboardStats({ stats }: Props) {
       {items.map((item) => (
         <Card 
           key={item.label} 
-          className={`group transition-all duration-300 border-2 border-transparent shadow-sm ${item.cardBg} ${item.borderColor} ${item.hoverShadow} hover:-translate-y-1`}
+          className={`group transition-all duration-300 border-1 border-transparent shadow-sm ${item.cardBg} ${item.borderColor} ${item.hoverShadow} hover:-translate-y-1`}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">
@@ -88,12 +88,7 @@ export function DashboardStats({ stats }: Props) {
               <span className="text-3xl font-black   group-hover:not-italic transition-all">
                 {item.value}
               </span>
-              <div className="mt-2 flex items-center gap-1">
-                <div className={`h-1.5 w-1.5 rounded-full ${item.color.replace('text', 'bg')}`} />
-                <span className="text-[10px] font-medium text-muted-foreground uppercase">
-                  Workspace Activo
-                </span>
-              </div>
+           
             </div>
           </CardContent>
         </Card>

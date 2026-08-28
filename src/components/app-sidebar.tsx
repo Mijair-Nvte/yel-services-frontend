@@ -1,4 +1,4 @@
-// C:\YEL\yel-services-frontend\src\components\app-sidebar.tsx
+
 "use client";
 
 import * as React from "react";
@@ -15,6 +15,8 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
+  SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -36,7 +38,7 @@ import {
   HandCoins,
   FileText,
   SquareTerminal,
-    BriefcaseBusiness,
+  BriefcaseBusiness,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -56,6 +58,8 @@ const getInitials = (name?: string) => {
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { workspace, hasPermission } = useWorkspaceStore();
   const user = useAuthStore((state) => state.user);
+
+  const { setOpen, isMobile } = useSidebar();
 
   // ✅ 2. Agregamos "requiredPermission" a cada item
   const rawNavMain = [
@@ -117,7 +121,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   ];
 
   const rawNavBussines = [
-    
+
 
     {
       title: "Ventas y Comisiones",
@@ -125,11 +129,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: BadgeDollarSign,
       requiredPermission: "view_sales",
     },
-     {
+    {
       title: "Afiliados",
       url: workspace ? `/dashboard/${workspace.uid}/partners` : "#",
       icon: HandCoins,
-     
+
     },
     {
       title: "Servicios",
@@ -142,10 +146,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       url: workspace ? `/dashboard/${workspace.uid}/insurance` : "#",
       icon: ShieldCheck, // Icono de protección/seguro
     },
-     {
+    {
       title: "Prestamos",
       url: workspace ? `/dashboard/${workspace.uid}/loans` : "#",
-     icon: FileText,
+      icon: FileText,
     },
     {
       title: "Mapeo de Enlaces",
@@ -183,38 +187,57 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       !item.requiredPermission || hasPermission(item.requiredPermission),
   );
 
+  const handleMouseEnter = () => {
+    // Si estamos en móvil, no queremos este comportamiento de hover
+    if (!isMobile) {
+      setOpen(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile) {
+      setOpen(false);
+    }
+  };
+
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link
-              href={`/dashboard/${workspace?.uid}`}
-              // Añadimos un pequeño flex para centrar las iniciales cuando esté colapsado
-              className="flex items-center justify-center py-2"
-            >
-              {/* ✅ TEXTO COMPLETO: Se oculta en modo ícono */}
-           <Image src={Logo} width={200} alt="yaestoylisto">
+    <div
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="h-full"
+    >
 
-           </Image>
+      <Sidebar collapsible="icon"  {...props}>
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <Link
+                href={`/dashboard/${workspace?.uid}`}
+                className="flex items-center justify-center py-2 overflow-hidden"
+              >
+                {/* ✅ LOGO COMPLETO: Se muestra expandido, se oculta cuando el sidebar está colapsado */}
+                <div className="flex items-center justify-center group-data-[collapsible=icon]:hidden">
+                  <Image src={Logo} width={160} alt="YEL GROUP" priority />
+                </div>
 
-              {/* ✅ INICIALES: Se muestran solo en modo ícono */}
-              <span className=" text-xl font-bold hidden group-data-[collapsible=icon]:block truncate">
-                {getInitials(workspace?.name)}
-              </span>
-            </Link>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
+                {/* ✅ INICIALES / LOGO REDUCIDO: Se muestra EXCLUSIVAMENTE cuando está colapsado */}
+                <span className="hidden group-data-[collapsible=icon]:flex items-center justify-center h-10 w-10 font-black text-pink-600  text-lg tracking-wider ">
+                  YG
+                </span>
+              </Link>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarSeparator ></SidebarSeparator>
+        <SidebarContent className=" text-xl font-semibold">
+          {/* Renderizamos los arreglos ya filtrados */}
+          <NavMain items={navMain} />
+          <NavBussines items={rawNavBussines}></NavBussines>
+          <NavSecondary items={navSecondary} className="mt-auto" />
+        </SidebarContent>
 
-      <SidebarContent className=" text-xl font-semibold">
-        {/* Renderizamos los arreglos ya filtrados */}
-        <NavMain items={navMain} />
-        <NavBussines items={rawNavBussines}></NavBussines>
-        <NavSecondary items={navSecondary} className="mt-auto" />
-      </SidebarContent>
-
-      <SidebarFooter></SidebarFooter>
-    </Sidebar>
+        <SidebarFooter></SidebarFooter>
+      </Sidebar>
+    </div>
   );
 }

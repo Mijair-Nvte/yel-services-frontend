@@ -85,14 +85,34 @@ export const getInsuranceColumns = ({ onEdit, onDelete }: InsuranceColumnProps):
     cell: ({ row }) => {
       const status = row.original.status;
       const config: Record<string, { bg: string; label: string }> = {
-        pending: { bg: "bg-amber-100 text-amber-800", label: "Pendiente" },
-        reviewing: { bg: "bg-blue-100 text-blue-800", label: "En Revisión" },
-        approved: { bg: "bg-emerald-100 text-emerald-800", label: "Aprobado" },
-        rejected: { bg: "bg-rose-100 text-rose-800", label: "Rechazado" },
-        completed: { bg: "bg-slate-200 text-slate-800", label: "Finalizado" },
+        Open: { bg: "bg-blue-100 text-blue-800", label: "Open" },
+        Lost: { bg: "bg-rose-100 text-rose-800", label: "Lost" },
+        Won: { bg: "bg-emerald-100 text-emerald-800", label: "Won" },
+        Abandon: { bg: "bg-slate-200 text-slate-800", label: "Abandon" },
       };
-      const current = config[status] || config.pending;
+      const current = config[status] || config.Open;
       return <Badge className={`${current.bg} border-none shadow-none`}>{current.label}</Badge>;
+    },
+  },
+  {
+    accessorKey: "won_at",
+    header: "Fecha Cierre",
+    cell: ({ row }) => {
+      const wonAt = row.original.won_at;
+      
+      if (!wonAt) {
+        return <span className="text-sm text-slate-300">-</span>;
+      }
+
+      return (
+        <span className="text-sm font-medium text-emerald-600">
+          {new Date(wonAt).toLocaleDateString('es-MX', { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric' 
+          })}
+        </span>
+      );
     },
   },
   {

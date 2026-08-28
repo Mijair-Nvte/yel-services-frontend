@@ -167,7 +167,7 @@ export function LoginForm({
               </FieldGroup>
             </form>
 
-          <div className="relative hidden md:flex items-center justify-center">
+          <div className="relative border-l hidden md:flex items-center justify-center">
             <Image
               src={Loginbg}
               alt="Login background"

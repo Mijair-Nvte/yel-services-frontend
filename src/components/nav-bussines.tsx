@@ -54,8 +54,7 @@ export function NavBussines({
                   key={item.title}
                   className="py-2"
                 >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                  
                       <SidebarMenuButton
                         asChild
                         className="
@@ -93,22 +92,7 @@ export function NavBussines({
                           )}
                         </Link>
                       </SidebarMenuButton>
-                    </TooltipTrigger>
-
-                    {isCollapsed && (
-                      <TooltipContent
-                        side="right"
-                        align="center"
-                        className="flex items-center gap-2"
-                      >
-                        {item.title}
-
-                        {item.badge && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                        )}
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
+                   
                 </SidebarMenuItem>
               );
             })}

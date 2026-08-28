@@ -15,7 +15,8 @@ export interface LoanApplication {
   applicant_state: string;
   loan_type: string;
   estimated_amount?: number;
-  status: "pending" | "reviewing" | "approved" | "rejected" | "completed";
+status: "Open" | "Lost" | "Won" | "Abandon";
+won_at?: string | null;
   notes?: string;
   commission_amount?: number;
   commission_status?: "pending" | "paid" | "not_applicable";
@@ -40,7 +41,7 @@ export interface LoanApplication {
 
 
 export interface UpdateLoanDto {
-  status?: string;
+ status?: "Open" | "Lost" | "Won" | "Abandon";
   loan_type?: string;
   commission_amount?: number;
   commission_status?: "pending" | "paid" | "not_applicable";

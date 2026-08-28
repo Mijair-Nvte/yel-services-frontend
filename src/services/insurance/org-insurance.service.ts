@@ -9,8 +9,8 @@ export interface InsuranceApplication {
   applicant_phone: string;
   applicant_address: string;
   insurance_type: string;
-  status: "pending" | "reviewing" | "approved" | "rejected" | "completed";
-  // Nuevos campos para comisiones (preparados para la BD)
+status: "Open" | "Lost" | "Won" | "Abandon";
+won_at?: string | null;
   commission_amount?: number;
   commission_status?: "pending" | "paid" | "not_applicable";
   seller_payout_date?: string;
@@ -33,7 +33,7 @@ export interface InsuranceApplication {
 }
 
 export interface UpdateInsuranceDto {
-  status?: string;
+ status?: "Open" | "Lost" | "Won" | "Abandon";
   insurance_type?: string;
   // Nuevos campos para actualizar
   commission_amount?: number;

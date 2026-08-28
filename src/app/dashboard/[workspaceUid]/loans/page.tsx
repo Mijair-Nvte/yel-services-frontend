@@ -25,8 +25,8 @@ export default function PageLoans() {
   // Cálculo de KPIs dinámicos para Préstamos
   const kpiItems: KpiItem[] = useMemo(() => {
     const total = applications.length;
-    const pending = applications.filter((app) => app.status === "pending").length;
-    const approved = applications.filter((app) => app.status === "approved").length;
+    const Open = applications.filter((app) => app.status === "Open").length;
+    const Won = applications.filter((app) => app.status === "Won").length;
     
     const estimatedSum = applications.reduce((acc, app) => acc + (Number(app.estimated_amount) || 0), 0);
     const paidCommissions = applications
@@ -51,7 +51,7 @@ export default function PageLoans() {
       },
       {
         label: "Pendientes",
-        value: pending,
+        value: Open,
         icon: Clock,
         color: "text-amber-600",
         iconBg: "bg-amber-100",
@@ -61,8 +61,8 @@ export default function PageLoans() {
         subtitle: "Por revisar"
       },
       {
-        label: "Aprobados",
-        value: approved,
+        label: "Ganados",
+        value: Won,
         icon: CheckCircle2,
         color: "text-emerald-600",
         iconBg: "bg-emerald-100",

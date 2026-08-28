@@ -63,7 +63,7 @@ export const getLoanColumns = ({ onEdit, onDelete }: LoanColumnProps): ColumnDef
   },
   {
     id: "loan_type_amount",
-    header: "Tipo / Monto",
+    header: "Tipo",
     // accessorFn nos permite buscar por el tipo de préstamo
     accessorFn: (row) => row.loan_type,
     cell: ({ row }) => {
@@ -71,9 +71,7 @@ export const getLoanColumns = ({ onEdit, onDelete }: LoanColumnProps): ColumnDef
       return (
         <div>
           <div className="text-sm font-medium text-slate-900 capitalize">{app.loan_type}</div>
-          <div className="text-xs text-slate-500">
-            {app.estimated_amount ? `$${Number(app.estimated_amount).toLocaleString()}` : "N/D"}
-          </div>
+
         </div>
       );
     },
@@ -96,20 +94,77 @@ export const getLoanColumns = ({ onEdit, onDelete }: LoanColumnProps): ColumnDef
       );
     },
   },
+  // COLUMNA 1: MONTO COMISIÓN
+  {
+    accessorKey: "commission_amount",
+    header: () => <div className="text-right">Comisión</div>, // Alinear header a la derecha
+    cell: ({ row }) => {
+      const amount = row.original.commission_amount ? Number(row.original.commission_amount) : 0;
+      return (
+        <div className="text-right font-medium text-slate-900">
+          ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </div>
+      );
+    },
+  },
+  // COLUMNA 2: ESTATUS COMISIÓN
+  {
+    accessorKey: "commission_status",
+    header: "Pago",
+    cell: ({ row }) => {
+      const status = row.original.commission_status || "not_applicable";
+
+      const statusConfig: Record<string, { bg: string; label: string }> = {
+        pending: { bg: "bg-amber-100 text-amber-800", label: "Pendiente" },
+        paid: { bg: "bg-emerald-100 text-emerald-800", label: "Pagada" },
+        not_applicable: { bg: "bg-slate-100 text-slate-500", label: "N/A" },
+      };
+
+      const currentStatus = statusConfig[status] || statusConfig.not_applicable;
+
+      return (
+        <Badge variant="outline" className={`border-transparent shadow-none ${currentStatus.bg}`}>
+          {currentStatus.label}
+        </Badge>
+      );
+    },
+  },
   {
     accessorKey: "status",
     header: "Estatus",
     cell: ({ row }) => {
       const status = row.original.status;
       const config: Record<string, { bg: string; label: string }> = {
-        pending: { bg: "bg-amber-100 text-amber-800", label: "Pendiente" },
-        reviewing: { bg: "bg-blue-100 text-blue-800", label: "En Revisión" },
-        approved: { bg: "bg-emerald-100 text-emerald-800", label: "Aprobado" },
-        rejected: { bg: "bg-rose-100 text-rose-800", label: "Rechazado" },
-        completed: { bg: "bg-slate-200 text-slate-800", label: "Finalizado" },
+        Open: { bg: "bg-blue-100 text-blue-800", label: "Open" },
+        Lost: { bg: "bg-rose-100 text-rose-800", label: "Lost" },
+        Won: { bg: "bg-emerald-100 text-emerald-800", label: "Won" },
+        Abandon: { bg: "bg-slate-200 text-slate-800", label: "Abandon" },
       };
-      const current = config[status] || config.pending;
+      const current = config[status] || config.Open;
       return <Badge className={`${current.bg} border-none shadow-none`}>{current.label}</Badge>;
+    },
+  },
+  {
+    accessorKey: "won_at",
+    header: "Fecha Cierre",
+    cell: ({ row }) => {
+      const wonAt = row.original.won_at;
+      
+      // Si no hay fecha (es null porque no es Won), no mostramos nada (o un pequeño guion)
+      if (!wonAt) {
+        return <span className="text-sm text-slate-300">-</span>;
+      }
+
+      // Si hay fecha, la formateamos bien bonita
+      return (
+        <span className="text-sm font-medium text-emerald-600">
+          {new Date(wonAt).toLocaleDateString('es-MX', { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric' 
+          })}
+        </span>
+      );
     },
   },
   {

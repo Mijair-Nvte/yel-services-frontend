@@ -39,7 +39,7 @@ export function NavMain({
   return (
     <TooltipProvider delayDuration={0}>
       <SidebarGroup>
-         <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
+        <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
         <SidebarGroupContent className="flex flex-col gap-5">
           <SidebarMenu>
             {items.map((item) => {
@@ -54,11 +54,10 @@ export function NavMain({
                   key={item.title}
                   className="py-2"
                 >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton
-                        asChild
-                        className="
+
+                  <SidebarMenuButton
+                    asChild
+                    className="
     relative
     transition-all
     duration-200
@@ -71,44 +70,32 @@ export function NavMain({
     data-[active=true]:text-white
     data-[active=true]:shadow-[0_4px_16px_rgba(236,72,153,0.20)]
   "
-                        tooltip={item.title}
-                        isActive={isActive}
+                    tooltip={item.title}
+                    isActive={isActive}
 
-                      >
-                        <Link
-                          href={item.url}
-                          className="flex items-center gap-2 w-full"
-                        >
-                          {item.icon && (
-                            <item.icon className="h-4 w-4" />
-                          )}
+                  >
+                    <Link
+                      href={item.url}
+                      className="flex items-center gap-2 w-full"
+                    >
+                      {item.icon && (
+                        <item.icon className="h-4 w-4" />
+                      )}
 
-                          <span>{item.title}</span>
+                      <span>{item.title}</span>
 
-                          {item.badge && (
-                            <span className="absolute right-2 top-2 flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.8)]" />
-                            </span>
-                          )}
-                        </Link>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
+                      {item.badge && (
+                        <span className="absolute right-2 top-2 flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.8)]" />
+                        </span>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
 
-                    {isCollapsed && (
-                      <TooltipContent
-                        side="right"
-                        align="center"
-                        className="flex items-center gap-2"
-                      >
-                        {item.title}
 
-                        {item.badge && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                        )}
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
+
+
                 </SidebarMenuItem>
               );
             })}
