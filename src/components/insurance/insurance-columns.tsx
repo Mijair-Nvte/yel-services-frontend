@@ -116,6 +116,45 @@ export const getInsuranceColumns = ({ onEdit, onDelete }: InsuranceColumnProps):
     },
   },
   {
+    accessorKey: "commission_amount",
+    header: "Comisión",
+    cell: ({ row }) => {
+      const amount = Number(row.original.commission_amount) || 0;
+      return (
+        <span className="text-sm font-medium text-slate-700">
+          ${amount.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "commission_status",
+    header: "Pago",
+    cell: ({ row }) => {
+      const status = row.original.commission_status;
+      const config: Record<string, { bg: string; label: string }> = {
+        pending: { bg: "bg-amber-100 text-amber-800", label: "Pendiente" },
+        paid: { bg: "bg-emerald-100 text-emerald-800", label: "Pagada" },
+        not_applicable: { bg: "bg-slate-100 text-slate-500", label: "N/A" },
+      };
+      const current = status ? config[status] : config.not_applicable;
+      return <Badge className={`${current.bg} border-none shadow-none`}>{current.label}</Badge>;
+    },
+  },
+  {
+    accessorKey: "seller_payout_date",
+    header: "Fecha Pago",
+    cell: ({ row }) => {
+      const payoutDate = row.original.seller_payout_date;
+      if (!payoutDate) return <span className="text-sm text-slate-300">-</span>;
+      return (
+        <span className="text-sm font-medium text-purple-600">
+          {new Date(payoutDate).toLocaleDateString('es-MX', { timeZone: 'UTC' })}
+        </span>
+      );
+    },
+  },
+  {
     id: "actions",
     header: () => <div className="text-right pr-4">Acciones</div>,
     cell: ({ row }) => {

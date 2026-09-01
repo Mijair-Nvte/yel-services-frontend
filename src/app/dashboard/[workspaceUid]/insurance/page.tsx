@@ -6,7 +6,7 @@ import { Search, Loader2, ShieldCheck, Clock, CheckCircle, DollarSign, AlertCirc
 import { Input } from "@/components/ui/input";
 import { useAdminInsurance } from "@/hooks/insurance/use-admin-insurance";
 import { InsuranceAdminTable } from "@/components/insurance/insurance-admin-table";
-import { InsuranceAdminDialog } from "@/components/insurance/insurance-admin-dialog";
+import { InsuranceAdminSheet } from "@/components/insurance/insurance-admin-sheet";
 import { InsuranceApplication } from "@/services/insurance/org-insurance.service";
 import { KpiCards, KpiItem } from "@/components/ui/kpi-cards";
 
@@ -15,7 +15,8 @@ export default function InsuranceAdminPage() {
   const { applications, isLoading, loadData, updateApplication, deleteApplication } = useAdminInsurance(workspaceUid);
   
   const [search, setSearch] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   const [selectedApplication, setSelectedApplication] = useState<InsuranceApplication | null>(null);
 
   useEffect(() => {
@@ -148,7 +149,7 @@ export default function InsuranceAdminPage() {
           applications={filteredApplications}
           onEdit={(app) => {
             setSelectedApplication(app);
-            setIsDialogOpen(true);
+          setIsSheetOpen(true);
           }}
           onDelete={async (uid: string) => {
             if (confirm("¿Estás seguro de eliminar esta solicitud? Esta acción es irreversible.")) {
@@ -159,11 +160,12 @@ export default function InsuranceAdminPage() {
       )}
 
       {/* Modal / Dialogo de Edición */}
-      <InsuranceAdminDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+     <InsuranceAdminSheet
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
         application={selectedApplication}
         onUpdate={updateApplication as any} 
+        onDelete={deleteApplication as any}
       />
     </div>
   );

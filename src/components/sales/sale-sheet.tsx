@@ -205,47 +205,47 @@ export function SaleSheet({
 
         <div className="p-3 space-y-6 flex-1 bg-white">
           {/* INFO CLIENTE */}
-        <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
-  <div className="flex items-start gap-4">
-    <Avatar className="h-14 w-14 border-2 border-white shadow-lg ring-1 ring-slate-100">
-      <AvatarFallback className="bg-slate-900 text-white text-lg font-bold">
-        {sale.customer?.first_name?.charAt(0) || "C"}
-      </AvatarFallback>
-    </Avatar>
+          <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+            <div className="flex items-start gap-4">
+              <Avatar className="h-14 w-14 border-2 border-white shadow-lg ring-1 ring-slate-100">
+                <AvatarFallback className="bg-slate-900 text-white text-lg font-bold">
+                  {sale.customer?.first_name?.charAt(0) || "C"}
+                </AvatarFallback>
+              </Avatar>
 
-    <div className="flex-1 space-y-1">
-      <h4 className="font-bold text-slate-900 text-lg leading-tight tracking-tight">
-        {sale.customer ? `${sale.customer.first_name || ""} ${sale.customer.last_name || ""}`.trim() : "Cliente Desconocido"}
-      </h4>
+              <div className="flex-1 space-y-1">
+                <h4 className="font-bold text-slate-900 text-lg leading-tight tracking-tight">
+                  {sale.customer ? `${sale.customer.first_name || ""} ${sale.customer.last_name || ""}`.trim() : "Cliente Desconocido"}
+                </h4>
 
-      {/* Email Row */}
-      <div className="flex items-center gap-2 group">
-        <div className="flex items-center gap-1.5 text-slate-500 text-sm">
-          <Mail className="h-3.5 w-3.5 text-slate-400" />
-          <span className="truncate max-w-[180px]">
-            {sale.customer?.email || "Sin correo"}
-          </span>
-        </div>
-        {sale.customer?.email && <CopyButton text={sale.customer.email} />}
-      </div>
+                {/* Email Row */}
+                <div className="flex items-center gap-2 group">
+                  <div className="flex items-center gap-1.5 text-slate-500 text-sm">
+                    <Mail className="h-3.5 w-3.5 text-slate-400" />
+                    <span className="truncate max-w-[180px]">
+                      {sale.customer?.email || "Sin correo"}
+                    </span>
+                  </div>
+                  {sale.customer?.email && <CopyButton text={sale.customer.email} />}
+                </div>
 
-      {/* Phone Row */}
-      <div className="flex items-center gap-2 group">
-        <div className="flex items-center gap-1.5 text-slate-500 text-sm">
-          <Phone className="h-3.5 w-3.5 text-slate-400" />
-          <span>{sale.customer?.phone || "Sin teléfono"}</span>
-        </div>
-        {sale.customer?.phone && <CopyButton text={sale.customer.phone} />}
-      </div>
+                {/* Phone Row */}
+                <div className="flex items-center gap-2 group">
+                  <div className="flex items-center gap-1.5 text-slate-500 text-sm">
+                    <Phone className="h-3.5 w-3.5 text-slate-400" />
+                    <span>{sale.customer?.phone || "Sin teléfono"}</span>
+                  </div>
+                  {sale.customer?.phone && <CopyButton text={sale.customer.phone} />}
+                </div>
 
-      <div className="pt-2">
-        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-[10px] text-indigo-700 font-bold uppercase tracking-wider">
-          <CalendarIcon className="h-3 w-3" />
-          Venta: {new Date(sale.created_at).toLocaleDateString()}
-        </span>
-      </div>
-    </div>
-  </div>
+                <div className="pt-2">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-indigo-50 text-[10px] text-indigo-700 font-bold uppercase tracking-wider">
+                    <CalendarIcon className="h-3 w-3" />
+                    Venta: {new Date(sale.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
 
             {sale.seller && (
               <div className="mt-2 pt-3 border-t border-dashed border-slate-200">
@@ -258,16 +258,31 @@ export function SaleSheet({
                       <p className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">
                         Vendedor
                       </p>
-                      <p className="text-xs font-semibold text-slate-700">
-                        {sale.seller.name}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-semibold text-slate-700">
+                          {sale.seller.name}
+                        </p>
+
+                        {/* Badge de tipo de vendedor corregido */}
+                        {sale.seller.type_name && (
+                          <span className={cn(
+                            "px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded border",
+                            sale.seller.type_name === "Interno"
+                              ? "bg-blue-50 text-blue-600 border-blue-200"
+                              : "bg-purple-50 text-purple-600 border-purple-200"
+                          )}>
+                            {sale.seller.type_name}
+                          </span>
+                        )}
+                      </div>
+                       <p className="text-[10px] text-slate-400 italic">
+                    {sale.seller.email}
+                  </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] text-slate-400 italic">
-                      {sale.seller.email}
-                    </p>
-                  </div>
+                </div>
+                <div className="text-right mt-1">
+                 
                 </div>
               </div>
             )}
@@ -487,7 +502,7 @@ export function SaleSheet({
             </Button>
           </SheetClose>
         </SheetFooter>
-      </SheetContent>
-    </Sheet>
+      </SheetContent >
+    </Sheet >
   );
 }

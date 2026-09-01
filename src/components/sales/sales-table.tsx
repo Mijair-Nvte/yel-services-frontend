@@ -151,15 +151,29 @@ export function SalesTable({
                   </TableCell>
 
                   {/* VENDEDOR */}
-                  <TableCell className="py-4">
+              <TableCell className="py-4">
                     {sale.seller ? (
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] text-indigo-700 font-bold border border-indigo-200/50">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 shrink-0 rounded-full bg-indigo-100 flex items-center justify-center text-[11px] text-indigo-700 font-bold border border-indigo-200/50">
                           {sale.seller.name.charAt(0)}
                         </div>
-                        <span className="text-sm font-medium text-slate-600">
-                          {sale.seller.name}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-slate-700 leading-tight">
+                            {sale.seller.name}
+                          </span>
+                          
+                          {/* 💡 AQUÍ ESTÁ LA MAGIA: Badge del tipo de vendedor */}
+                          {sale.seller.type_name && (
+                            <span className={cn(
+                              "mt-1 w-fit px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-md border",
+                              sale.seller.type_name === "Interno" 
+                                ? "bg-blue-50 text-blue-600 border-blue-200" 
+                                : "bg-purple-50 text-purple-600 border-purple-200"
+                            )}>
+                              {sale.seller.type_name}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1.5 text-rose-500 bg-rose-50 px-2 py-1 rounded-md w-fit border border-rose-100">

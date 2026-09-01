@@ -130,7 +130,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       requiredPermission: "view_sales",
     },
     {
-      title: "Afiliados",
+      title: "Vendedores",
       url: workspace ? `/dashboard/${workspace.uid}/partners` : "#",
       icon: HandCoins,
 

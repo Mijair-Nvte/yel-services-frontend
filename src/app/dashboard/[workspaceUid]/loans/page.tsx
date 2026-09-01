@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { Search, Loader2, FileSpreadsheet, Clock, CheckCircle2, DollarSign, AlertCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Loader2, FileSpreadsheet, Clock, CheckCircle2, DollarSign, AlertCircle } from "lucide-react";
 import { useAdminLoans } from "@/hooks/org_loans/use-loans";
 import { LoanTable } from "@/components/org_loans/loan-admin-table";
-import { LoanDialog } from "@/components/org_loans/loan-admin-dialog";
+import { LoanAdminSheet } from "@/components/org_loans/loan-admin-sheet";
 import { LoanApplication } from "@/services/org-loan/org-loan.service";
 import { KpiCards, KpiItem } from "@/components/ui/kpi-cards";
 
@@ -15,7 +14,7 @@ export default function PageLoans() {
   const { applications, isLoading, loadData, updateApplication, deleteApplication } = useAdminLoans(workspaceUid);
   
   const [search, setSearch] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<LoanApplication | null>(null);
 
   useEffect(() => {
@@ -125,7 +124,6 @@ export default function PageLoans() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-           
             Gestión de Préstamos
           </h1>
           <p className="text-slate-500 text-sm mt-1">
@@ -136,7 +134,6 @@ export default function PageLoans() {
 
       {/* Renderizamos las Tarjetas de KPIs Modulares */}
       {!isLoading && <KpiCards items={kpiItems} columns="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" />}
-
 
       {/* Grid de Contenido */}
       {isLoading ? (
@@ -149,7 +146,7 @@ export default function PageLoans() {
           applications={filteredApplications}
           onEdit={(app) => {
             setSelectedApplication(app);
-            setIsDialogOpen(true);
+            setIsSheetOpen(true);
           }}
           onDelete={async (uid: string) => {
             if (confirm("¿Estás seguro de eliminar esta solicitud? Esta acción es irreversible.")) {
@@ -159,12 +156,13 @@ export default function PageLoans() {
         />
       )}
 
-      {/* Modal / Dialogo de Edición */}
-      <LoanDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+      {/* Sheet de Edición Lateral */}
+      <LoanAdminSheet
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
         application={selectedApplication}
         onUpdate={updateApplication}
+        onDelete={deleteApplication}
       />
     </div>
   );

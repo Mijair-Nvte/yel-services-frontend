@@ -39,7 +39,7 @@ export function NavBussines({
   return (
     <TooltipProvider delayDuration={0}>
       <SidebarGroup>
-         <SidebarGroupLabel>Business</SidebarGroupLabel>
+         <SidebarGroupLabel>Negocio</SidebarGroupLabel>
         <SidebarGroupContent className="flex flex-col gap-5">
           <SidebarMenu>
             {items.map((item) => {

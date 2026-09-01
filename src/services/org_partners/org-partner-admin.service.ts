@@ -22,4 +22,11 @@ export const OrgPartnerAdminService = {
     apiFetch(`/org-companies/${workspaceUid}/partners/${partnerId}/reject`, {
       method: "POST",
     }),
+
+    //  ASIGNAR VENDEDOR INTERNO
+  assignInternal: (workspaceUid: string, userId: number | string) =>
+    apiFetch(`/org-companies/${workspaceUid}/partners/internal`, {
+      method: "POST",
+      body: JSON.stringify({ user_id: userId }),
+    }),
 };

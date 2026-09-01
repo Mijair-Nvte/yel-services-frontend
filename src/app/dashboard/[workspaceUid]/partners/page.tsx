@@ -3,11 +3,11 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 // Ojo: Ya no le pasamos el "activeTab" al hook, queremos que traiga TODOS los registros
-import { useOrgPartnersAdmin } from "@/hooks/org_partners/use-org-partners-admin"; 
+import { useOrgPartnersAdmin } from "@/hooks/org_partners/use-org-partners-admin";
 import { Users } from "lucide-react";
 import { PartnerReviewSheet } from "@/components/org_partners/partner-review-sheet";
 import { PartnerAdminTable } from "@/components/org_partners/partner-admin-table";
-
+import { AssignInternalPartnerModal } from "@/components/org_partners/assign-internal-partner-modal";
 export default function PartnersAdminPage() {
   const { workspaceUid } = useParams<{ workspaceUid: string }>();
 
@@ -21,14 +21,19 @@ export default function PartnersAdminPage() {
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8 pt-6">
       {/* HEADER */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-          <Users className="h-8 w-8 text-emerald-600" />
-          Solicitudes de Partners
-        </h1>
-        <p className="text-muted-foreground">
-          Revisa y administra los usuarios que desean unirse al programa de afiliados.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+     
+            Gestion de vendedores
+          </h1>
+          <p className="text-muted-foreground">
+            Revisa y administra los usuarios que desean unirse al programa de afiliados.
+          </p>
+        </div>
+
+        {/* 👈 AQUÍ COLOCAMOS EL BOTÓN QUE ABRE EL BUSCADOR DE SHADCN */}
+        <AssignInternalPartnerModal onAssigned={reload} />
       </div>
 
       {/* LISTA / TABLA MODULAR */}
