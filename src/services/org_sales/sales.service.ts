@@ -34,7 +34,7 @@ export const SalesService = {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/org-companies/${workspaceUid}/sales/export-pdf`, {
             method: 'POST',
             headers: {
-                'Accept': 'application/json', // <--- CRÍTICO: Le dice a Laravel que somos una API
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 ...(token && { 'Authorization': `Bearer ${token}` })
             },
@@ -51,6 +51,30 @@ export const SalesService = {
         const blob = await response.blob();
         return blob;
     },
+
+    exportExcel: async (workspaceUid: string, saleIds: number[]) => {
+        const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/org-companies/${workspaceUid}/sales/export-excel`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            },
+            body: JSON.stringify({ sale_ids: saleIds })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null);
+            console.error("Error del backend al exportar Excel:", errorData);
+            throw errorData || new Error("Error al exportar el Excel");
+        }
+
+        const blob = await response.blob();
+        return blob;
+    },
+
 
     deleteSale: async (workspaceUid: string, saleId: number) => {
         const response = await apiFetch(

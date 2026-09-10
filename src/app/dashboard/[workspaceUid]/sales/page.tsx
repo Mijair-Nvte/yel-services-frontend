@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { FileDown, FilterX, Loader2 } from "lucide-react";
+import { FileDown, FilterX, Loader2,FileSpreadsheet } from "lucide-react";
 import { SalesService } from "@/services/org_sales/sales.service";
 
 export default function SalesPage() {
@@ -35,7 +35,7 @@ export default function SalesPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
   const [isExporting, setIsExporting] = useState(false);
-
+const [isExportingExcel, setIsExportingExcel] = useState(false);
 
   const [editSaleTarget, setEditSaleTarget] = useState<any>(null);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
@@ -71,6 +71,34 @@ export default function SalesPage() {
       // Aquí podrías mostrar un toast de error
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    if (filteredSales.length === 0) return;
+
+    try {
+      setIsExportingExcel(true);
+      const saleIds = filteredSales.map((sale) => sale.id);
+
+      const blob = await SalesService.exportExcel(workspaceUid, saleIds);
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Cambiamos la extensión a .xlsx
+      const fileName = `Reporte_${selectedSeller !== "all" ? "Vendedor" : "General"}_${format(new Date(), "ddMMyyyy")}.xlsx`;
+      link.setAttribute("download", fileName);
+
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error al exportar Excel:", error);
+    } finally {
+      setIsExportingExcel(false);
     }
   };
 
@@ -174,19 +202,33 @@ export default function SalesPage() {
             Listado de Transacciones
           </h3>
 
-          {/* --- BOTÓN DE EXPORTAR (Por ahora solo diseño, lo conectamos a Laravel después) --- */}
-          <Button
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
-            onClick={handleExportPDF}
-            disabled={isExporting || filteredSales.length === 0}
-          >
-            {isExporting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <FileDown className="mr-2 h-4 w-4" />
-            )}
-            {isExporting ? "Generando PDF..." : "Exportar Recibo PDF"}
-          </Button>
+         <div className="flex items-center gap-2">
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={handleExportExcel}
+              disabled={isExportingExcel || filteredSales.length === 0}
+            >
+              {isExportingExcel ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+              )}
+              {isExportingExcel ? "Generando..." : "Exportar Excel"}
+            </Button>
+
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              onClick={handleExportPDF}
+              disabled={isExporting || filteredSales.length === 0}
+            >
+              {isExporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <FileDown className="mr-2 h-4 w-4" />
+              )}
+              {isExporting ? "Generando..." : "Exportar PDF"}
+            </Button>
+          </div>
         </div>
 
         {/* --- BARRA DE FILTROS --- */}
