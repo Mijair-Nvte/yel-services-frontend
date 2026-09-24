@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, parseISO } from "date-fns"; // 🔥 IMPORTANTE
+import { format, parseISO } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -22,13 +22,14 @@ import {
 } from "@/lib/calendar-colors";
 import { cn } from "@/lib/utils";
 import { Trash2 } from "lucide-react"; // Para el botón de borrar
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { ImageUploader } from "@/components/ui/image-uploader";
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any) => Promise<void>;
-  onDelete?: () => Promise<void>; // 🔥 Añadido
-  eventToEdit?: any | null; // 🔥 Añadido
+  onSubmit: (data: FormData) => Promise<void>;
+  onDelete?: () => Promise<void>;
+  eventToEdit?: any | null;
   defaultDate?: Date;
 }
 
@@ -55,6 +56,9 @@ export function EventDialog({
   const [targetPlatform, setTargetPlatform] = useState("yel_services");
   const isEditing = !!eventToEdit;
 
+  const [coverImage, setCoverImage] = useState<File | string | null>(null);
+  const [bannerImage, setBannerImage] = useState<File | string | null>(null);
+
   // 🔥 EFECTO MAGICO: Rellena los datos cuando se abre el modal para editar
   useEffect(() => {
     if (open) {
@@ -79,8 +83,11 @@ export function EventDialog({
             ? format(parseISO(eventToEdit.ends_at), "yyyy-MM-dd'T'HH:mm")
             : "",
         );
+
+        setCoverImage(eventToEdit.cover_image_url || null);
+        setBannerImage(eventToEdit.banner_image_url || null);
       } else {
-        // Reset para Nuevo Evento
+
         setTitle("");
         setDescription("");
         setLocation("");
@@ -93,6 +100,8 @@ export function EventDialog({
           defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : "",
         );
         setEndDate("");
+        setCoverImage(null);
+        setBannerImage(null);
       }
     }
   }, [open, eventToEdit, defaultDate]);
@@ -109,18 +118,36 @@ export function EventDialog({
 
     try {
       setLoading(true);
-      await onSubmit({
-        title,
-        description,
-        location,
-        color,
-        target_platform: targetPlatform,
-        meeting_url: meetingUrl || null,
-        external_url: externalUrl || null,
-        starts_at: new Date(startDate).toISOString(),
-        ends_at: endDate ? new Date(endDate).toISOString() : null,
-        is_all_day: isAllDay,
-      });
+
+    
+      const payload = new FormData();
+
+      payload.append("title", title);
+      payload.append("description", description);
+      payload.append("location", location);
+      payload.append("color", color);
+      payload.append("target_platform", targetPlatform);
+      if (meetingUrl) payload.append("meeting_url", meetingUrl);
+      if (externalUrl) payload.append("external_url", externalUrl);
+      payload.append("starts_at", new Date(startDate).toISOString());
+      if (endDate && !isAllDay) payload.append("ends_at", new Date(endDate).toISOString());
+      payload.append("is_all_day", isAllDay ? "1" : "0");
+
+     
+      if (coverImage instanceof File) {
+        payload.append("cover_image", coverImage);
+      }
+      if (bannerImage instanceof File) {
+        payload.append("banner_image", bannerImage);
+      }
+
+   
+      if (isEditing) {
+        payload.append("_method", "PUT");
+      }
+
+      // Enviamos el FormData
+      await onSubmit(payload);
 
       toast.success(isEditing ? "Evento actualizado ✏️" : "Evento creado 🎉");
       onOpenChange(false);
@@ -130,7 +157,6 @@ export function EventDialog({
       setLoading(false);
     }
   };
-
   const handleDeleteClick = async () => {
     if (!onDelete) return;
     if (!confirm("¿Estás seguro de que deseas eliminar este evento?")) return;
@@ -156,7 +182,25 @@ export function EventDialog({
         </DialogHeader>
 
         <div className="space-y-5 py-2">
-          {/* ... TODOS TUS CAMPOS DEL FORMULARIO SE QUEDAN EXACTAMENTE IGUAL ... */}
+         <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div className="space-y-2">
+              <ImageUploader
+                label="Portada (Cuadrada)"
+                description="Ideal: 800x800px"
+                value={coverImage}
+                onChange={(file) => setCoverImage(file)}
+              />
+            </div>
+            <div className="space-y-2">
+              <ImageUploader
+                label="Banner (Horizontal)"
+                description="Ideal: 1200x600px"
+                value={bannerImage}
+                onChange={(file) => setBannerImage(file)}
+              />
+            </div>
+          </div>
+          
           <div className="space-y-2">
             <Label>Título</Label>
             <Input
@@ -198,11 +242,16 @@ export function EventDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Modalidad</Label>
-              <Input
-                placeholder="Ej: En linea, presencial"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
+              <Select value={location} onValueChange={setLocation}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="En línea">En línea</SelectItem>
+                  <SelectItem value="Presencial">Presencial</SelectItem>
+                  <SelectItem value="Híbrido">Híbrido</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Link de reunión</Label>

@@ -39,6 +39,7 @@ import {
   FileText,
   SquareTerminal,
   BriefcaseBusiness,
+  Ticket,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -69,11 +70,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: LayoutDashboard,
       requiredPermission: "view_dashboard",
     },
-    {
-      title: "Departamentos",
-      url: workspace ? `/dashboard/${workspace.uid}/departments` : "#",
-      icon: FolderTree,
-      requiredPermission: "view_areas",
+
+     {
+      title: "Eventos",
+      url: workspace ? `/dashboard/${workspace.uid}/events` : "#",
+      icon: Ticket,
+      requiredPermission: "view_calendar",
     },
     {
       title: "Calendario",

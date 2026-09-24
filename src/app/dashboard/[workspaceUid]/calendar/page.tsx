@@ -15,7 +15,7 @@ export default function CalendarPage() {
   const { workspaceUid } = useParams<{ workspaceUid: string }>();
   
   const [open, setOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any | null>(null); // 🔥 ESTADO PARA EDITAR
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
   const calendar = useOrgCalendar(workspaceUid);
 
@@ -27,7 +27,7 @@ export default function CalendarPage() {
 
   // Función para abrir modal en modo "Editar"
 const handleOpenEdit = (event: any) => {
-    // 🔥 BLOQUEO PARA FERIADOS
+   
     if (event.is_holiday) {
       toast.info(`🎉 ${event.title} es un día feriado oficial y no se puede editar.`);
       return; // Detenemos la ejecución, no se abre el modal
