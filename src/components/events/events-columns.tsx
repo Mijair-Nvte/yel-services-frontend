@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { OrgEvent } from "@/services/events/org-event.service";
 import { DataTableRowActions } from "@/components/ui/data-table-row-actions";
-import { MapPin, Link as LinkIcon, Users, Eye,Copy, Check } from "lucide-react";
+import { MapPin, Link as LinkIcon, Users, Eye, Copy, Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -114,12 +114,14 @@ export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps):
         id: "status",
         header: "Estatus",
         accessorFn: (row) => {
-            const isPast = new Date(row.original.starts_at) < new Date();
-            return !row.original.is_active ? "Inactivo" : isPast ? "Finalizado" : "Próximo";
+            const ev = row as OrgEvent; 
+            const isPast = new Date(ev.starts_at) < new Date();
+            return !ev.is_active ? "Inactivo" : isPast ? "Finalizado" : "Próximo";
         },
         cell: ({ row }) => {
-            const isPast = new Date(row.original.starts_at) < new Date();
-            const isActive = row.original.is_active;
+            const ev = row.original as OrgEvent;
+            const isPast = new Date(ev.starts_at) < new Date();
+            const isActive = ev.is_active;
 
             let badgeStyle = "bg-slate-100 text-slate-500";
             let label = "Inactivo";

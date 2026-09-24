@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { OrgEventService, OrgEvent, CreateEventDto } from "@/services/events/org-event.service";
+import { OrgEventService, OrgEvent } from "@/services/events/org-event.service";
 
 export function useAdminEvents(workspaceUid: string) {
   const [events, setEvents] = useState<OrgEvent[]>([]);
@@ -22,7 +22,8 @@ export function useAdminEvents(workspaceUid: string) {
     }
   }, [workspaceUid]);
 
-  const createEvent = async (data: CreateEventDto) => {
+  // 👇 Cambiamos el tipo de 'data' a FormData
+  const createEvent = async (data: FormData) => {
     try {
       await OrgEventService.create(workspaceUid, data);
       toast.success("Evento creado correctamente.");
@@ -33,7 +34,8 @@ export function useAdminEvents(workspaceUid: string) {
     }
   };
 
-  const updateEvent = async (eventUid: string, data: Partial<CreateEventDto>) => {
+  // 👇 Cambiamos el tipo de 'data' a FormData
+  const updateEvent = async (eventUid: string, data: FormData) => {
     try {
       await OrgEventService.update(workspaceUid, eventUid, data);
       toast.success("Evento actualizado correctamente.");

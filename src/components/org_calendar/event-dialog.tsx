@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   EVENT_COLORS,
   CalendarColorKey,
@@ -180,7 +181,7 @@ export function EventDialog({
             {isEditing ? "Editar Evento" : "Nuevo Evento"}
           </DialogTitle>
         </DialogHeader>
-
+<ScrollArea className="max-h-[65vh] px-6">
         <div className="space-y-5 py-2">
          <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
             <div className="space-y-2">
@@ -309,7 +310,7 @@ export function EventDialog({
             </select>
           </div>
         </div>
-
+</ScrollArea>
         <DialogFooter className="flex justify-between sm:justify-between w-full">
           {isEditing && onDelete ? (
             <Button

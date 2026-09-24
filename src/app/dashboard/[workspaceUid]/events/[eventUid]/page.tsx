@@ -59,8 +59,7 @@ export default function EventDetailsPage() {
     const kpiItems: KpiItem[] = useMemo(() => {
         const totalRegistered = registrations.length;
         const totalAttended = registrations.filter(r => r.status === "attended").length;
-        const totalUnattended = registrations.filter(r => r.status === "registered" || r.status === "unattended").length;
-
+const totalUnattended = registrations.filter(r => r.status === "registered").length;
         return [
             {
                 label: "Total Registrados",
