@@ -4,7 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { OrgCustomer } from "@/services/org-customer/org-customer.service";
 import { DataTableRowActions } from "@/components/ui/data-table-row-actions";
-import { Mail, Phone } from "lucide-react";
+// ✅ Agregamos ExternalLink y UserCheck a tus importaciones de lucide-react
+import { Mail, Phone, ExternalLink, UserCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface CustomerColumnProps {
   onView: (customer: OrgCustomer) => void;
@@ -31,7 +33,6 @@ export const getCustomerColumns = ({ onView, onDelete }: CustomerColumnProps): C
       const customer = row.original;
       const fullName = `${customer.first_name} ${customer.last_name || ""}`.trim();
       return (
-        // ✅ Envolvemos el contenido en un div cliqueable
         <div 
           className="cursor-pointer group" 
           onClick={() => onView(customer)}
@@ -39,7 +40,6 @@ export const getCustomerColumns = ({ onView, onDelete }: CustomerColumnProps): C
           <div className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
             {fullName}
           </div>
-    
         </div>
       );
     },
@@ -82,6 +82,44 @@ export const getCustomerColumns = ({ onView, onDelete }: CustomerColumnProps): C
               {tag}
             </Badge>
           ))}
+        </div>
+      );
+    },
+  },
+  // 🚀 NUEVA COLUMNA: Enlace al CRM (GoHighLevel)
+  {
+    id: "crm",
+    header: () => <div className="text-center">CRM</div>,
+    cell: ({ row }) => {
+      const customer = row.original;
+      const locationId = process.env.NEXT_PUBLIC_GHL_LOCATION_ID;
+
+      // Usamos 'contact_id' que es la columna oficial en tu tabla de base de datos
+      const ghlUrl = customer?.contact_id && locationId
+        ? `https://app.ideashubai.com/v2/location/${locationId}/contacts/detail/${customer.contact_id}`
+        : null;
+
+      return (
+        <div className="flex justify-center">
+          {ghlUrl ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+              onClick={(e) => {
+                e.stopPropagation(); // Evita que se abra el modal/detalle del cliente al hacer clic aquí
+                window.open(ghlUrl, '_blank');
+              }}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Ver en CRM
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" disabled className="text-slate-400">
+              <UserCheck className="h-4 w-4 mr-2" />
+              Local
+            </Button>
+          )}
         </div>
       );
     },

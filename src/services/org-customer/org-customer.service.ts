@@ -10,6 +10,7 @@ export interface OrgCustomer {
     phone: string | null;
     user_id?: number | null;
     metadata?: Record<string, any> | null;
+    contact_id?: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -60,4 +61,26 @@ export const OrgCustomerService = {
             method: "DELETE",
         });
     },
+
+
+    getLoans: async (workspaceUid: string, customerUid: string) => {
+        const response = await apiFetch(`/org-companies/${workspaceUid}/customers/${customerUid}/loans`);
+        return response.data;
+    },
+
+    getInsurances: async (workspaceUid: string, customerUid: string) => {
+        const response = await apiFetch(`/org-companies/${workspaceUid}/customers/${customerUid}/insurances`);
+        return response.data;
+    },
+
+    getEvents: async (workspaceUid: string, customerUid: string) => {
+        const response = await apiFetch(`/org-companies/${workspaceUid}/customers/${customerUid}/events`);
+        return response.data;
+    },
+
+    getServiceOrders: async (workspaceUid: string, customerUid: string) => {
+        const response = await apiFetch(`/org-companies/${workspaceUid}/customers/${customerUid}/service-orders`);
+        return response.data;
+    },
+
 };
