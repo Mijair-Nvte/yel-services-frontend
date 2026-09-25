@@ -39,6 +39,7 @@ import {
   FileText,
   SquareTerminal,
   BriefcaseBusiness,
+  Contact,
   Ticket,
 } from "lucide-react";
 import Link from "next/link";
@@ -62,7 +63,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
   const { setOpen, isMobile } = useSidebar();
 
-  // ✅ 2. Agregamos "requiredPermission" a cada item
+  
   const rawNavMain = [
     {
       title: "Dashboard",
@@ -70,7 +71,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: LayoutDashboard,
       requiredPermission: "view_dashboard",
     },
-
+{
+      title: "Clientes",
+      url: workspace ? `/dashboard/${workspace.uid}/customers` : "#",
+      icon: Contact, 
+      requiredPermission: "view_customers", 
+    },
      {
       title: "Eventos",
       url: workspace ? `/dashboard/${workspace.uid}/events` : "#",
@@ -189,6 +195,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       !item.requiredPermission || hasPermission(item.requiredPermission),
   );
 
+  const navBussines = rawNavBussines.filter(
+    (item) =>
+      !item.requiredPermission || hasPermission(item.requiredPermission),
+  );
+
   const handleMouseEnter = () => {
     // Si estamos en móvil, no queremos este comportamiento de hover
     if (!isMobile) {
@@ -234,7 +245,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarContent className=" text-xl font-semibold">
           {/* Renderizamos los arreglos ya filtrados */}
           <NavMain items={navMain} />
-          <NavBussines items={rawNavBussines}></NavBussines>
+         <NavBussines items={navBussines}></NavBussines>
           <NavSecondary items={navSecondary} className="mt-auto" />
         </SidebarContent>
 
