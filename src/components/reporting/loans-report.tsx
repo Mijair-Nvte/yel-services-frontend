@@ -1,0 +1,164 @@
+"use client";
+
+import { Landmark, CheckCircle2, DollarSign, Handshake, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Bar, BarChart, CartesianGrid, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { useReportingLoans } from "@/hooks/reporting/use-reporting-loans";
+import { LoansPeriodData } from "@/services/reporting/org-reporting.service";
+
+interface LoansReportProps {
+    workspaceUid: string;
+    start: string;
+    end: string;
+    isComparing: boolean;
+    compareStart: string;
+    compareEnd: string;
+}
+
+export function LoansReport({ workspaceUid, start, end, isComparing, compareStart, compareEnd }: LoansReportProps) {
+    const { data, isLoading } = useReportingLoans(workspaceUid, start, end, isComparing, compareStart, compareEnd);
+
+    if (isLoading || !data) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+            </div>
+        );
+    }
+
+    return (
+        <div className={`grid grid-cols-1 ${isComparing ? "xl:grid-cols-2 gap-8" : "gap-6"}`}>
+            <div className="space-y-6">
+                <div className="bg-slate-100 p-2 rounded-lg text-center font-semibold text-slate-700 text-sm">
+                    Periodo: {data.primary.label}
+                </div>
+                <LoansReportBlock periodData={data.primary} />
+            </div>
+
+            {isComparing && data.comparison && (
+                <div className="space-y-6 border-t xl:border-t-0 xl:border-l border-slate-200 xl:pl-8 pt-8 xl:pt-0">
+                    <div className="bg-cyan-50 p-2 rounded-lg text-center font-semibold text-cyan-700 text-sm">
+                        Comparación: {data.comparison.label}
+                    </div>
+                    <LoansReportBlock periodData={data.comparison} />
+                </div>
+            )}
+        </div>
+    );
+}
+
+function LoansReportBlock({ periodData }: { periodData: LoansPeriodData }) {
+    const formatCurrency = (num: number) => new Intl.NumberFormat("es-MX", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(num);
+    const formatNumber = (num: number) => new Intl.NumberFormat("es-MX").format(num);
+
+    return (
+        <div className="space-y-6">
+            {/* 4 KPIs FINANCIEROS */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+                <Card className="shadow-sm border-slate-200 bg-cyan-50/40">
+                    <CardHeader className="p-3 pb-0 flex flex-row justify-between items-center">
+                        <CardTitle className="text-xs font-medium text-cyan-700 truncate">Vol. Solicitado</CardTitle>
+                        <DollarSign className="h-3 w-3 text-cyan-500" />
+                    </CardHeader>
+                    <CardContent className="p-3 pt-1">
+                        <div className="text-lg font-bold text-cyan-800">{formatCurrency(periodData.kpis.total_volume)}</div>
+                    </CardContent>
+                </Card>
+
+                <Card className="shadow-sm border-slate-200">
+                    <CardHeader className="p-3 pb-0 flex flex-row justify-between items-center">
+                        <CardTitle className="text-xs font-medium text-slate-500 truncate">Aplicaciones</CardTitle>
+                        <Landmark className="h-3 w-3 text-slate-400" />
+                    </CardHeader>
+                    <CardContent className="p-3 pt-1">
+                        <div className="text-lg font-bold text-slate-900">{formatNumber(periodData.kpis.total_applications)}</div>
+                    </CardContent>
+                </Card>
+
+                <Card className="shadow-sm border-slate-200">
+                    <CardHeader className="p-3 pb-0 flex flex-row justify-between items-center">
+                        <CardTitle className="text-xs font-medium text-emerald-600 truncate">Ganados (Won)</CardTitle>
+                        <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                    </CardHeader>
+                    <CardContent className="p-3 pt-1">
+                        <div className="text-lg font-bold text-emerald-700">{formatNumber(periodData.kpis.won_applications)}</div>
+                    </CardContent>
+                </Card>
+
+                <Card className="shadow-sm border-slate-200 bg-indigo-50/30">
+                    <CardHeader className="p-3 pb-0 flex flex-row justify-between items-center">
+                        <CardTitle className="text-xs font-medium text-indigo-600 truncate">Comisiones</CardTitle>
+                        <Handshake className="h-3 w-3 text-indigo-400" />
+                    </CardHeader>
+                    <CardContent className="p-3 pt-1">
+                        <div className="text-lg font-bold text-indigo-700">{formatCurrency(periodData.kpis.total_commissions)}</div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* GRÁFICAS DE PASTEL Y BARRAS */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+                <Card className="shadow-sm border-slate-200">
+                    <CardHeader className="p-4 pb-2">
+                        <CardTitle className="text-sm">Estado del Pipeline</CardTitle>
+                        <CardDescription className="text-xs">Distribución de aplicaciones.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0 flex items-center h-[160px]">
+                        {periodData.kpis.total_applications === 0 ? (
+                            <div className="w-full flex items-center justify-center text-slate-400 text-sm">Sin datos</div>
+                        ) : (
+                            <>
+                                <div className="w-1/2 h-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={periodData.pipelinePie} cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={2} dataKey="value">
+                                                {periodData.pipelinePie.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                                            </Pie>
+                                            <Tooltip formatter={(value: number) => [`${formatNumber(value)} apps`, "Cantidad"]} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <div className="w-1/2 flex flex-col gap-2 overflow-y-auto max-h-full pr-1">
+                                    {periodData.pipelinePie.map((item, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-xs">
+                                            <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: item.color }}></div>
+                                            <span className="text-slate-600">{item.name}</span>
+                                            <span className="font-semibold ml-auto">{item.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card className="shadow-sm border-slate-200">
+                    <CardHeader className="p-4 pb-2">
+                        <CardTitle className="text-sm">Top Tipos (Por Volumen USD)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                        {periodData.loanTypesChart.length === 0 ? (
+                            <div className="h-[160px] flex items-center justify-center text-slate-400 text-sm">Sin datos</div>
+                        ) : (
+                            <div className="h-[160px] w-full">
+                                <ChartContainer config={{ volume: { label: "Volumen", color: "#06b6d4" } }} className="h-full w-full">
+                                    <BarChart data={periodData.loanTypesChart} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                                        <CartesianGrid horizontal={true} vertical={false} strokeDasharray="3 3" stroke="#e2e8f0" />
+                                        <XAxis type="number" hide />
+                                        <XAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 10 }} width={70} />
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <Bar dataKey="volume" name="Volumen" fill="var(--color-volume)" radius={[0, 4, 4, 0]} barSize={16} />
+                                    </BarChart>
+                                </ChartContainer>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+            </div>
+        </div>
+    );
+}

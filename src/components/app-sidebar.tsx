@@ -41,6 +41,7 @@ import {
   BriefcaseBusiness,
   Contact,
   Ticket,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -63,7 +64,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
   const { setOpen, isMobile } = useSidebar();
 
-  
+
   const rawNavMain = [
     {
       title: "Dashboard",
@@ -71,13 +72,19 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       icon: LayoutDashboard,
       requiredPermission: "view_dashboard",
     },
-{
+    {
+      title: "Reportes",
+      url: workspace ? `/dashboard/${workspace.uid}/reporting` : "#",
+      icon: BarChart3,
+      // requiredPermission: "view_reports", // Opcional: Agrega un permiso si lo necesitas
+    },
+    {
       title: "Clientes",
       url: workspace ? `/dashboard/${workspace.uid}/customers` : "#",
-      icon: Contact, 
-      requiredPermission: "view_customers", 
+      icon: Contact,
+      requiredPermission: "view_customers",
     },
-     {
+    {
       title: "Eventos",
       url: workspace ? `/dashboard/${workspace.uid}/events` : "#",
       icon: Ticket,
@@ -245,7 +252,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarContent className=" text-xl font-semibold">
           {/* Renderizamos los arreglos ya filtrados */}
           <NavMain items={navMain} />
-         <NavBussines items={navBussines}></NavBussines>
+          <NavBussines items={navBussines}></NavBussines>
           <NavSecondary items={navSecondary} className="mt-auto" />
         </SidebarContent>
 
