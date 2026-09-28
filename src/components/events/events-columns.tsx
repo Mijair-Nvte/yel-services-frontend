@@ -4,10 +4,11 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { OrgEvent } from "@/services/events/org-event.service";
 import { DataTableRowActions } from "@/components/ui/data-table-row-actions";
-import { MapPin, Link as LinkIcon, Users, Eye, Copy, Check } from "lucide-react";
+import { MapPin, Link as LinkIcon, Users, Eye, Copy, Check, CalendarDays } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
 interface EventColumnProps {
     onEdit: (event: OrgEvent) => void;
     onDelete: (uid: string) => void;
@@ -65,18 +66,37 @@ export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps):
             );
         },
     },
-    {
+{
         id: "title",
         header: "Evento",
         accessorFn: (row) => row.title,
         cell: ({ row }) => {
             const ev = row.original;
-            return (
-                <div>
+            // Usamos el cover_image_url como imagen principal
+            const imageUrl = ev.cover_image_url || ev.banner_image_url; 
 
+            return (
+                <div className="flex items-center gap-3">
+                    {/* 📸 THUMBNAIL DEL EVENTO */}
+                    <div className="relative h-10 w-14 shrink-0 rounded-md overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
+                        {imageUrl ? (
+                            <Image 
+                                src={imageUrl} 
+                                alt={ev.title} 
+                                fill 
+                                sizes="56px"
+                                className="object-cover transition-transform duration-300 hover:scale-110" 
+                            />
+                        ) : (
+                            <CalendarDays className="h-5 w-5 text-slate-400" />
+                        )}
+                    </div>
+                    
+                    {/* 📝 TÍTULO DEL EVENTO */}
                     <div
-                        className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer transition-colors"
+                        className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer transition-colors max-w-[200px] sm:max-w-[300px] truncate"
                         onClick={() => onView(ev)}
+                        title={ev.title}
                     >
                         {ev.title}
                     </div>

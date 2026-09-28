@@ -33,6 +33,8 @@ export interface OrgEvent {
   location?: string;
   meeting_url?: string;
   external_url?: string;
+  cover_image_url?: string;
+  banner_image_url?: string;
   target_platform: "yel_services" | "yel_pro" | "yel_investor";
   starts_at: string;
   ends_at?: string;

@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KpiCards, KpiItem } from "@/components/ui/kpi-cards";
 import { AttendeesTable } from "@/components/events/attendees-table";
 import { toast } from "sonner";
-
+import Image from "next/image";
 export default function EventDetailsPage() {
     const { workspaceUid, eventUid } = useParams() as { workspaceUid: string; eventUid: string };
     const router = useRouter();
@@ -59,7 +59,7 @@ export default function EventDetailsPage() {
     const kpiItems: KpiItem[] = useMemo(() => {
         const totalRegistered = registrations.length;
         const totalAttended = registrations.filter(r => r.status === "attended").length;
-const totalUnattended = registrations.filter(r => r.status === "registered").length;
+        const totalUnattended = registrations.filter(r => r.status === "registered").length;
         return [
             {
                 label: "Total Registrados",
@@ -110,7 +110,7 @@ const totalUnattended = registrations.filter(r => r.status === "registered").len
 
     const isPast = new Date(event.starts_at) < new Date();
     const eventStatus = !event.is_active ? "Inactivo" : isPast ? "Finalizado" : "Próximo";
-
+    const imageUrl = event.cover_image_url || event.banner_image_url;
     return (
         <div className="space-y-6 p-1">
             {/* Botón de regreso */}
@@ -122,92 +122,115 @@ const totalUnattended = registrations.filter(r => r.status === "registered").len
                 <ArrowLeft className="h-4 w-4 mr-2" /> Volver a eventos
             </Button>
 
-            {/* Header del Evento */}
-            <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-                <div className={`absolute top-0 left-0 w-full h-2 ${isPast ? 'bg-slate-300' : 'bg-indigo-500'}`} />
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                <div className={`absolute top-0 left-0 w-full h-2 z-10 ${isPast ? 'bg-slate-300' : 'bg-indigo-500'}`} />
 
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                    <div className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Badge className={`${isPast ? 'bg-slate-100 text-slate-600' : 'bg-emerald-100 text-emerald-800'} border-none uppercase tracking-wider text-[10px]`}>
-                                {eventStatus}
-                            </Badge>
-                            <Badge variant="outline" className="text-slate-500 uppercase tracking-wider text-[10px] border-slate-200">
-                                {event.target_platform.replace('_', ' ')}
-                            </Badge>
-                        </div>
-
-                        <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-                            {event.title}
-                        </h1>
-
-                        {event.description && (
-                            <p className="text-slate-600 max-w-2xl leading-relaxed">
-                                {event.description}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Tarjeta lateral con fechas, ubicación y el UID para Meta Ads */}
-                    <div className="bg-slate-50 p-5 rounded-xl border border-slate-100 min-w-[300px] space-y-4">
-                        <div className="flex items-start gap-3">
-                            <div className="bg-white p-2 rounded-lg shadow-sm">
-                                <Calendar className="h-5 w-5 text-indigo-500" />
+                <div className="p-6 md:p-8">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                        
+                        {/* COLUMNA IZQUIERDA: Información principal (Badges, Título, Descripción) */}
+                        <div className="space-y-4 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Badge className={`${isPast ? 'bg-slate-100 text-slate-600' : 'bg-emerald-100 text-emerald-800'} border-none uppercase tracking-wider text-[10px]`}>
+                                    {eventStatus}
+                                </Badge>
+                                <Badge variant="outline" className="text-slate-500 uppercase tracking-wider text-[10px] border-slate-200">
+                                    {event.target_platform.replace('_', ' ')}
+                                </Badge>
                             </div>
-                            <div>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Fecha y Hora</p>
-                                <p className="text-sm font-semibold text-slate-800">
-                                    {new Date(event.starts_at).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
+
+                            <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                                {event.title}
+                            </h1>
+
+                            {event.description && (
+                                <p className="text-slate-600 leading-relaxed text-sm md:text-base">
+                                    {event.description}
                                 </p>
-                                <p className="text-xs text-slate-500 mt-0.5">
-                                    {event.is_all_day ? "Todo el día" : new Date(event.starts_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                            </div>
+                            )}
                         </div>
 
-                        <div className="flex items-start gap-3">
-                            <div className="bg-white p-2 rounded-lg shadow-sm">
-                                {event.location === "En línea" ? (
-                                    <Radio className="h-5 w-5 text-rose-500" />
-                                ) : (
-                                    <MapPin className="h-5 w-5 text-emerald-500" />
-                                )}
+                        {/* COLUMNA DERECHA: Imagen de portada + Tarjeta de Fecha/Ubicación/UID */}
+                        <div className="w-full lg:w-[360px] shrink-0 space-y-4">
+                            
+                            {/* 📸 IMAGEN DE PORTADA A LA DERECHA */}
+                            {imageUrl && (
+                                <div className="relative w-full h-44 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
+                                    <Image
+                                        src={imageUrl}
+                                        alt={event.title}
+                                        fill
+                                        priority
+                                        sizes="(max-width: 1024px) 100vw, 360px"
+                                        className="object-cover"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Tarjeta lateral con fechas, ubicación y el UID para Meta Ads */}
+                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200/60 space-y-4 shadow-2xs">
+                                <div className="flex items-start gap-3">
+                                    <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-100">
+                                        <Calendar className="h-5 w-5 text-indigo-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Fecha y Hora</p>
+                                        <p className="text-sm font-semibold text-slate-800">
+                                            {new Date(event.starts_at).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                        </p>
+                                        <p className="text-xs text-slate-500 mt-0.5">
+                                            {event.is_all_day ? "Todo el día" : new Date(event.starts_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-start gap-3">
+                                    <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-100">
+                                        {event.location === "En línea" ? (
+                                            <Radio className="h-5 w-5 text-rose-500" />
+                                        ) : (
+                                            <MapPin className="h-5 w-5 text-emerald-500" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Ubicación</p>
+                                        <p className="text-sm font-semibold text-slate-800">
+                                            {event.location || "Por definir"}
+                                        </p>
+                                        {event.meeting_url && (
+                                            <a href={event.meeting_url} target="_blank" rel="noreferrer" className="text-xs text-indigo-500 hover:underline flex items-center gap-1 mt-1 font-medium">
+                                                <LinkIcon className="h-3 w-3" /> Unirse a la reunión
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Bloque para copiar el UID del Evento para Meta Ads / GHL */}
+                                <div className="pt-3 border-t border-slate-200">
+                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">UID para Meta Ads (GHL)</p>
+                                    <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-2xs">
+                                        <span className="text-xs font-mono text-slate-600 truncate max-w-[180px]" title={event.uid}>
+                                            {event.uid}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleCopyEventUid}
+                                            className="h-7 px-2 text-xs gap-1 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600"
+                                        >
+                                            {copiedUid ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                            {copiedUid ? "Copiado" : "Copiar"}
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Ubicación</p>
-                                <p className="text-sm font-semibold text-slate-800">
-                                    {event.location || "Por definir"}
-                                </p>
-                                {event.meeting_url && (
-                                    <a href={event.meeting_url} target="_blank" rel="noreferrer" className="text-xs text-indigo-500 hover:underline flex items-center gap-1 mt-1">
-                                        <LinkIcon className="h-3 w-3" /> Unirse a la reunión
-                                    </a>
-                                )}
-                            </div>
+
                         </div>
 
-                        {/* Bloque para copiar el UID del Evento para Meta Ads / GHL */}
-                        <div className="pt-3 border-t border-slate-200">
-                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">UID para Meta Ads (GHL)</p>
-                            <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-xs">
-                                <span className="text-xs font-mono text-slate-600 truncate max-w-[200px]" title={event.uid}>
-                                    {event.uid}
-                                </span>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleCopyEventUid}
-                                    className="h-7 px-2 text-xs gap-1 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600"
-                                >
-                                    {copiedUid ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                                    {copiedUid ? "Copiado" : "Copiar"}
-                                </Button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
-
+            
             {/* --- TARJETAS KPI DE ASISTENCIA DEL EVENTO --- */}
             <KpiCards items={kpiItems} columns="sm:grid-cols-3" />
 
