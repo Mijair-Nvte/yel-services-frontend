@@ -12,8 +12,9 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+   PaginationState, OnChangeFn
 } from "@tanstack/react-table";
-// NUEVO: Importamos el ícono Filter
+
 import {
   ChevronLeft,
   ChevronRight,
@@ -58,9 +59,13 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   title?: string;
   description?: string;
-  // NUEVO: Props para hacer el filtro modular
+ 
   filterColumn?: string;
   filterOptions?: FilterOption[];
+  pageCount?: number;
+  pagination?: PaginationState; 
+  onPaginationChange?: OnChangeFn<PaginationState>;
+  manualPagination?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -70,6 +75,10 @@ export function DataTable<TData, TValue>({
   description,
   filterColumn,
   filterOptions,
+  pageCount,
+  pagination,
+  onPaginationChange,
+  manualPagination = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -80,6 +89,9 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
+    manualPagination,
+    pageCount,
+    onPaginationChange,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
@@ -95,10 +107,11 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       globalFilter,
+      ...(pagination !== undefined && { pagination }),
     },
     initialState: {
       pagination: {
-        pageSize: 10,
+        pageSize: 100,
       },
     },
   });
@@ -203,7 +216,7 @@ export function DataTable<TData, TValue>({
         </DropdownMenu>
       </div>
 
-      <div className="max-h-[500px] overflow-y-auto">
+      <div className="[&>div]:max-h-[500px] [&>div]:overflow-y-auto relative">
         <Table>
           <TableHeader className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm shadow-sm">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -276,7 +289,7 @@ export function DataTable<TData, TValue>({
                 />
               </SelectTrigger>
               <SelectContent side="top">
-                {[10, 20, 30, 40, 50].map((pageSize) => (
+                {[10, 20, 30, 40, 50,100].map((pageSize) => (
                   <SelectItem key={pageSize} value={`${pageSize}`}>
                     {pageSize}
                   </SelectItem>

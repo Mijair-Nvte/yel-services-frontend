@@ -2,20 +2,21 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { OrgCustomerService, OrgCustomer, CreateCustomerDto, UpdateCustomerDto } from "@/services/org-customer/org-customer.service";
+import { OrgCustomerService, OrgCustomer, CreateCustomerDto, UpdateCustomerDto,PaginatedMeta } from "@/services/org-customer/org-customer.service";
 
 export function useAdminCustomers(workspaceUid: string) {
     const [customers, setCustomers] = useState<OrgCustomer[]>([]);
+   const [meta, setMeta] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const loadData = useCallback(async () => {
+const loadData = useCallback(async (page: number = 1, perPage: number = 100, search: string = "") => {
         if (!workspaceUid) return;
         setIsLoading(true);
         try {
-            const res = await OrgCustomerService.getAll(workspaceUid);
-            setCustomers(res || []);
+            const res = await OrgCustomerService.getAll(workspaceUid, page, perPage, search);
+            setCustomers(res.data || []);
+            setMeta(res.meta || null); // Guardamos la metadata de Laravel
         } catch (error) {
-            console.error("Error loading customers:", error);
             toast.error("Error al cargar los clientes.");
         } finally {
             setIsLoading(false);
@@ -57,6 +58,7 @@ export function useAdminCustomers(workspaceUid: string) {
 
     return {
         customers,
+        meta,
         isLoading,
         loadData,
         createCustomer,

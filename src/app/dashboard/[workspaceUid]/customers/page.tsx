@@ -12,32 +12,34 @@ import { useRouter } from "next/navigation";
 export default function PageCustomers() {
   const router = useRouter();
   const { workspaceUid } = useParams() as { workspaceUid: string };
-  const { customers, isLoading, loadData, deleteCustomer } = useAdminCustomers(workspaceUid);
-
+  const { customers, meta, isLoading, loadData, deleteCustomer } = useAdminCustomers(workspaceUid);
   const [search, setSearch] = useState("");
-  // const [isSheetOpen, setIsSheetOpen] = useState(false); // Lo activaremos después
-  // const [selectedCustomer, setSelectedCustomer] = useState<OrgCustomer | null>(null);
+
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 100,
+  });
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    const delayDebounce = setTimeout(() => {
+      // Pasamos pageIndex + 1 porque Laravel espera página 1, 2, 3...
+      loadData(pagination.pageIndex + 1, pagination.pageSize, search);
+    }, 400); // 400ms de debounce para no saturar al teclear
+
+    return () => clearTimeout(delayDebounce);
+  }, [pagination.pageIndex, pagination.pageSize, search, loadData]);
 
   // Cálculo de KPIs dinámicos para Clientes
   const kpiItems: KpiItem[] = useMemo(() => {
-    const total = customers.length;
-
-    // Clientes creados en los últimos 7 días
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const newCustomers = customers.filter(c => new Date(c.created_at) >= sevenDaysAgo).length;
-
-    const withEmail = customers.filter(c => c.email).length;
-    const withPhone = customers.filter(c => c.phone).length;
+    const totalReal = meta?.total || 0;
+    const newCustomers = meta?.kpis?.new_7_days || 0;
+    const withEmail = meta?.kpis?.with_email || 0;
+    const withPhone = meta?.kpis?.with_phone || 0;
 
     return [
       {
         label: "Total Clientes",
-        value: total,
+        value: totalReal,
         icon: Users,
         color: "text-blue-600",
         iconBg: "bg-blue-100",
@@ -80,7 +82,8 @@ export default function PageCustomers() {
         subtitle: "Contacto directo"
       }
     ];
-  }, [customers]);
+  }, [customers, meta]);
+
 
   // Filtrado de búsqueda en tiempo real
   const filteredCustomers = useMemo(() => {
@@ -131,15 +134,15 @@ export default function PageCustomers() {
         </div>
       ) : (
         <CustomerTable
-          customers={filteredCustomers}
-          onView={(customer) => {
-          
-            router.push(`/dashboard/${workspaceUid}/customers/${customer.uid}`);
-          }}
+          customers={customers}
+
+          meta={meta}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+
+          onView={(customer) => router.push(`/dashboard/${workspaceUid}/customers/${customer.uid}`)}
           onDelete={async (uid: string) => {
-            if (confirm("¿Estás seguro de eliminar este cliente? Esta acción es irreversible.")) {
-              await deleteCustomer(uid);
-            }
+            if (confirm("¿Estás seguro?")) await deleteCustomer(uid);
           }}
         />
       )}
