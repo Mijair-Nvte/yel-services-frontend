@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { OrgCustomer } from "@/services/org-customer/org-customer.service";
 import { DataTableRowActions } from "@/components/ui/data-table-row-actions";
-// ✅ Agregamos ExternalLink y UserCheck a tus importaciones de lucide-react
+
 import { Mail, Phone, ExternalLink, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

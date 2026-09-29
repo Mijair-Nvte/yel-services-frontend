@@ -1,30 +1,40 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Loader2, Users, UserPlus, Mail, Phone } from "lucide-react";
 import { useAdminCustomers } from "@/hooks/org_customers/use-customers";
 import { CustomerTable } from "@/components/org_customers/customer-admin-table";
-import { OrgCustomer } from "@/services/org-customer/org-customer.service";
 import { KpiCards, KpiItem } from "@/components/ui/kpi-cards";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+
 export default function PageCustomers() {
   const router = useRouter();
   const { workspaceUid } = useParams() as { workspaceUid: string };
   const { customers, meta, isLoading, loadData, deleteCustomer } = useAdminCustomers(workspaceUid);
+  
   const [search, setSearch] = useState("");
-
+  const [isSearching, setIsSearching] = useState(false); 
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 100,
   });
 
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      // Pasamos pageIndex + 1 porque Laravel espera página 1, 2, 3...
-      loadData(pagination.pageIndex + 1, pagination.pageSize, search);
-    }, 400); // 400ms de debounce para no saturar al teclear
+    if (!isLoading && customers) {
+      setHasLoadedOnce(true);
+    }
+  }, [isLoading, customers]);
+
+  // Efecto de búsqueda inteligente
+  useEffect(() => {
+    setIsSearching(true);
+    const delayDebounce = setTimeout(async () => {
+      await loadData(pagination.pageIndex + 1, pagination.pageSize, search);
+      setIsSearching(false);
+    }, 400);
 
     return () => clearTimeout(delayDebounce);
   }, [pagination.pageIndex, pagination.pageSize, search, loadData]);
@@ -82,25 +92,11 @@ export default function PageCustomers() {
         subtitle: "Contacto directo"
       }
     ];
-  }, [customers, meta]);
-
-
-  // Filtrado de búsqueda en tiempo real
-  const filteredCustomers = useMemo(() => {
-    if (!search) return customers;
-    const lowerSearch = search.toLowerCase();
-    return customers.filter(
-      (c) =>
-        c.first_name.toLowerCase().includes(lowerSearch) ||
-        (c.last_name?.toLowerCase().includes(lowerSearch)) ||
-        (c.email?.toLowerCase().includes(lowerSearch)) ||
-        (c.phone?.includes(lowerSearch))
-    );
-  }, [customers, search]);
+  }, [meta]);
 
   return (
     <div className="space-y-6 p-1">
-      {/* Header */}
+      {/* Header (Permanece intacto y estático) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
@@ -111,10 +107,7 @@ export default function PageCustomers() {
           </p>
         </div>
         <div>
-          {/* Botón preparado para cuando hagamos el Sheet */}
           <Button onClick={() => {
-            // setSelectedCustomer(null);
-            // setIsSheetOpen(true);
             alert("El formulario (Sheet) se implementará en el siguiente paso.");
           }}>
             <UserPlus className="h-4 w-4 mr-2" />
@@ -123,38 +116,43 @@ export default function PageCustomers() {
         </div>
       </div>
 
-      {/* Tarjetas de KPIs Modulares */}
+      {/* Tarjetas de KPIs (Inmóviles, no parpadean al buscar) */}
       {!isLoading && <KpiCards items={kpiItems} columns="sm:grid-cols-2 lg:grid-cols-4" />}
 
       {/* Grid de Contenido */}
-      {isLoading ? (
+      {!hasLoadedOnce && isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 space-y-4">
           <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
           <p className="text-slate-400 text-sm font-medium">Cargando clientes...</p>
         </div>
       ) : (
-        <CustomerTable
-          customers={customers}
+        <div className="relative">
+          {/* 👇 Indicador flotante sutil exclusivamente dentro del contenedor de la tabla */}
+          {isSearching && (
+            <div className="absolute top-3 right-4 z-30 flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 px-3 py-1.5 rounded-full shadow-md border border-slate-200 dark:border-slate-800 text-xs font-medium text-indigo-600">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Actualizando tabla...
+            </div>
+          )}
 
-          meta={meta}
-          pagination={pagination}
-          onPaginationChange={setPagination}
-
-          onView={(customer) => router.push(`/dashboard/${workspaceUid}/customers/${customer.uid}`)}
-          onDelete={async (uid: string) => {
-            if (confirm("¿Estás seguro?")) await deleteCustomer(uid);
-          }}
-        />
+          {/* La tabla se queda totalmente firme, los KPIs no se enteran de la búsqueda */}
+          <CustomerTable
+            customers={customers}
+            meta={meta}
+            pagination={pagination}
+            onPaginationChange={setPagination}
+            search={search}
+            onSearchChange={(value) => {
+              setSearch(value);
+              setPagination(prev => ({ ...prev, pageIndex: 0 }));
+            }}
+            onView={(customer) => router.push(`/dashboard/${workspaceUid}/customers/${customer.uid}`)}
+            onDelete={async (uid: string) => {
+              if (confirm("¿Estás seguro?")) await deleteCustomer(uid);
+            }}
+          />
+        </div>
       )}
-
-      {/* Sheet de Creación/Edición Lateral (Comentado hasta el próximo paso) */}
-      {/* <CustomerAdminSheet
-        open={isSheetOpen}
-        onOpenChange={setIsSheetOpen}
-        customer={selectedCustomer}
-        onCreate={createCustomer}
-        onUpdate={updateCustomer}
-      /> */}
     </div>
   );
 }

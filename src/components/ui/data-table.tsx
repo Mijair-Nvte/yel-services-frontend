@@ -66,7 +66,7 @@ interface DataTableProps<TData, TValue> {
   pagination?: PaginationState; 
   onPaginationChange?: OnChangeFn<PaginationState>;
   manualPagination?: boolean;
-  manualFiltering?: boolean; // 👈 Inteligente: Permite alternar entre filtrado local o del servidor
+  manualFiltering?: boolean; 
   globalFilter?: string;
   onGlobalFilterChange?: (value: string) => void;
 }

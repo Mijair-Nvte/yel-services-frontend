@@ -10,7 +10,8 @@ interface CustomerTableProps {
   customers: OrgCustomer[];
   onView: (customer: OrgCustomer) => void;
   onDelete: (uid: string) => void;
-
+search: string;
+onSearchChange: (value: string) => void;
   meta?: any;
   pagination?: PaginationState;
   onPaginationChange?: OnChangeFn<PaginationState>;
@@ -22,7 +23,9 @@ export function CustomerTable({
   pagination,
   onPaginationChange, 
   onView, 
-  onDelete 
+  onDelete,
+  search,
+  onSearchChange
 }: CustomerTableProps) {
   
   const columns = useMemo(
@@ -35,9 +38,12 @@ export function CustomerTable({
       columns={columns} 
       data={customers} 
       manualPagination={true}
+      manualFiltering={true}
       pageCount={meta?.last_page ?? -1} 
       pagination={pagination}
       onPaginationChange={onPaginationChange}
+      globalFilter={search}
+      onGlobalFilterChange={onSearchChange}
     />
   );
 }
