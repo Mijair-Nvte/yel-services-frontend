@@ -12,7 +12,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-   PaginationState, OnChangeFn
+  PaginationState, 
+  OnChangeFn
 } from "@tanstack/react-table";
 
 import {
@@ -37,8 +38,8 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem, // NUEVO
-  DropdownMenuSeparator, // NUEVO
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -59,13 +60,15 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   title?: string;
   description?: string;
- 
   filterColumn?: string;
   filterOptions?: FilterOption[];
   pageCount?: number;
   pagination?: PaginationState; 
   onPaginationChange?: OnChangeFn<PaginationState>;
   manualPagination?: boolean;
+  manualFiltering?: boolean; // 👈 Inteligente: Permite alternar entre filtrado local o del servidor
+  globalFilter?: string;
+  onGlobalFilterChange?: (value: string) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -79,17 +82,36 @@ export function DataTable<TData, TValue>({
   pagination,
   onPaginationChange,
   manualPagination = false,
+  manualFiltering = false, // 👈 Por defecto es local para no romper otras tablas
+  globalFilter: externalGlobalFilter,
+  onGlobalFilterChange,
 }: DataTableProps<TData, TValue>) {
+  
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [globalFilter, setGlobalFilter] = useState("");
+  
+  // Estado local de respaldo para tablas que no usen servidor
+  const [localGlobalFilter, setLocalGlobalFilter] = useState("");
+
+  // Determinamos si el buscador está controlado externamente (por el padre) o localmente
+  const isControlledFilter = externalGlobalFilter !== undefined;
+  const currentGlobalFilter = isControlledFilter ? externalGlobalFilter : localGlobalFilter;
+
+  const handleFilterChange = (value: string) => {
+    if (isControlledFilter && onGlobalFilterChange) {
+      onGlobalFilterChange(value); // Notifica al componente padre (ej. la vista de clientes)
+    } else {
+      setLocalGlobalFilter(value); // Manejo interno local
+    }
+  };
 
   const table = useReactTable({
     data,
     columns,
     manualPagination,
+    manualFiltering, // 👈 Se adapta según la entidad que lo invoque
     pageCount,
     onPaginationChange,
     getCoreRowModel: getCoreRowModel(),
@@ -100,13 +122,13 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange: setLocalGlobalFilter,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
-      globalFilter,
+      globalFilter: currentGlobalFilter,
       ...(pagination !== undefined && { pagination }),
     },
     initialState: {
@@ -129,19 +151,17 @@ export function DataTable<TData, TValue>({
 
       {/* Toolbar: Buscador Global, Filtro Dinámico y Visibilidad de Columnas */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border gap-4">
-        {/* Agrupamos el Buscador y el Filtro juntos */}
         <div className="flex items-center gap-3 w-full max-w-lg">
           <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Buscar en todos los registros..."
-              value={globalFilter ?? ""}
-              onChange={(e) => setGlobalFilter(String(e.target.value))}
+              value={currentGlobalFilter ?? ""}
+              onChange={(e) => handleFilterChange(String(e.target.value))}
               className="pl-9 h-9 bg-slate-50/50"
             />
           </div>
 
-          {/* NUEVO: Renderizado condicional del Filtro */}
           {filterColumn && filterOptions && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -151,7 +171,6 @@ export function DataTable<TData, TValue>({
                   className="h-9 border-dashed text-slate-600"
                 >
                   <Filter className="mr-2 h-4 w-4" />
-                  {/* Encontramos el label que coincide con el valor actual */}
                   {filterOptions.find(
                     (o) =>
                       o.value ===
@@ -218,17 +237,17 @@ export function DataTable<TData, TValue>({
 
       <div className="[&>div]:max-h-[500px] [&>div]:overflow-y-auto relative">
         <Table>
-          <TableHeader className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm shadow-sm">
+          <TableHeader className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm shadow-sm outline outline-1 outline-slate-200/60">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className="border-b border-slate-200 hover:bg-transparent"
+                className="border-none hover:bg-transparent"
               >
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
                       key={header.id}
-                      className="py-2 text-xs uppercase tracking-wider font-semibold text-slate-500"
+                      className="py-3 text-xs uppercase tracking-wider font-semibold text-slate-600 bg-slate-50/95"
                     >
                       {header.isPlaceholder
                         ? null
@@ -289,7 +308,7 @@ export function DataTable<TData, TValue>({
                 />
               </SelectTrigger>
               <SelectContent side="top">
-                {[10, 20, 30, 40, 50,100].map((pageSize) => (
+                {[10, 20, 30, 40, 50, 100].map((pageSize) => (
                   <SelectItem key={pageSize} value={`${pageSize}`}>
                     {pageSize}
                   </SelectItem>
