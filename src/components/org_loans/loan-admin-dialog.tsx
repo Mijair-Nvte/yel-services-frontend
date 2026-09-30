@@ -83,7 +83,7 @@ export function LoanDialog({ open, onOpenChange, application, onUpdate }: LoanDi
           </div>
           <div className="flex justify-between border-b border-slate-200 pb-2">
             <span className="text-slate-500">Tipo de Préstamo:</span>
-            <span className="font-medium text-slate-900 capitalize">{application.loan_type}</span>
+            <span className="font-medium text-slate-900 capitalize">{application.loan_purpose}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-500">Monto Estimado:</span>
