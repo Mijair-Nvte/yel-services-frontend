@@ -13,7 +13,11 @@ export interface LoanApplication {
   applicant_phone: string;
   applicant_address: string;
   applicant_state: string;
-  loan_type: string;
+loan_purpose: string;
+  loan_program?: string;
+  occupancy_type?: string;
+  
+  is_first_time_buyer?: boolean;
   estimated_amount?: number;
 status: "Open" | "Lost" | "Won" | "Abandon";
 won_at?: string | null;
@@ -33,6 +37,12 @@ won_at?: string | null;
     state: string;
   };
   user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  assigned_to?: number;
+  assignee?: {
     id: number;
     name: string;
     email: string;

@@ -61,17 +61,21 @@ export const getLoanColumns = ({ onEdit, onDelete }: LoanColumnProps): ColumnDef
       );
     },
   },
-  {
-    id: "loan_type_amount",
-    header: "Tipo",
-    // accessorFn nos permite buscar por el tipo de préstamo
-    accessorFn: (row) => row.loan_type,
+{
+    id: "loan_purpose",
+    header: "Propósito",
+    // accessorFn nos permite buscar por el propósito del préstamo
+    accessorFn: (row) => row.loan_purpose ||  "N/A",
     cell: ({ row }) => {
       const app = row.original;
       return (
         <div>
-          <div className="text-sm font-medium text-slate-900 capitalize">{app.loan_type}</div>
-
+          <div className="text-sm font-medium text-slate-900 capitalize">
+            {app.loan_purpose ||  "No definido"}
+          </div>
+          {app.loan_program && (
+             <div className="text-xs text-slate-500">{app.loan_program}</div>
+          )}
         </div>
       );
     },
@@ -94,7 +98,24 @@ export const getLoanColumns = ({ onEdit, onDelete }: LoanColumnProps): ColumnDef
       );
     },
   },
-
+{
+    id: "Asignado",
+    header: "Agente Asignado",
+    accessorFn: (row) => row.assignee?.name || "Sin asignar",
+    cell: ({ row }) => {
+      const assignee = row.original.assignee;
+      return (
+        <div>
+          <div className="text-sm font-medium text-slate-900">
+            {assignee?.name || "No asignado"}
+          </div>
+          {assignee?.email && (
+             <div className="text-xs text-slate-500">{assignee.email}</div>
+          )}
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "status",
     header: "Estatus",

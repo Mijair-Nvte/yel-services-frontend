@@ -213,6 +213,22 @@ export function LoanAdminSheet({
                             </div>
                         </div>
 
+                        <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-100 text-xs grid grid-cols-2 gap-3">
+                            <div>
+                                <span className="text-slate-400 block font-medium">Programa:</span>
+                                <span className="font-semibold text-slate-700">{application.loan_program || "No especificado"}</span>
+                            </div>
+                            <div>
+                                <span className="text-slate-400 block font-medium">Ocupación:</span>
+                                <span className="font-semibold text-slate-700">{application.occupancy_type || "No especificada"}</span>
+                            </div>
+                            <div className="col-span-2 flex items-center gap-2 mt-1">
+                                <Badge variant="outline" className={application.is_first_time_buyer ? "bg-indigo-50 text-indigo-700 border-indigo-200" : "bg-slate-100 text-slate-500"}>
+                                    {application.is_first_time_buyer ? "Sí es Primer Comprador" : "No es Primer Comprador"}
+                                </Badge>
+                            </div>
+                        </div>
+
                         {application.user && (
                             <div className="mt-2 pt-3 border-t border-dashed border-slate-200">
                                 <div className="flex items-center justify-between bg-slate-50/80 rounded-lg p-2.5">
@@ -238,25 +254,60 @@ export function LoanAdminSheet({
                             </div>
                         )}
 
-                        <Separator className="bg-slate-100" />
+                      <Separator className="bg-slate-100" />
 
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="space-y-1">
-                                <p className="text-xs font-medium text-slate-500 block uppercase tracking-wider">
-                                    Tipo / Monto
-                                </p>
-                                <p className="font-bold text-slate-700 text-xs leading-tight capitalize flex items-center">
-                                    <Landmark className="h-3 w-3 inline mr-1 text-indigo-500" />
-                                    {application.loan_type}
-                                </p>
-                               
+                        {/* AGENTE ASIGNADO */}
+                        {application.assigned_to && application.assignee && (
+                            <div className="flex items-center justify-between bg-indigo-50/50 rounded-lg p-3 border border-indigo-100/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-white p-2 rounded-full shadow-sm border border-indigo-100">
+                                        <UserCheck className="h-4 w-4 text-indigo-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-indigo-400 uppercase leading-none mb-1">
+                                            Agente Asignado (Sales)
+                                        </p>
+                                        <p className="text-sm font-semibold text-slate-800 leading-tight">
+                                            {application.assignee.name}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="space-y-1 text-right">
-                                <p className="text-xs font-medium text-slate-500 block uppercase tracking-wider">
+                        )}
+
+                        {/* TIPO, MONTO Y ESTATUS BIEN ESTRUCTURADO */}
+                        <div className="grid grid-cols-3 gap-4 text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            {/* Columna 1: Propósito */}
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                    Propósito
+                                </p>
+                                <p className="font-bold text-slate-700 text-sm leading-tight capitalize flex items-center">
+                                    <Landmark className="h-3.5 w-3.5 inline mr-1.5 text-indigo-500" />
+                                    {application.loan_purpose || "No definido"}
+                                </p>
+                            </div>
+
+                            {/* Columna 2: Monto */}
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                    Monto Estimado
+                                </p>
+                                <p className="font-bold text-slate-700 text-sm leading-tight flex items-center">
+                                    <DollarSign className="h-3.5 w-3.5 inline text-emerald-500" />
+                                    {application.estimated_amount 
+                                        ? Number(application.estimated_amount).toLocaleString('en-US') 
+                                        : "N/D"}
+                                </p>
+                            </div>
+
+                            {/* Columna 3: Estatus (Alineado a la derecha) */}
+                            <div className="space-y-1.5 flex flex-col items-end">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                                     Estatus Trámite
                                 </p>
                                 <Select value={status} onValueChange={(val) => setStatus(val as AppStatus)}>
-                                    <SelectTrigger className="h-7 text-xs font-semibold border-slate-200 shadow-sm mt-1">
+                                    <SelectTrigger className="h-8 w-28 text-xs font-semibold border-slate-200 shadow-sm bg-white">
                                         <SelectValue placeholder="Estatus" />
                                     </SelectTrigger>
                                     <SelectContent>
