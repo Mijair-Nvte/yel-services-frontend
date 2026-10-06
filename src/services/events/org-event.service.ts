@@ -72,6 +72,7 @@ export interface EventRegistration {
   id: number;
   uid: string;
   status: "registered" | "attended" | "cancelled";
+  source?: string;
   created_at: string;
   customer?: {
     id: number;

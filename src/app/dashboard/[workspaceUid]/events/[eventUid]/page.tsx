@@ -3,12 +3,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { OrgEventService, OrgEvent, EventRegistration } from "@/services/events/org-event.service";
-import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KpiCards, KpiItem } from "@/components/ui/kpi-cards";
+import { EventSharePopover } from "@/components/events/event-share-popover";
 import { AttendeesTable } from "@/components/events/attendees-table";
+import { normalizeSource } from "@/components/events/attendees-columns";
 import { toast } from "sonner";
 import Image from "next/image";
 export default function EventDetailsPage() {
@@ -68,12 +70,34 @@ export default function EventDetailsPage() {
         }
     };
 
-    // Cálculo dinámico de las métricas del evento
+        const sourceMetrics = useMemo(() => {
+        const stats: Record<string, number> = {
+            "Facebook": 0, "TikTok": 0, "Instagram": 0, "Google": 0, "Orgánico": 0, "Otros": 0
+        };
+
+        registrations.forEach(r => {
+            const clean = normalizeSource(r.source);
+            if (stats[clean] !== undefined) {
+                stats[clean]++;
+            } else {
+                stats["Otros"]++;
+            }
+        });
+
+        // Filtramos solo los que tienen al menos 1 y ordenamos de mayor a menor
+        return Object.entries(stats)
+            .filter(([_, count]) => count > 0)
+            .sort((a, b) => b[1] - a[1]);
+    }, [registrations]);
+    
+    // Cálculo dinámico de las métricas y fuentes del evento para los KPIs
     const kpiItems: KpiItem[] = useMemo(() => {
         const totalRegistered = registrations.length;
         const totalAttended = registrations.filter(r => r.status === "attended").length;
         const totalUnattended = registrations.filter(r => r.status === "registered").length;
-        return [
+
+        // Tarjetas base de asistencia
+        const baseItems: KpiItem[] = [
             {
                 label: "Total Registrados",
                 value: totalRegistered,
@@ -108,7 +132,27 @@ export default function EventDetailsPage() {
                 subtitle: "Pendientes / Ausentes",
             }
         ];
-    }, [registrations]);
+
+        // Generamos tarjetas adicionales dinámicas por cada fuente detectada
+        const sourceCards: KpiItem[] = sourceMetrics.map(([source, count]) => {
+            return {
+                label: `Origen: ${source}`,
+                value: count,
+                icon: Target, // Asegúrate de importar Target de 'lucide-react' si lo usas aquí
+                color: "text-indigo-600",
+                iconBg: "bg-indigo-100",
+                cardBg: "bg-indigo-50/30 dark:bg-indigo-950/20",
+                hoverShadow: "hover:shadow-indigo-500/20",
+                borderColor: "hover:border-indigo-400",
+                subtitle: `Leads de ${source}`,
+            };
+        });
+
+        return [...baseItems, ...sourceCards];
+    }, [registrations, sourceMetrics]);
+
+
+
 
     if (isLoading) {
         return (
@@ -239,22 +283,18 @@ export default function EventDetailsPage() {
 
                                 {event.confirmation_url && (
                                     <div className="pt-3 border-t border-slate-200">
-                                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                                            Enlace de Registro / Acceso
-                                        </p>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                                Enlace de Registro Público
+                                            </p>
+                                        </div>
                                         <div className="flex items-center justify-between bg-indigo-50/50 px-3 py-2 rounded-lg border border-indigo-100 shadow-2xs">
-                                            <span className="text-xs font-mono text-indigo-700 truncate max-w-[180px]" title={event.confirmation_url}>
+                                            <span className="text-xs font-mono text-indigo-700 truncate max-w-[170px]" title={event.confirmation_url}>
                                                 {event.confirmation_url.replace(/^https?:\/\//, '')}
                                             </span>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={handleCopyLink}
-                                                className="h-7 px-2 text-xs gap-1 border-indigo-200 bg-white hover:bg-indigo-50 hover:text-indigo-700 text-indigo-600"
-                                            >
-                                                {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <LinkIcon className="h-3.5 w-3.5" />}
-                                                {copiedLink ? "Copiado" : "Copiar"}
-                                            </Button>
+
+                                            <EventSharePopover confirmationUrl={event.confirmation_url} />
+
                                         </div>
                                     </div>
                                 )}
@@ -268,14 +308,13 @@ export default function EventDetailsPage() {
             </div>
 
             {/* --- TARJETAS KPI DE ASISTENCIA DEL EVENTO --- */}
-            <KpiCards items={kpiItems} columns="sm:grid-cols-3" />
-
+            <KpiCards items={kpiItems} columns="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
             {/* TABS DE NAVEGACIÓN */}
             <Tabs defaultValue="attendees" className="w-full">
                 <TabsList className="bg-white border shadow-sm rounded-lg p-1 mb-6">
                     <TabsTrigger value="attendees" className="rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none font-medium">
                         <Users className="h-4 w-4 mr-2" />
-                        Asistentes ({registrations.length})
+                        Registros ({registrations.length})
                     </TabsTrigger>
                     <TabsTrigger value="overview" className="rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none font-medium">
                         Resumen
@@ -286,12 +325,39 @@ export default function EventDetailsPage() {
                     <AttendeesTable registrations={registrations} />
                 </TabsContent>
 
-                <TabsContent value="overview" className="mt-0">
-                    <div>
-                        <h3 className="text-lg font-bold text-slate-900 mb-4">Métricas Detalladas</h3>
-                        <p className="text-slate-500 text-sm">
-                            Aquí puedes analizar el rendimiento de las campañas de marketing vinculadas a este evento y la tasa de conversión final de asistencia.
+                <TabsContent value="overview" className="mt-0 space-y-6">
+                    <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                        <h3 className="text-lg font-bold text-slate-900 mb-1">Rendimiento de Adquisición</h3>
+                        <p className="text-slate-500 text-sm mb-6">
+                            Distribución de asistentes según la campaña o plataforma de origen.
                         </p>
+
+                        {sourceMetrics.length === 0 ? (
+                            <p className="text-slate-400 text-sm py-4">Aún no hay datos suficientes para mostrar métricas.</p>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {sourceMetrics.map(([source, count]) => {
+                                    const percentage = Math.round((count / registrations.length) * 100);
+                                    return (
+                                        <div key={source} className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col justify-center">
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{source}</p>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-2xl font-black text-slate-800">{count}</span>
+                                                <span className="text-xs font-medium text-slate-500">leads</span>
+                                            </div>
+                                            {/* Pequeña barra de progreso visual */}
+                                            <div className="mt-3 w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                                <div
+                                                    className="bg-indigo-500 h-1.5 rounded-full"
+                                                    style={{ width: `${percentage}%` }}
+                                                />
+                                            </div>
+                                            <p className="text-[10px] text-slate-500 mt-1.5 font-medium text-right">{percentage}% del total</p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </TabsContent>
             </Tabs>
