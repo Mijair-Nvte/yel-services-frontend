@@ -48,6 +48,40 @@ function CopyUidCell({ uid }: { uid: string }) {
     );
 }
 
+function CopyLinkCell({ url }: { url?: string }) {
+    const [copied, setCopied] = useState(false);
+
+    if (!url) return <span className="text-xs text-slate-400">No disponible</span>;
+
+    const handleCopy = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+            toast.success("Enlace de acceso copiado");
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            toast.error("No se pudo copiar el enlace");
+        }
+    };
+
+    return (
+        <div className="flex items-center gap-1.5 bg-indigo-50/50 border border-indigo-100 px-2 py-1 rounded-md w-fit">
+            <span className="text-xs font-medium text-indigo-700 truncate max-w-[120px]">
+                {url.replace(/^https?:\/\//, '')} {/* Oculta el https:// para verse más limpio */}
+            </span>
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 p-0"
+                onClick={handleCopy}
+                title="Copiar Enlace de Registro/Acceso"
+            >
+                {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+            </Button>
+        </div>
+    );
+}
 export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps): ColumnDef<OrgEvent>[] => [
     {
         accessorKey: "starts_at",
@@ -66,32 +100,32 @@ export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps):
             );
         },
     },
-{
+    {
         id: "title",
         header: "Evento",
         accessorFn: (row) => row.title,
         cell: ({ row }) => {
             const ev = row.original;
             // Usamos el cover_image_url como imagen principal
-            const imageUrl = ev.cover_image_url || ev.banner_image_url; 
+            const imageUrl = ev.cover_image_url || ev.banner_image_url;
 
             return (
                 <div className="flex items-center gap-3">
                     {/* 📸 THUMBNAIL DEL EVENTO */}
                     <div className="relative h-10 w-14 shrink-0 rounded-md overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
                         {imageUrl ? (
-                            <Image 
-                                src={imageUrl} 
-                                alt={ev.title} 
-                                fill 
+                            <Image
+                                src={imageUrl}
+                                alt={ev.title}
+                                fill
                                 sizes="56px"
-                                className="object-cover transition-transform duration-300 hover:scale-110" 
+                                className="object-cover transition-transform duration-300 hover:scale-110"
                             />
                         ) : (
                             <CalendarDays className="h-5 w-5 text-slate-400" />
                         )}
                     </div>
-                    
+
                     {/* 📝 TÍTULO DEL EVENTO */}
                     <div
                         className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer transition-colors max-w-[200px] sm:max-w-[300px] truncate"
@@ -131,10 +165,15 @@ export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps):
         },
     },
     {
+        id: "confirmation_url",
+        header: "Enlace Público",
+        cell: ({ row }) => <CopyLinkCell url={row.original.confirmation_url} />,
+    },
+    {
         id: "status",
         header: "Estatus",
         accessorFn: (row) => {
-            const ev = row as OrgEvent; 
+            const ev = row as OrgEvent;
             const isPast = new Date(ev.starts_at) < new Date();
             return !ev.is_active ? "Inactivo" : isPast ? "Finalizado" : "Próximo";
         },

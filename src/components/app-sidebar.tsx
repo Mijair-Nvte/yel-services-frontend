@@ -79,6 +79,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       // requiredPermission: "view_reports", // Opcional: Agrega un permiso si lo necesitas
     },
     {
+      title: "Analíticas Redes", 
+      url: workspace ? `/dashboard/${workspace.uid}/analytics/meta` : "#",
+      icon: BarChart3,
+      requiredPermission: "view_dashboard",
+    },
+    {
       title: "Clientes",
       url: workspace ? `/dashboard/${workspace.uid}/customers` : "#",
       icon: Contact,

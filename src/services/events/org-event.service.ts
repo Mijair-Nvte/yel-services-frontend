@@ -23,6 +23,13 @@ const fetchMultipart = async (endpoint: string, formData: FormData) => {
   return data;
 };
 
+export interface EventResource {
+  title: string;
+  url: string;
+  type: string;
+}
+
+
 export interface OrgEvent {
   id: number;
   uid: string;
@@ -35,6 +42,7 @@ export interface OrgEvent {
   external_url?: string;
   cover_image_url?: string;
   banner_image_url?: string;
+  confirmation_url?: string;
   target_platform: "yel_services" | "yel_pro" | "yel_investor";
   starts_at: string;
   ends_at?: string;
@@ -45,6 +53,7 @@ export interface OrgEvent {
   registrations_count?: number;
   attended_count?: number;
   unattended_count?: number;
+  resources?: EventResource[];
 }
 
 export interface CreateEventDto {

@@ -15,7 +15,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ResourceUploader, ResourceItem } from "@/components/events/resource-uploader";
 import {
   EVENT_COLORS,
   CalendarColorKey,
@@ -59,6 +70,7 @@ export function EventDialog({
 
   const [coverImage, setCoverImage] = useState<File | string | null>(null);
   const [bannerImage, setBannerImage] = useState<File | string | null>(null);
+  const [resources, setResources] = useState<ResourceItem[]>([]);
 
   // 🔥 EFECTO MAGICO: Rellena los datos cuando se abre el modal para editar
   useEffect(() => {
@@ -87,6 +99,20 @@ export function EventDialog({
 
         setCoverImage(eventToEdit.cover_image_url || null);
         setBannerImage(eventToEdit.banner_image_url || null);
+
+        if (eventToEdit.resources && Array.isArray(eventToEdit.resources)) {
+          setResources(
+            eventToEdit.resources.map((r: any) => ({
+              title: r.title,
+              url: r.url,
+              file: null,
+              type: r.type,
+            }))
+          );
+        } else {
+          setResources([]);
+        }
+
       } else {
 
         setTitle("");
@@ -103,6 +129,7 @@ export function EventDialog({
         setEndDate("");
         setCoverImage(null);
         setBannerImage(null);
+        setResources([]);
       }
     }
   }, [open, eventToEdit, defaultDate]);
@@ -119,35 +146,46 @@ export function EventDialog({
 
     try {
       setLoading(true);
-
-    
       const payload = new FormData();
 
-      payload.append("title", title);
-      payload.append("description", description);
-      payload.append("location", location);
-      payload.append("color", color);
-      payload.append("target_platform", targetPlatform);
-      if (meetingUrl) payload.append("meeting_url", meetingUrl);
-      if (externalUrl) payload.append("external_url", externalUrl);
-      payload.append("starts_at", new Date(startDate).toISOString());
-      if (endDate && !isAllDay) payload.append("ends_at", new Date(endDate).toISOString());
-      payload.append("is_all_day", isAllDay ? "1" : "0");
+      // 1. Agrupamos TODOS los textos en un objeto limpio
+      const eventData = {
+        title,
+        description,
+        location,
+        color,
+        target_platform: targetPlatform,
+        meeting_url: meetingUrl,
+        external_url: externalUrl,
+        starts_at: new Date(startDate).toISOString(),
+        ends_at: endDate && !isAllDay ? new Date(endDate).toISOString() : null,
+        is_all_day: isAllDay ? 1 : 0,
+        resources: resources.map(r => ({
+          title: r.title,
+          url: r.url || null,
+          type: r.type
+        }))
+      };
 
-     
-      if (coverImage instanceof File) {
-        payload.append("cover_image", coverImage);
-      }
-      if (bannerImage instanceof File) {
-        payload.append("banner_image", bannerImage);
-      }
+      // 2. Stringificamos el objeto y lo mandamos como un solo campo
+      payload.append("event_data", JSON.stringify(eventData));
 
-   
+      // 3. Mandamos las imágenes principales (planas)
+      if (coverImage instanceof File) payload.append("cover_image", coverImage);
+      if (bannerImage instanceof File) payload.append("banner_image", bannerImage);
+
+      resources.forEach((res, index) => {
+
+        if (res.file instanceof File) {
+          payload.append(`resource_file_${index}`, res.file);
+        } else {
+        }
+      });
+
       if (isEditing) {
         payload.append("_method", "PUT");
       }
 
-      // Enviamos el FormData
       await onSubmit(payload);
 
       toast.success(isEditing ? "Evento actualizado ✏️" : "Evento creado 🎉");
@@ -158,6 +196,7 @@ export function EventDialog({
       setLoading(false);
     }
   };
+
   const handleDeleteClick = async () => {
     if (!onDelete) return;
     if (!confirm("¿Estás seguro de que deseas eliminar este evento?")) return;
@@ -174,171 +213,167 @@ export function EventDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="sm:max-w-lg">
+        <SheetHeader>
           <DialogTitle>
             {isEditing ? "Editar Evento" : "Nuevo Evento"}
           </DialogTitle>
-        </DialogHeader>
-<ScrollArea className="max-h-[65vh] px-6">
-        <div className="space-y-5 py-2">
-         <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-            <div className="space-y-2">
-              <ImageUploader
-                label="Portada (Cuadrada)"
-                description="Ideal: 800x800px"
-                value={coverImage}
-                onChange={(file) => setCoverImage(file)}
-              />
-            </div>
-            <div className="space-y-2">
-              <ImageUploader
-                label="Banner (Horizontal)"
-                description="Ideal: 1200x600px"
-                value={bannerImage}
-                onChange={(file) => setBannerImage(file)}
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Título</Label>
-            <Input
-              placeholder="Ej: Seminario de inversión"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Color del evento</Label>
-            <div className="flex gap-2">
-              {(Object.keys(EVENT_COLORS) as CalendarColorKey[]).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  className={cn(
-                    "w-6 h-6 rounded-full transition-all ring-offset-2 ring-offset-background",
-                    EVENT_COLORS[c].picker,
-                    color === c
-                      ? "ring-2 scale-110"
-                      : "opacity-70 hover:opacity-100",
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Descripción</Label>
-            <Textarea
-              placeholder="Detalles del evento..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Modalidad</Label>
-              <Select value={location} onValueChange={setLocation}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="En línea">En línea</SelectItem>
-                  <SelectItem value="Presencial">Presencial</SelectItem>
-                  <SelectItem value="Híbrido">Híbrido</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Link de reunión</Label>
-              <Input
-                placeholder="https://meet.google.com/..."
-                value={meetingUrl}
-                onChange={(e) => setMeetingUrl(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Link Registro</Label>
-              <Input
-                placeholder="https://tusitio.com/evento"
-                value={externalUrl}
-                onChange={(e) => setExternalUrl(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border p-3">
-            <Label>Todo el día</Label>
-            <Switch checked={isAllDay} onCheckedChange={setIsAllDay} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Inicio</Label>
-              <Input
-                type="datetime-local"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            {!isAllDay && (
+        </SheetHeader>
+      <div className="no-scrollbar overflow-y-auto px-4">
+      <div className="grid flex-1 auto-rows-min gap-6 px-4">
+            <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
               <div className="space-y-2">
-                <Label>Fin</Label>
-                <Input
-                  type="datetime-local"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                <ImageUploader
+                  label="Portada (Cuadrada)"
+                  description="Ideal: 800x800px"
+                  value={coverImage}
+                  onChange={(file) => setCoverImage(file)}
                 />
               </div>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label>Plataforma donde se mostrará</Label>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              value={targetPlatform}
-              onChange={(e) => setTargetPlatform(e.target.value)}
-            >
-              <option value="yel_services">Yel Services (Central)</option>
-              <option value="yel_pro">Yel Pro</option>
-              <option value="yel_investor">Yel Investor</option>
-            </select>
+              <div className="space-y-2">
+                <ImageUploader
+                  label="Banner (Horizontal)"
+                  description="Ideal: 1200x600px"
+                  value={bannerImage}
+                  onChange={(file) => setBannerImage(file)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Título</Label>
+              <Input
+                placeholder="Ej: Seminario de inversión"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Color del evento</Label>
+              <div className="flex gap-2">
+                {(Object.keys(EVENT_COLORS) as CalendarColorKey[]).map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setColor(c)}
+                    className={cn(
+                      "w-6 h-6 rounded-full transition-all ring-offset-2 ring-offset-background",
+                      EVENT_COLORS[c].picker,
+                      color === c
+                        ? "ring-2 scale-110"
+                        : "opacity-70 hover:opacity-100",
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Descripción</Label>
+              <Textarea
+                placeholder="Detalles del evento..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Modalidad</Label>
+                <Select value={location} onValueChange={setLocation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="En línea">En línea</SelectItem>
+                    <SelectItem value="Presencial">Presencial</SelectItem>
+                    <SelectItem value="Híbrido">Híbrido</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Link de reunión</Label>
+                <Input
+                  placeholder="https://meet.google.com/..."
+                  value={meetingUrl}
+                  onChange={(e) => setMeetingUrl(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Link Registro</Label>
+                <Input
+                  placeholder="https://tusitio.com/evento"
+                  value={externalUrl}
+                  onChange={(e) => setExternalUrl(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <Label>Todo el día</Label>
+              <Switch checked={isAllDay} onCheckedChange={setIsAllDay} />
+            </div>
+
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Inicio</Label>
+                <Input
+                  type="datetime-local"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              {!isAllDay && (
+                <div className="space-y-2">
+                  <Label>Fin</Label>
+                  <Input
+                    type="datetime-local"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="space-y-2 pt-2">
+              <ResourceUploader
+                resources={resources}
+                onChange={setResources}
+                label="Guías y Recursos Descargables"
+                description="Archivos que los usuarios podrán descargar al registrarse."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Plataforma donde se mostrará</Label>
+              <select
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={targetPlatform}
+                onChange={(e) => setTargetPlatform(e.target.value)}
+              >
+                <option value="yel_services">Yel Services (Central)</option>
+                <option value="yel_pro">Yel Pro</option>
+                <option value="yel_investor">Yel Investor</option>
+              </select>
+            </div>
           </div>
         </div>
-</ScrollArea>
-        <DialogFooter className="flex justify-between sm:justify-between w-full">
-          {isEditing && onDelete ? (
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={handleDeleteClick}
-              disabled={loading || isDeleting}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          ) : (
-            <div /> // Espaciador para mantener el layout flex-between
-          )}
+        <SheetFooter >
 
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading || isDeleting}
-            >
-              Cancelar
-            </Button>
-            <Button onClick={handleSubmit} disabled={loading || isDeleting}>
-              {loading ? "Guardando..." : "Guardar Cambios"}
-            </Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={loading || isDeleting}
+          >
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmit} disabled={loading || isDeleting}>
+            {loading ? "Guardando..." : "Guardar"}
+          </Button>
+
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

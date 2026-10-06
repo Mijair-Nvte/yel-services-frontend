@@ -1,15 +1,18 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCompanySettings } from '@/hooks/org_company_settings/useCompanySettings';
 import { apiFetch } from '@/services/http';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, RefreshCw, Webhook, CheckCircle2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { useSearchParams } from 'next/navigation';
+import MetaSettingsTab from './meta-tab'; // Importamos el componente separado
 
 interface CrmIntegrationSettings {
   initial_sync_completed: boolean;
+  meta?: any;
 }
 
 const defaultIntegrationSettings: CrmIntegrationSettings = {
@@ -21,7 +24,6 @@ interface IntegrationsTabProps {
 }
 
 export default function IntegrationsTab({ workspaceUid }: IntegrationsTabProps) {
-  // Usamos tu hook mágico para leer/guardar el status de la BD
   const {
     settings,
     setSettings,
@@ -32,33 +34,33 @@ export default function IntegrationsTab({ workspaceUid }: IntegrationsTabProps) 
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
+  const searchParams = useSearchParams();
+  const metaStatus = searchParams.get('meta_status');
+
+  useEffect(() => {
+    if (metaStatus === 'success') {
+      alert("¡Cuenta de Meta conectada exitosamente!");
+      window.history.replaceState(null, '', window.location.pathname);
+    } else if (metaStatus === 'error') {
+      alert("Hubo un error al conectar con Meta.");
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, [metaStatus]);
+
   const handleStartSync = async () => {
     if (!workspaceUid) return;
-    
-    // Confirmación para no dispararlo por accidente
-    if (!window.confirm("¿Estás seguro de iniciar la importación masiva de contactos? Este proceso corre en segundo plano y puede tardar varios minutos dependiendo del volumen de datos.")) {
-        return;
-    }
+    if (!window.confirm("¿Estás seguro de iniciar la importación masiva de contactos?")) return;
 
     setIsSyncing(true);
     setSyncMessage(null);
 
     try {
-      // Hacemos el POST a la nueva ruta protegida
       const response = await apiFetch(`/org-companies/${workspaceUid}/ghl/sync-historical`, {
         method: 'POST',
       });
-
       setSyncMessage(response.message || "Sincronización iniciada.");
-      
-      // Actualizamos el estado local para que la UI cambie automáticamente
-      setSettings({
-        ...settings,
-        initial_sync_completed: true,
-      });
-
+      setSettings({ ...settings, initial_sync_completed: true });
     } catch (err: any) {
-      console.error("Error al iniciar sync:", err);
       setSyncMessage(err?.message || "Ocurrió un error al intentar iniciar la sincronización.");
     } finally {
       setIsSyncing(false);
@@ -86,34 +88,34 @@ export default function IntegrationsTab({ workspaceUid }: IntegrationsTabProps) 
     <Card className="border shadow-sm">
       <CardHeader>
         <CardTitle className="text-xl font-semibold flex items-center gap-2">
-          Integraciones CRM
+          Integraciones CRM y Analítica
         </CardTitle>
         <CardDescription>
-          Conecta y sincroniza los datos de tu empresa con plataformas externas como GoHighLevel.
+          Conecta y sincroniza los datos de tu empresa con plataformas externas como GoHighLevel y Meta.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-8">
+        
+        {/* Sección GoHighLevel */}
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-foreground font-medium">
             <Webhook className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-base">GoHighLevel (GHL)</h3>
           </div>
-          
+
           <div className="pl-6 grid gap-4">
             <div className="rounded-lg border p-4 bg-card shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
                 <h4 className="text-sm font-semibold">Sincronización Histórica de Contactos</h4>
                 <p className="text-sm text-muted-foreground">
-                  Importa todos los contactos existentes desde GoHighLevel hacia tu base de datos local. Solo se permite ejecutar una vez por empresa.
+                  Importa todos los contactos existentes desde GoHighLevel hacia tu base de datos local.
                 </p>
                 {syncMessage && (
-                  <p className="text-xs text-primary font-medium mt-2 animate-in fade-in">
-                    {syncMessage}
-                  </p>
+                  <p className="text-xs text-primary font-medium mt-2">{syncMessage}</p>
                 )}
               </div>
-              
+
               <div className="shrink-0">
                 {settings.initial_sync_completed ? (
                   <div className="flex items-center gap-2 text-sm text-green-600 bg-green-500/10 px-4 py-2 rounded-full font-medium">
@@ -121,22 +123,9 @@ export default function IntegrationsTab({ workspaceUid }: IntegrationsTabProps) 
                     Sincronización Completada
                   </div>
                 ) : (
-                  <Button 
-                    onClick={handleStartSync} 
-                    disabled={isSyncing}
-                    className="gap-2 w-full sm:w-auto"
-                  >
-                    {isSyncing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Iniciando...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="h-4 w-4" />
-                        Importar Contactos
-                      </>
-                    )}
+                  <Button onClick={handleStartSync} disabled={isSyncing} className="gap-2 w-full sm:w-auto">
+                    {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                    Importar Contactos
                   </Button>
                 )}
               </div>
@@ -145,6 +134,14 @@ export default function IntegrationsTab({ workspaceUid }: IntegrationsTabProps) 
         </div>
 
         <Separator />
+
+        {/* Componente separado de Meta */}
+        <MetaSettingsTab 
+          workspaceUid={workspaceUid} 
+          settings={settings} 
+          setSettings={setSettings} 
+        />
+
       </CardContent>
     </Card>
   );
