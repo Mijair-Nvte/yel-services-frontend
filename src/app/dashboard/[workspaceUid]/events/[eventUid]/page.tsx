@@ -13,6 +13,7 @@ import { AttendeesTable } from "@/components/events/attendees-table";
 import { normalizeSource } from "@/components/events/attendees-columns";
 import { toast } from "sonner";
 import Image from "next/image";
+
 export default function EventDetailsPage() {
     const { workspaceUid, eventUid } = useParams() as { workspaceUid: string; eventUid: string };
     const router = useRouter();
@@ -21,15 +22,25 @@ export default function EventDetailsPage() {
     const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [copiedUid, setCopiedUid] = useState(false);
-    const [copiedLink, setCopiedLink] = useState(false);
+    const [copiedAccessLink, setCopiedAccessLink] = useState(false);
 
-    const handleCopyLink = async () => {
-        if (!event?.confirmation_url) return;
+    // 1. Enlace público principal para compartir (Siempre bajo /evento/ con UTMs)
+    const publicEventUrl = event?.confirmation_url 
+        ? event.confirmation_url.replace('/acceso/', '/evento/') 
+        : "";
+
+    // 2. Enlace de acceso al evento (Usa la ruta /acceso/ limpia, sin UTMs, para el mero día)
+    const eventAccessUrl = event?.confirmation_url 
+        ? event.confirmation_url.split('?')[0] 
+        : "";
+
+    const handleCopyAccessLink = async () => {
+        if (!eventAccessUrl) return;
         try {
-            await navigator.clipboard.writeText(event.confirmation_url);
-            setCopiedLink(true);
-            toast.success("Enlace de acceso copiado al portapapeles");
-            setTimeout(() => setCopiedLink(false), 2000);
+            await navigator.clipboard.writeText(eventAccessUrl);
+            setCopiedAccessLink(true);
+            toast.success("Enlace de acceso al evento copiado al portapapeles");
+            setTimeout(() => setCopiedAccessLink(false), 2000);
         } catch (err) {
             toast.error("No se pudo copiar el enlace");
         }
@@ -70,7 +81,7 @@ export default function EventDetailsPage() {
         }
     };
 
-        const sourceMetrics = useMemo(() => {
+    const sourceMetrics = useMemo(() => {
         const stats: Record<string, number> = {
             "Facebook": 0, "TikTok": 0, "Instagram": 0, "Google": 0, "Orgánico": 0, "Otros": 0
         };
@@ -138,7 +149,7 @@ export default function EventDetailsPage() {
             return {
                 label: `Origen: ${source}`,
                 value: count,
-                icon: Target, // Asegúrate de importar Target de 'lucide-react' si lo usas aquí
+                icon: Target,
                 color: "text-indigo-600",
                 iconBg: "bg-indigo-100",
                 cardBg: "bg-indigo-50/30 dark:bg-indigo-950/20",
@@ -150,9 +161,6 @@ export default function EventDetailsPage() {
 
         return [...baseItems, ...sourceCards];
     }, [registrations, sourceMetrics]);
-
-
-
 
     if (isLoading) {
         return (
@@ -168,6 +176,7 @@ export default function EventDetailsPage() {
     const isPast = new Date(event.starts_at) < new Date();
     const eventStatus = !event.is_active ? "Inactivo" : isPast ? "Finalizado" : "Próximo";
     const imageUrl = event.cover_image_url || event.banner_image_url;
+
     return (
         <div className="space-y-6 p-1">
             {/* Botón de regreso */}
@@ -224,7 +233,7 @@ export default function EventDetailsPage() {
                                 </div>
                             )}
 
-                            {/* Tarjeta lateral con fechas, ubicación y el UID para Meta Ads */}
+                            {/* Tarjeta lateral con fechas, ubicación y enlaces */}
                             <div className="bg-slate-50 p-5 rounded-xl border border-slate-200/60 space-y-4 shadow-2xs">
                                 <div className="flex items-start gap-3">
                                     <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-100">
@@ -281,20 +290,44 @@ export default function EventDetailsPage() {
                                     </div>
                                 </div>
 
-                                {event.confirmation_url && (
+                                {/* Enlace Público para Compartir (Bajo la ruta /evento/ con UTMs para Redes) */}
+                                {publicEventUrl && (
                                     <div className="pt-3 border-t border-slate-200">
                                         <div className="flex items-center justify-between mb-2">
                                             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                                                Enlace de Registro Público
+                                                Compartir Evento (Redes con UTM)
                                             </p>
                                         </div>
                                         <div className="flex items-center justify-between bg-indigo-50/50 px-3 py-2 rounded-lg border border-indigo-100 shadow-2xs">
-                                            <span className="text-xs font-mono text-indigo-700 truncate max-w-[170px]" title={event.confirmation_url}>
-                                                {event.confirmation_url.replace(/^https?:\/\//, '')}
+                                            <span className="text-xs font-mono text-indigo-700 truncate max-w-[170px]" title={publicEventUrl}>
+                                                {publicEventUrl.replace(/^https?:\/\//, '')}
                                             </span>
+                                            <EventSharePopover confirmationUrl={publicEventUrl} />
+                                        </div>
+                                    </div>
+                                )}
 
-                                            <EventSharePopover confirmationUrl={event.confirmation_url} />
-
+                                {/* Enlace de Acceso al Evento (Ruta /acceso/ limpia para el mero día) */}
+                                {eventAccessUrl && (
+                                    <div className="pt-3 border-t border-slate-200">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                                Enlace de Acceso al Evento
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-2xs">
+                                            <span className="text-xs font-mono text-slate-600 truncate max-w-[170px]" title={eventAccessUrl}>
+                                                {eventAccessUrl.replace(/^https?:\/\//, '')}
+                                            </span>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={handleCopyAccessLink}
+                                                className="h-7 px-2 text-xs gap-1 border-slate-200 hover:bg-slate-100"
+                                            >
+                                                {copiedAccessLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                                {copiedAccessLink ? "Copiado" : "Copiar"}
+                                            </Button>
                                         </div>
                                     </div>
                                 )}
@@ -309,6 +342,7 @@ export default function EventDetailsPage() {
 
             {/* --- TARJETAS KPI DE ASISTENCIA DEL EVENTO --- */}
             <KpiCards items={kpiItems} columns="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
+
             {/* TABS DE NAVEGACIÓN */}
             <Tabs defaultValue="attendees" className="w-full">
                 <TabsList className="bg-white border shadow-sm rounded-lg p-1 mb-6">
