@@ -8,6 +8,7 @@ import { NavMain } from "@/components/nav-main";
 import Logo from "@/assets/logoytl.png"
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
+import { NavCourses } from "./nav-courses";
 import {
   Sidebar,
   SidebarContent,
@@ -42,6 +43,10 @@ import {
   Contact,
   Ticket,
   BarChart3,
+  GraduationCap,
+  ClipboardList,
+  FileQuestion,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -79,7 +84,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       // requiredPermission: "view_reports", // Opcional: Agrega un permiso si lo necesitas
     },
     {
-      title: "Analíticas Redes", 
+      title: "Analíticas Redes",
       url: workspace ? `/dashboard/${workspace.uid}/analytics/meta` : "#",
       icon: BarChart3,
       requiredPermission: "view_dashboard",
@@ -113,6 +118,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       url: workspace ? `/dashboard/${workspace.uid}/service-orders` : "#",
       icon: KanbanSquare,
     },
+
     {
       title: "Links",
       url: workspace ? `/dashboard/${workspace.uid}/links` : "#",
@@ -198,6 +204,39 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     },
   ];
 
+  const rawNavCourses = [
+    {
+      title: "Cursos",
+      url: workspace ? `/dashboard/${workspace.uid}/courses` : "#",
+      icon: GraduationCap,
+     requiredPermission: "manage_courses",
+    },
+    {
+      title: "Estudiantes",
+      url: workspace ? `/dashboard/${workspace.uid}/students` : "#",
+      icon: Users,
+     requiredPermission: "manage_courses",
+    },
+    {
+      title: "Inscripciones",
+      url: workspace ? `/dashboard/${workspace.uid}/enrollments` : "#",
+      icon: ClipboardList,
+       requiredPermission: "manage_courses",
+    },
+    {
+      title: "Evaluaciones",
+      url: workspace ? `/dashboard/${workspace.uid}/quizzes` : "#",
+      icon: FileQuestion,
+     requiredPermission: "manage_courses",
+    },
+    {
+      title: "Certificados",
+      url: workspace ? `/dashboard/${workspace.uid}/certificates` : "#",
+      icon: Award,
+       requiredPermission: "manage_courses",
+    },
+  ];
+
   const navMain = rawNavMain.filter(
     (item) =>
       !item.requiredPermission || hasPermission(item.requiredPermission),
@@ -211,6 +250,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const navBussines = rawNavBussines.filter(
     (item) =>
       !item.requiredPermission || hasPermission(item.requiredPermission),
+  );
+
+  const navCourses = rawNavCourses.filter(
+    (item) => !item.requiredPermission || hasPermission(item.requiredPermission),
   );
 
   const handleMouseEnter = () => {
@@ -259,6 +302,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           {/* Renderizamos los arreglos ya filtrados */}
           <NavMain items={navMain} />
           <NavBussines items={navBussines}></NavBussines>
+          <NavCourses items={navCourses} />
           <NavSecondary items={navSecondary} className="mt-auto" />
         </SidebarContent>
 
