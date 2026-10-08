@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns"; // Ya no necesitamos parseISO aquí
 import {
   Dialog,
   DialogContent,
@@ -33,9 +33,10 @@ import {
   DEFAULT_EVENT_COLOR,
 } from "@/lib/calendar-colors";
 import { cn } from "@/lib/utils";
-import { Trash2 } from "lucide-react"; // Para el botón de borrar
+import { Trash2 } from "lucide-react"; 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { ImageUploader } from "@/components/ui/image-uploader";
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -87,14 +88,13 @@ export function EventDialog({
           (eventToEdit.color as CalendarColorKey) || DEFAULT_EVENT_COLOR,
         );
 
-        // Formateo especial para el input type="datetime-local" (yyyy-MM-ddThh:mm)
+        // ✅ CORRECCIÓN 1: Formateo limpio sin conversiones de zona horaria local
+        // Tomamos los primeros 16 caracteres de la fecha enviada por la API (YYYY-MM-DDTHH:mm)
         setStartDate(
-          format(parseISO(eventToEdit.starts_at), "yyyy-MM-dd'T'HH:mm"),
+          eventToEdit.starts_at ? eventToEdit.starts_at.substring(0, 16) : "",
         );
         setEndDate(
-          eventToEdit.ends_at
-            ? format(parseISO(eventToEdit.ends_at), "yyyy-MM-dd'T'HH:mm")
-            : "",
+          eventToEdit.ends_at ? eventToEdit.ends_at.substring(0, 16) : "",
         );
 
         setCoverImage(eventToEdit.cover_image_url || null);
@@ -114,7 +114,6 @@ export function EventDialog({
         }
 
       } else {
-
         setTitle("");
         setDescription("");
         setLocation("");
@@ -123,6 +122,8 @@ export function EventDialog({
         setIsAllDay(false);
         setColor(DEFAULT_EVENT_COLOR);
         setTargetPlatform("yel_services");
+        
+        // Si hay una fecha por defecto al hacer clic en el calendario, la cargamos tal cual
         setStartDate(
           defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : "",
         );
@@ -157,8 +158,12 @@ export function EventDialog({
         target_platform: targetPlatform,
         meeting_url: meetingUrl,
         external_url: externalUrl,
-        starts_at: new Date(startDate).toISOString(),
-        ends_at: endDate && !isAllDay ? new Date(endDate).toISOString() : null,
+        
+        // ✅ CORRECCIÓN 2: Reemplazamos la "T" por espacio y no mandamos la "Z" de UTC
+        // Esto envía "2026-10-08 18:30:00" limpio al servidor
+        starts_at: startDate ? startDate.replace('T', ' ') + ':00' : null,
+        ends_at: endDate && !isAllDay ? endDate.replace('T', ' ') + ':00' : null,
+        
         is_all_day: isAllDay ? 1 : 0,
         resources: resources.map(r => ({
           title: r.title,
@@ -175,10 +180,8 @@ export function EventDialog({
       if (bannerImage instanceof File) payload.append("banner_image", bannerImage);
 
       resources.forEach((res, index) => {
-
         if (res.file instanceof File) {
           payload.append(`resource_file_${index}`, res.file);
-        } else {
         }
       });
 
