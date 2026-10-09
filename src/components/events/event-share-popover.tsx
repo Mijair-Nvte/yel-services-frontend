@@ -25,6 +25,7 @@ export function EventSharePopover({ confirmationUrl }: EventSharePopoverProps) {
         { id: "instagram", name: "Instagram", source: "instagram", icon: Instagram, color: "text-pink-600", bg: "bg-pink-50" },
         { id: "tiktok", name: "TikTok", source: "tiktok", icon: TikTokIcon, color: "text-slate-900", bg: "bg-slate-100" },
         { id: "web", name: "Sitio Web YEL", source: "web_yaestoylisto", icon: Globe, color: "text-emerald-600", bg: "bg-emerald-50" },
+        { id: "web_kch", name: "Sitio Web KCH", source: "web_kch", icon: Globe, color: "text-teal-600", bg: "bg-teal-50" },
         { id: "directo", name: "Link Directo (Sin UTM)", source: "", icon: Link2, color: "text-indigo-600", bg: "bg-indigo-50" },
     ];
 
