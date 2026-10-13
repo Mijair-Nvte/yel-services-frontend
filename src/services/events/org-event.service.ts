@@ -120,4 +120,10 @@ export const OrgEventService = {
     return response.data || response;
   },
 
+  deleteRegistration: async (workspaceUid: string, eventUid: string, registrationUid: string) => {
+    return await apiFetch(`/org-companies/${workspaceUid}/events/${eventUid}/registrations/${registrationUid}`, {
+      method: "DELETE",
+    });
+  },
+  
 };

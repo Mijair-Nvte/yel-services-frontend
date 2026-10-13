@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { EventRegistration } from "@/services/events/org-event.service";
 import { ExternalLink, UserCheck, Mail, Phone, Target, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import { DataTableRowActions } from "@/components/ui/data-table-row-actions";
 
 export const normalizeSource = (rawSource?: string | null): string => {
     if (!rawSource) return "Orgánico";
@@ -14,23 +14,27 @@ export const normalizeSource = (rawSource?: string | null): string => {
 
     // Tolerancia a errores de dedo en Facebook / Meta
     if (s.includes("face") || s.includes("fb") || s.includes("meta") || s.includes("facebok")) return "Facebook";
-    
+
     // Tolerancia a errores de dedo en TikTok
     if (s.includes("tik") || s.includes("tt") || s.includes("tik-tok")) return "TikTok";
-    
+
     // Tolerancia a errores de dedo en Instagram (atrapa "instragram", "insta", "ig")
     if (s.includes("insta") || s.includes("ig") || s.includes("instrag") || s.includes("instarg")) return "Instagram";
-    
+
     // Tolerancia a Google / Ads
     if (s.includes("google") || s.includes("ads") || s.includes("search") || s.includes("AdWords")) return "Google";
-    
+
     // Tolerancia a tráfico orgánico / directo
     if (s.includes("organica") || s.includes("organica") || s.includes("directo") || s.includes("ya estoy listo") || s.includes("web") || s.includes("organic")) return "Orgánico";
 
-    return "Otros"; 
+    return "Otros";
 };
 
-export const getAttendeesColumns = (): ColumnDef<EventRegistration>[] => [
+interface AttendeesColumnsProps {
+    onDelete?: (reg: EventRegistration) => void;
+}
+
+export const getAttendeesColumns = ({ onDelete }: AttendeesColumnsProps = {}): ColumnDef<EventRegistration>[] => [
     {
         id: "name",
         header: "Nombre",
@@ -78,12 +82,12 @@ export const getAttendeesColumns = (): ColumnDef<EventRegistration>[] => [
             );
         },
     },
-   {
+    {
         accessorKey: "source",
         header: "Origen (Campaña)",
         cell: ({ row }) => {
             const rawSource = row.original.source || "Directo";
-            const cleanSource = normalizeSource(rawSource); 
+            const cleanSource = normalizeSource(rawSource);
 
             const sourceStyles: Record<string, string> = {
                 "Facebook": "bg-[#1877F2]/10 text-[#1877F2] border-[#1877F2]/20",
@@ -105,7 +109,7 @@ export const getAttendeesColumns = (): ColumnDef<EventRegistration>[] => [
                         )}
                         {cleanSource}
                     </Badge>
-                    
+
                     {/* Texto original exacto que llegó de la URL o base de datos */}
                     <div className="text-[11px] text-slate-400 font-mono truncate max-w-[160px]" title={rawSource}>
                         Original: <span className="text-slate-600">{rawSource}</span>
@@ -145,18 +149,17 @@ export const getAttendeesColumns = (): ColumnDef<EventRegistration>[] => [
     },
     {
         id: "actions",
-        header: () => <div className="text-right pr-4">CRM</div>,
+        header: () => <div className="text-right pr-4">CRM / Acciones</div>, // 👇 Ajustamos el título
         cell: ({ row }) => {
             const customer = row.original.customer;
-
             const locationId = process.env.NEXT_PUBLIC_GHL_LOCATION_ID;
-
             const ghlUrl = customer?.ghl_contact_id && locationId
                 ? `https://app.ideashubai.com/v2/location/${locationId}/contacts/detail/${customer.ghl_contact_id}`
                 : null;
 
             return (
-                <div className="flex justify-end pr-2">
+                // 👇 Modificamos el div para incluir tanto el botón del CRM como el Dropdown de Acciones
+                <div className="flex items-center justify-end gap-2 pr-2">
                     {ghlUrl ? (
                         <Button
                             variant="outline"
@@ -173,6 +176,12 @@ export const getAttendeesColumns = (): ColumnDef<EventRegistration>[] => [
                             Local
                         </Button>
                     )}
+
+                    {/* 👇 Agregamos tu componente reutilizable DataTableRowActions */}
+                    <DataTableRowActions
+                        row={row}
+                        onDelete={onDelete ? (data) => onDelete(data as EventRegistration) : undefined}
+                    />
                 </div>
             );
         },

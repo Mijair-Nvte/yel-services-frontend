@@ -2,13 +2,14 @@
 
 import { useParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings2, Shield, Users, Building, Briefcase, HandCoins, Plug } from "lucide-react";
+import { Settings2, Shield, Users, Building, Briefcase, HandCoins, Plug, Ticket } from "lucide-react";
 
 // Importamos los componentes de las pestañas (los crearemos en el siguiente paso)
 import TeamSettingsTab from "@/components/org_settings/components/team-tab";
 import InsuranceSettingsTab from "@/components/org_settings/components/insurance-tab";
 import LoansSettingsTab from "@/components/org_settings/components/loans-tab";
 import IntegrationsTab from "@/components/org_settings/components/integrations-tab";
+import EventsSettingsTab from "@/components/org_settings/components/events-tab";
 export default function SettingsPage() {
   const { workspaceUid } = useParams<{ workspaceUid: string }>();
 
@@ -57,6 +58,14 @@ export default function SettingsPage() {
             </TabsTrigger>
 
             <TabsTrigger
+              value="events"
+              className="gap-2 px-4 py-2.5 text-sm font-medium transition-all hover:text-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
+            >
+              <Ticket className="w-4 h-4" />
+              Eventos
+            </TabsTrigger>
+
+            <TabsTrigger
               value="integrations"
               className="gap-2 px-4 py-2.5 text-sm font-medium transition-all hover:text-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border"
             >
@@ -99,6 +108,11 @@ export default function SettingsPage() {
           <TabsContent value="loans" className="m-0">
             <LoansSettingsTab workspaceUid={workspaceUid} />
           </TabsContent>
+
+          <TabsContent value="events" className="m-0">
+            <EventsSettingsTab workspaceUid={workspaceUid} />
+          </TabsContent>
+
           <TabsContent value="integrations" className="m-0">
             <IntegrationsTab workspaceUid={workspaceUid} />
           </TabsContent>

@@ -356,7 +356,7 @@ export default function EventDetailsPage() {
                 </TabsList>
 
                 <TabsContent value="attendees" className="mt-0">
-                    <AttendeesTable registrations={registrations} />
+                    <AttendeesTable registrations={registrations} onDeleteSuccess={(deletedUid) => setRegistrations((prev) => prev.filter(r => r.uid !== deletedUid))} />
                 </TabsContent>
 
                 <TabsContent value="overview" className="mt-0 space-y-6">
