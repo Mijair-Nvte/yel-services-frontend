@@ -33,6 +33,7 @@ export interface EventResource {
 export interface OrgEvent {
   id: number;
   uid: string;
+  event_tag:string;
   org_company_id: number;
   title: string;
   description?: string;
@@ -123,6 +124,13 @@ export const OrgEventService = {
   deleteRegistration: async (workspaceUid: string, eventUid: string, registrationUid: string) => {
     return await apiFetch(`/org-companies/${workspaceUid}/events/${eventUid}/registrations/${registrationUid}`, {
       method: "DELETE",
+    });
+  },
+
+  importRegistrations: async (workspaceUid: string, eventUid: string, contacts: any[]) => {
+    return await apiFetch(`/org-companies/${workspaceUid}/events/${eventUid}/registrations/import`, {
+      method: "POST",
+      body: JSON.stringify({ contacts }),
     });
   },
   

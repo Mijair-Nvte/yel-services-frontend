@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { OrgEventService, OrgEvent, EventRegistration } from "@/services/events/org-event.service";
-import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check, Target } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check, Target, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,13 +25,13 @@ export default function EventDetailsPage() {
     const [copiedAccessLink, setCopiedAccessLink] = useState(false);
 
     // 1. Enlace público principal para compartir (Siempre bajo /evento/ con UTMs)
-    const publicEventUrl = event?.confirmation_url 
-        ? event.confirmation_url.replace('/acceso/', '/evento/') 
+    const publicEventUrl = event?.confirmation_url
+        ? event.confirmation_url.replace('/acceso/', '/evento/')
         : "";
 
     // 2. Enlace de acceso al evento (Usa la ruta /acceso/ limpia, sin UTMs, para el mero día)
-    const eventAccessUrl = event?.confirmation_url 
-        ? event.confirmation_url.split('?')[0] 
+    const eventAccessUrl = event?.confirmation_url
+        ? event.confirmation_url.split('?')[0]
         : "";
 
     const handleCopyAccessLink = async () => {
@@ -100,7 +100,7 @@ export default function EventDetailsPage() {
             .filter(([_, count]) => count > 0)
             .sort((a, b) => b[1] - a[1]);
     }, [registrations]);
-    
+
     // Cálculo dinámico de las métricas y fuentes del evento para los KPIs
     const kpiItems: KpiItem[] = useMemo(() => {
         const totalRegistered = registrations.length;
@@ -187,6 +187,8 @@ export default function EventDetailsPage() {
             >
                 <ArrowLeft className="h-4 w-4 mr-2" /> Volver a eventos
             </Button>
+
+
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
                 <div className={`absolute top-0 left-0 w-full h-2 z-10 ${isPast ? 'bg-slate-300' : 'bg-indigo-500'}`} />
@@ -344,57 +346,72 @@ export default function EventDetailsPage() {
             <KpiCards items={kpiItems} columns="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" />
 
             {/* TABS DE NAVEGACIÓN */}
-            <Tabs defaultValue="attendees" className="w-full">
-                <TabsList className="bg-white border shadow-sm rounded-lg p-1 mb-6">
-                    <TabsTrigger value="attendees" className="rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none font-medium">
-                        <Users className="h-4 w-4 mr-2" />
-                        Registros ({registrations.length})
-                    </TabsTrigger>
-                    <TabsTrigger value="overview" className="rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none font-medium">
-                        Resumen
-                    </TabsTrigger>
-                </TabsList>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <Tabs defaultValue="attendees" className="w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <TabsList className="bg-white border shadow-sm rounded-lg p-1">
+                            <TabsTrigger value="attendees" className="rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none font-medium">
+                                <Users className="h-4 w-4 mr-2" />
+                                Registros ({registrations.length})
+                            </TabsTrigger>
+                            <TabsTrigger value="overview" className="rounded-md data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:shadow-none font-medium">
+                                Resumen
+                            </TabsTrigger>
+                        </TabsList>
 
-                <TabsContent value="attendees" className="mt-0">
-                    <AttendeesTable registrations={registrations} onDeleteSuccess={(deletedUid) => setRegistrations((prev) => prev.filter(r => r.uid !== deletedUid))} />
-                </TabsContent>
-
-                <TabsContent value="overview" className="mt-0 space-y-6">
-                    <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h3 className="text-lg font-bold text-slate-900 mb-1">Rendimiento de Adquisición</h3>
-                        <p className="text-slate-500 text-sm mb-6">
-                            Distribución de asistentes según la campaña o plataforma de origen.
-                        </p>
-
-                        {sourceMetrics.length === 0 ? (
-                            <p className="text-slate-400 text-sm py-4">Aún no hay datos suficientes para mostrar métricas.</p>
-                        ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {sourceMetrics.map(([source, count]) => {
-                                    const percentage = Math.round((count / registrations.length) * 100);
-                                    return (
-                                        <div key={source} className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col justify-center">
-                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{source}</p>
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="text-2xl font-black text-slate-800">{count}</span>
-                                                <span className="text-xs font-medium text-slate-500">leads</span>
-                                            </div>
-                                            {/* Pequeña barra de progreso visual */}
-                                            <div className="mt-3 w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                                                <div
-                                                    className="bg-indigo-500 h-1.5 rounded-full"
-                                                    style={{ width: `${percentage}%` }}
-                                                />
-                                            </div>
-                                            <p className="text-[10px] text-slate-500 mt-1.5 font-medium text-right">{percentage}% del total</p>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
+                     
+                        <Button
+                            onClick={() => router.push(`/dashboard/${workspaceUid}/events/${eventUid}/import`)}
+                          
+                            className=" shadow-2xs gap-2 font-medium"
+                        >
+                            <FileSpreadsheet className="h-4 w-4 " />
+                            Importar CSV
+                        </Button>
                     </div>
-                </TabsContent>
-            </Tabs>
+                    <TabsContent value="attendees" className="mt-0">
+
+                        <AttendeesTable registrations={registrations} onDeleteSuccess={(deletedUid) => setRegistrations((prev) => prev.filter(r => r.uid !== deletedUid))} />
+
+                    </TabsContent>
+
+                    <TabsContent value="overview" className="mt-0 space-y-6">
+                        <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm">
+                            <h3 className="text-lg font-bold text-slate-900 mb-1">Rendimiento de Adquisición</h3>
+                            <p className="text-slate-500 text-sm mb-6">
+                                Distribución de asistentes según la campaña o plataforma de origen.
+                            </p>
+
+                            {sourceMetrics.length === 0 ? (
+                                <p className="text-slate-400 text-sm py-4">Aún no hay datos suficientes para mostrar métricas.</p>
+                            ) : (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {sourceMetrics.map(([source, count]) => {
+                                        const percentage = Math.round((count / registrations.length) * 100);
+                                        return (
+                                            <div key={source} className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col justify-center">
+                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{source}</p>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-2xl font-black text-slate-800">{count}</span>
+                                                    <span className="text-xs font-medium text-slate-500">leads</span>
+                                                </div>
+                                                {/* Pequeña barra de progreso visual */}
+                                                <div className="mt-3 w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                                    <div
+                                                        className="bg-indigo-500 h-1.5 rounded-full"
+                                                        style={{ width: `${percentage}%` }}
+                                                    />
+                                                </div>
+                                                <p className="text-[10px] text-slate-500 mt-1.5 font-medium text-right">{percentage}% del total</p>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            </div>
         </div>
     );
 }

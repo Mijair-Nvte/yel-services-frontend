@@ -4,11 +4,12 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { OrgEvent } from "@/services/events/org-event.service";
 import { DataTableRowActions } from "@/components/ui/data-table-row-actions";
-import { MapPin, Link as LinkIcon, Users, Eye, Copy, Check, CalendarDays } from "lucide-react";
+import { MapPin, Link as LinkIcon, Users, Eye, Copy, Check, CalendarDays, Tag } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
+
 interface EventColumnProps {
     onEdit: (event: OrgEvent) => void;
     onDelete: (uid: string) => void;
@@ -48,6 +49,43 @@ function CopyUidCell({ uid }: { uid: string }) {
     );
 }
 
+
+function CopyTagCell({ tag }: { tag?: string }) {
+    const [copied, setCopied] = useState(false);
+
+    if (!tag) return <span className="text-xs text-slate-400">Sin tag</span>;
+
+    const handleCopy = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await navigator.clipboard.writeText(tag);
+            setCopied(true);
+            toast.success("Event Tag copiado al portapapeles");
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            toast.error("No se pudo copiar el tag");
+        }
+    };
+
+    return (
+        <div className="flex items-center gap-1.5 bg-amber-50/50 border border-amber-200 px-2 py-1 rounded-md w-fit">
+            <Tag className="h-3 w-3 text-amber-500 shrink-0" />
+            <span className="text-xs font-mono font-medium text-amber-800 truncate max-w-[140px]">
+                {tag}
+            </span>
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-amber-400 hover:text-amber-700 hover:bg-amber-100 p-0"
+                onClick={handleCopy}
+                title="Copiar Event Tag para GoHighLevel"
+            >
+                {copied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+            </Button>
+        </div>
+    );
+}
+
 function CopyLinkCell({ url }: { url?: string }) {
     const [copied, setCopied] = useState(false);
 
@@ -68,7 +106,7 @@ function CopyLinkCell({ url }: { url?: string }) {
     return (
         <div className="flex items-center gap-1.5 bg-indigo-50/50 border border-indigo-100 px-2 py-1 rounded-md w-fit">
             <span className="text-xs font-medium text-indigo-700 truncate max-w-[120px]">
-                {url.replace(/^https?:\/\//, '')} {/* Oculta el https:// para verse más limpio */}
+                {url.replace(/^https?:\/\//, '')}
             </span>
             <Button
                 variant="ghost"
@@ -82,6 +120,7 @@ function CopyLinkCell({ url }: { url?: string }) {
         </div>
     );
 }
+
 export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps): ColumnDef<OrgEvent>[] => [
     {
         accessorKey: "starts_at",
@@ -106,12 +145,10 @@ export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps):
         accessorFn: (row) => row.title,
         cell: ({ row }) => {
             const ev = row.original;
-            // Usamos el cover_image_url como imagen principal
             const imageUrl = ev.cover_image_url || ev.banner_image_url;
 
             return (
                 <div className="flex items-center gap-3">
-                    {/* 📸 THUMBNAIL DEL EVENTO */}
                     <div className="relative h-10 w-14 shrink-0 rounded-md overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
                         {imageUrl ? (
                             <Image
@@ -125,8 +162,6 @@ export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps):
                             <CalendarDays className="h-5 w-5 text-slate-400" />
                         )}
                     </div>
-
-                    {/* 📝 TÍTULO DEL EVENTO */}
                     <div
                         className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer transition-colors max-w-[200px] sm:max-w-[300px] truncate"
                         onClick={() => onView(ev)}
@@ -137,6 +172,11 @@ export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps):
                 </div>
             );
         },
+    },
+    {
+        id: "event_tag_column",
+        header: "Event Tag",
+        cell: ({ row }) => <CopyTagCell tag={row.original.event_tag} />,
     },
     {
         id: "uid_column",
