@@ -33,9 +33,7 @@ export const getCourseColumns = ({ onView, onDelete }: CourseColumnProps): Colum
                         <div className="font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
                             {course.title}
                         </div>
-                        <div className="text-xs text-slate-500 line-clamp-1">
-                            {course.description || "Sin descripción"}
-                        </div>
+                       
                     </div>
                 </div>
             );
