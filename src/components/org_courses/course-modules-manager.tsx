@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Plus, GripVertical, Video, ChevronDown, ChevronUp, BookOpen, PlayCircle, Edit2 } from "lucide-react";
+import { Loader2, Plus, GripVertical, Video, ChevronDown, ChevronUp, BookOpen, PlayCircle, Edit2, Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCourseContent } from "@/hooks/org_courses/use-course-content";
@@ -9,7 +9,7 @@ import { OrgCourseContentService, OrgCourseModule, OrgCourseLesson } from "@/ser
 import { ModuleModal } from "./ModuleModal";
 import { LessonModal } from "./LessonModal";
 import { ConfirmDeleteDialog } from "@/components/shared/confirm-delete-dialog";
-
+import { ResourceManagerModal } from "@/components/org_courses/ResourceManagerModal";
 // Imports de DND-Kit
 import {
   DndContext,
@@ -42,6 +42,8 @@ function SortableLessonItem({
   moduleUid,
   onEditLesson,
   onDeleteLesson,
+  onManageResources,
+
 }: {
   lesson: OrgCourseLesson;
   index: number;
@@ -49,6 +51,7 @@ function SortableLessonItem({
   moduleUid: string;
   onEditLesson: (moduleUid: string, lesson: OrgCourseLesson) => void;
   onDeleteLesson: (moduleUid: string, lessonUid: string) => void;
+  onManageResources: (type: 'module' | 'lesson', uid: string, title: string, resources: any[]) => void;
 }) {
   const {
     attributes,
@@ -96,6 +99,10 @@ function SortableLessonItem({
 
       {/* Acciones de la Lección */}
       <div className="flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-indigo-600" title="Archivos adjuntos"
+          onClick={() => onManageResources('lesson', lesson.uid, lesson.title, lesson.resources || [])}>
+          <Paperclip className="h-3.5 w-3.5" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -127,6 +134,7 @@ function SortableModuleItem({
   onOpenCreateLesson,
   onEditLesson,
   onDeleteLesson,
+  onManageResources,
 }: {
   module: OrgCourseModule;
   index: number;
@@ -137,6 +145,7 @@ function SortableModuleItem({
   onOpenCreateLesson: (moduleUid: string) => void;
   onEditLesson: (moduleUid: string, lesson: OrgCourseLesson) => void;
   onDeleteLesson: (moduleUid: string, lessonUid: string) => void;
+  onManageResources: (type: 'module' | 'lesson', uid: string, title: string, resources: any[]) => void;
 }) {
   const {
     attributes,
@@ -178,6 +187,11 @@ function SortableModuleItem({
           </span>
 
           <div className="flex items-center gap-1 border-l pl-3 border-slate-200">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600" title="Archivos del módulo"
+              onClick={() => onManageResources('module', module.uid, module.title, module.resources || [])}>
+              <Paperclip className="h-4 w-4" />
+            </Button>
+
             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600" onClick={() => onEditModule(module)}>
               <Edit2 className="h-4 w-4" />
             </Button>
@@ -214,6 +228,7 @@ function SortableModuleItem({
                     moduleUid={module.uid}
                     onEditLesson={onEditLesson}
                     onDeleteLesson={onDeleteLesson}
+                    onManageResources={onManageResources}
                   />
                 ))}
               </div>
@@ -247,7 +262,9 @@ export function CourseModulesManager({ workspaceUid, courseUid }: CourseModulesM
     updateLesson,
     deleteLesson,
     reorderModules,
-    reorderLessons
+    reorderLessons, isUploadingResource,
+    createResource,
+    deleteResource
   } = useCourseContent(workspaceUid, courseUid);
 
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
@@ -268,9 +285,45 @@ export function CourseModulesManager({ workspaceUid, courseUid }: CourseModulesM
     })
   );
 
+  const [resourceModal, setResourceModal] = useState<{
+    isOpen: boolean;
+    type: 'course' | 'module' | 'lesson';
+    uid: string;
+    title: string;
+    resources: any[];
+  }>({
+    isOpen: false,
+    type: 'module',
+    uid: '',
+    title: '',
+    resources: []
+  });
+
   useEffect(() => {
     loadContent();
   }, [loadContent]);
+
+
+  const handleManageResources = (type: 'module' | 'lesson', uid: string, title: string, resources: any[]) => {
+    setResourceModal({ isOpen: true, type, uid, title, resources });
+  };
+
+  useEffect(() => {
+    if (resourceModal.isOpen) {
+      // Buscamos los datos frescos en el state 'modules'
+      let freshResources: any[] = [];
+      if (resourceModal.type === 'module') {
+        const mod = modules.find(m => m.uid === resourceModal.uid);
+        freshResources = mod?.resources || [];
+      } else if (resourceModal.type === 'lesson') {
+        for (const m of modules) {
+          const lsn = m.lessons?.find(l => l.uid === resourceModal.uid);
+          if (lsn) { freshResources = lsn.resources || []; break; }
+        }
+      }
+      setResourceModal(prev => ({ ...prev, resources: freshResources }));
+    }
+  }, [modules, resourceModal.isOpen, resourceModal.uid, resourceModal.type]);
 
   const toggleModule = (uid: string) => {
     setExpandedModules((prev) =>
@@ -303,7 +356,7 @@ export function CourseModulesManager({ workspaceUid, courseUid }: CourseModulesM
 
       if (lessonFile instanceof File) {
         setUploadingStatus("Generando enlace seguro...");
-        const presign = await OrgCourseContentService.presignLessonVideo(workspaceUid, courseUid, lessonFile.name, lessonFile.type);
+        const presign = await OrgCourseContentService.presignLessonVideo(workspaceUid, courseUid, lessonFile.name, lessonFile.type, activeModuleUid || undefined);
 
         setUploadingStatus("Subiendo video...");
         const uploadResponse = await fetch(presign.upload_url, {
@@ -444,6 +497,7 @@ export function CourseModulesManager({ workspaceUid, courseUid }: CourseModulesM
                     setIsLessonModalOpen(true);
                   }}
                   onDeleteLesson={(uid, lessonUid) => deleteLesson(uid, lessonUid)}
+                  onManageResources={handleManageResources}
                 />
               ))}
             </div>
@@ -469,6 +523,19 @@ export function CourseModulesManager({ workspaceUid, courseUid }: CourseModulesM
         uploadingStatus={uploadingStatus}
         initialData={editingLesson}
       />
+
+      <ResourceManagerModal
+        isOpen={resourceModal.isOpen}
+        onClose={() => setResourceModal(prev => ({ ...prev, isOpen: false }))}
+        resourceableType={resourceModal.type}
+        resourceableUid={resourceModal.uid}
+        parentTitle={resourceModal.title}
+        existingResources={resourceModal.resources}
+        isUploading={isUploadingResource}
+        onUpload={createResource}
+        onDelete={deleteResource}
+      />
+
     </div>
   );
 }

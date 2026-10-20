@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Button } from "@/components/ui/button";
-import { Trash2Icon } from "lucide-react";
+import { Trash2Icon, Loader2 } from "lucide-react";
 
 export function ConfirmDeleteDialog({
   title = "Eliminar elemento",
@@ -22,27 +23,47 @@ export function ConfirmDeleteDialog({
   confirmText = "Eliminar",
   cancelText = "Cancelar",
   onConfirm,
+  trigger,
 }: {
   title?: string;
   description?: string;
   confirmText?: string;
   cancelText?: string;
-  onConfirm: () => void;
+  onConfirm: () => Promise<boolean | void> | void;
+  trigger?: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleConfirm = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Evita que se cierre antes de completar la llamada a la API
+    try {
+      setLoading(true);
+      await onConfirm();
+      setOpen(false);
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       {/* TRIGGER */}
       <AlertDialogTrigger asChild>
-        <Button size="sm" variant="destructive">
-          <Trash2Icon className="h-4 w-4" />
-        </Button>
+        {trigger || (
+          <Button size="sm" variant="destructive">
+            <Trash2Icon className="h-4 w-4" />
+          </Button>
+        )}
       </AlertDialogTrigger>
 
-      {/* MODAL */}
-      <AlertDialogContent className="max-w-sm rounded-xl">
+      {/* MODAL - Se asigna z-[100] para quedar siempre encima de ResourceManagerModal */}
+      <AlertDialogContent className="max-w-sm rounded-xl z-[100]">
         <AlertDialogHeader className="space-y-2">
           <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
-            <Trash2Icon />
+            <Trash2Icon className="h-5 w-5" />
           </AlertDialogMedia>
 
           <AlertDialogTitle className="text-lg font-semibold">
@@ -55,11 +76,16 @@ export function ConfirmDeleteDialog({
         </AlertDialogHeader>
 
         <AlertDialogFooter className="mt-4">
-          <AlertDialogCancel variant="outline">
+          <AlertDialogCancel variant="outline" disabled={loading}>
             {cancelText}
           </AlertDialogCancel>
 
-          <AlertDialogAction variant="destructive" onClick={onConfirm}>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={loading}
+          >
+            {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             {confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>

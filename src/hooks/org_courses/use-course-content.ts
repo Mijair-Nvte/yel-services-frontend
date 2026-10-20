@@ -2,12 +2,14 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
-import { OrgCourseContentService, OrgCourseModule, CreateModuleDto, CreateLessonDto } from "@/services/org-course/org-course.service";
+import { OrgCourseContentService, OrgCourseModule, CreateModuleDto, CreateLessonDto, StoreResourceDto } from "@/services/org-course/org-course.service";
 
 export function useCourseContent(workspaceUid: string, courseUid: string) {
     const [modules, setModules] = useState<OrgCourseModule[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isCreating, setIsCreating] = useState(false);
+
+    const [isUploadingResource, setIsUploadingResource] = useState(false);
 
     // Cargar todo el temario (módulos y lecciones)
     const loadContent = useCallback(async () => {
@@ -138,6 +140,61 @@ export function useCourseContent(workspaceUid: string, courseUid: string) {
         }
     };
 
+    const createResource = async (data: StoreResourceDto, file: File) => {
+        setIsUploadingResource(true);
+        try {
+            // 1. Obtener URL pre-firmada con la ruta estricta
+            const presign = await OrgCourseContentService.presignResource(
+                workspaceUid,
+                courseUid,
+                file.name,
+                file.type,
+                data.resourceable_type,
+                data.resourceable_uid
+            );
+
+            // 2. Subir directo a Cloudflare R2
+            const uploadResponse = await fetch(presign.upload_url, {
+                method: "PUT",
+                headers: { "Content-Type": file.type },
+                body: file,
+            });
+
+            if (!uploadResponse.ok) throw new Error("Error al subir el archivo físico.");
+
+            // 3. Registrar en la base de datos
+            await OrgCourseContentService.storeResource(workspaceUid, courseUid, {
+                ...data,
+                file_url: presign.path, // La ruta relativa que devolvió el backend
+                file_name: file.name,
+                mime_type: file.type,
+                file_size: file.size,
+            });
+
+            toast.success("Recurso adjuntado correctamente.");
+            await loadContent(); // Recarga el árbol completo
+            return true;
+        } catch (error: any) {
+            toast.error(error.message || "Error al adjuntar el recurso.");
+            return false;
+        } finally {
+            setIsUploadingResource(false);
+        }
+    };
+
+    // Eliminar Recurso
+    const deleteResource = async (resourceUid: string) => {
+        try {
+            await OrgCourseContentService.deleteResource(workspaceUid, courseUid, resourceUid);
+            toast.success("Recurso eliminado.");
+            await loadContent();
+            return true;
+        } catch (error) {
+            toast.error("Error al eliminar el recurso.");
+            return false;
+        }
+    };
+
     return {
         modules,
         isLoading,
@@ -149,6 +206,9 @@ export function useCourseContent(workspaceUid: string, courseUid: string) {
         createLesson,
         reorderModules,
         reorderLessons, updateLesson, deleteLesson,
+        isUploadingResource,
+        createResource,
+        deleteResource,
 
     };
 }

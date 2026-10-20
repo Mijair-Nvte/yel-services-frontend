@@ -1,5 +1,27 @@
 import { apiFetch } from "@/services/http";
 
+export interface OrgCourseResource {
+    id: number;
+    uid: string;
+    title: string;
+    file_name: string;
+    file_url: string;
+    public_url: string | null;
+    mime_type: string | null;
+    file_size: number | null;
+    sort_order: number;
+}
+
+export interface StoreResourceDto {
+    resourceable_type: 'course' | 'module' | 'lesson';
+    resourceable_uid: string;
+    title: string;
+    file_name: string;
+    file_url: string;
+    mime_type?: string;
+    file_size?: number;
+}
+
 // --- Interfaces ---
 export interface OrgCourse {
     id: number;
@@ -10,8 +32,8 @@ export interface OrgCourse {
     description: string | null;
     cover_image_url: string | null;
     preview_video_url: string | null;
-     cover_url: string | null;
-      preview_url: string | null;
+    cover_url: string | null;
+    preview_url: string | null;
     is_free: boolean;
     is_active: boolean;
     revenuecat_entitlement_id: string | null;
@@ -20,6 +42,7 @@ export interface OrgCourse {
     metadata?: Record<string, any> | null;
     created_at: string;
     updated_at: string;
+    resources?: OrgCourseResource[];
 }
 
 export interface CreateCourseDto {
@@ -113,6 +136,7 @@ export interface OrgCourseLesson {
     is_free_preview: boolean;
     sort_order: number;
     is_active: boolean;
+    resources?: OrgCourseResource[];
 }
 
 export interface OrgCourseModule {
@@ -123,7 +147,8 @@ export interface OrgCourseModule {
     description: string | null;
     sort_order: number;
     is_active: boolean;
-    lessons: OrgCourseLesson[]; // Relación anidada que nos devuelve el backend
+    lessons: OrgCourseLesson[];
+    resources?: OrgCourseResource[];
 }
 
 export interface CreateModuleDto {
@@ -174,10 +199,10 @@ export const OrgCourseContentService = {
 
 
     // Pre-firma para Video Privado (Lecciones)
-    presignLessonVideo: async (workspaceUid: string, courseUid: string, fileName: string, mimeType: string) => {
+    presignLessonVideo: async (workspaceUid: string, courseUid: string, fileName: string, mimeType: string, moduleUid?: string) => {
         return await apiFetch(`/org-companies/${workspaceUid}/courses/${courseUid}/lessons/presign`, {
             method: "POST",
-            body: JSON.stringify({ file_name: fileName, mime_type: mimeType }),
+            body: JSON.stringify({ file_name: fileName, mime_type: mimeType,module_uid: moduleUid }),
         });
     },
 
@@ -211,7 +236,7 @@ export const OrgCourseContentService = {
         });
     },
 
-reorderLessons: async (workspaceUid: string, courseUid: string, moduleUid: string, lessons: { uid: string; sort_order: number }[]) => {
+    reorderLessons: async (workspaceUid: string, courseUid: string, moduleUid: string, lessons: { uid: string; sort_order: number }[]) => {
         return await apiFetch(`/org-companies/${workspaceUid}/courses/${courseUid}/modules/${moduleUid}/lessons/reorder`, {
             method: "PUT",
             body: JSON.stringify({ lessons }),
@@ -219,5 +244,32 @@ reorderLessons: async (workspaceUid: string, courseUid: string, moduleUid: strin
     },
 
 
+    // Pre-firma para Recursos (PDF, ZIP, etc.)
+    presignResource: async (workspaceUid: string, courseUid: string, fileName: string, mimeType: string, resourceableType: string, resourceableUid: string) => {
+        return await apiFetch(`/org-companies/${workspaceUid}/courses/${courseUid}/resources/presign`, {
+            method: "POST",
+            body: JSON.stringify({
+                file_name: fileName,
+                mime_type: mimeType,
+                resourceable_type: resourceableType,
+                resourceable_uid: resourceableUid
+            }),
+        });
+    },
+
+    // Guardar Recurso Polimórfico
+    storeResource: async (workspaceUid: string, courseUid: string, data: StoreResourceDto) => {
+        return await apiFetch(`/org-companies/${workspaceUid}/courses/${courseUid}/resources`, {
+            method: "POST",
+            body: JSON.stringify(data),
+        });
+    },
+
+    // Eliminar Recurso
+    deleteResource: async (workspaceUid: string, courseUid: string, resourceUid: string) => {
+        return await apiFetch(`/org-companies/${workspaceUid}/courses/${courseUid}/resources/${resourceUid}`, {
+            method: "DELETE",
+        });
+    },
 
 };
