@@ -77,11 +77,31 @@ export interface PaginatedMeta {
         total_published: number;
         total_drafts: number;
         new_this_month: number;
+        total_active: number;
     };
 }
 
 export interface PaginatedCourses {
     data: OrgCourse[];
+    meta: PaginatedMeta;
+}
+
+export interface CourseStudent {
+    id: number;
+    user_id: number;
+    org_course_id: number;
+    source: string;
+    status: string;
+    enrolled_at: string;
+    user: {
+        id: number;
+        name: string;
+        email: string;
+    };
+}
+
+export interface PaginatedCourseStudents {
+    data: CourseStudent[];
     meta: PaginatedMeta;
 }
 
@@ -120,6 +140,25 @@ export const OrgCourseService = {
             method: "DELETE",
         });
     },
+
+    importSubscribers: async (workspaceUid: string, courseUid: string, contacts: any[]) => {
+        return await apiFetch(`/org-companies/${workspaceUid}/courses/${courseUid}/enrollments/import`, {
+            method: "POST",
+            body: JSON.stringify({ contacts }),
+        });
+    },
+
+
+    getStudents: async (workspaceUid: string, courseUid: string, page: number = 1, perPage: number = 10, search: string = ""): Promise<PaginatedCourseStudents> => {
+        const params = new URLSearchParams();
+        params.append("page", page.toString());
+        params.append("per_page", perPage.toString());
+        if (search) params.append("search", search);
+
+        return await apiFetch(`/org-companies/${workspaceUid}/courses/${courseUid}/students?${params.toString()}`);
+    },
+
+
 };
 
 
@@ -202,7 +241,7 @@ export const OrgCourseContentService = {
     presignLessonVideo: async (workspaceUid: string, courseUid: string, fileName: string, mimeType: string, moduleUid?: string) => {
         return await apiFetch(`/org-companies/${workspaceUid}/courses/${courseUid}/lessons/presign`, {
             method: "POST",
-            body: JSON.stringify({ file_name: fileName, mime_type: mimeType,module_uid: moduleUid }),
+            body: JSON.stringify({ file_name: fileName, mime_type: mimeType, module_uid: moduleUid }),
         });
     },
 
@@ -271,5 +310,8 @@ export const OrgCourseContentService = {
             method: "DELETE",
         });
     },
+
+
+
 
 };
