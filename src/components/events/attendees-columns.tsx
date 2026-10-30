@@ -1,12 +1,13 @@
 "use client";
-
+import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { EventRegistration } from "@/services/events/org-event.service";
-import { ExternalLink, UserCheck, Mail, Phone, Target, Search } from "lucide-react";
+import { EventRegistration, OrgEventService } from "@/services/events/org-event.service";
+import { ExternalLink, UserCheck, Mail, Phone, Target, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTableRowActions } from "@/components/ui/data-table-row-actions";
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { toast } from "sonner";
 export const normalizeSource = (rawSource?: string | null): string => {
     if (!rawSource) return "Orgánico";
 
@@ -30,11 +31,68 @@ export const normalizeSource = (rawSource?: string | null): string => {
     return "Otros";
 };
 
-interface AttendeesColumnsProps {
-    onDelete?: (reg: EventRegistration) => void;
+export const CONTACT_STATUSES = {
+    pending: { label: "Pendiente", color: "bg-slate-100 text-slate-600" },
+    contacted: { label: "Contactado", color: "bg-blue-100 text-blue-700" },
+    no_answer: { label: "No Respondió", color: "bg-amber-100 text-amber-700" },
+    follow_up_1w: { label: "Seguimiento 1 sem", color: "bg-indigo-100 text-indigo-700" },
+    follow_up_1m: { label: "Seguimiento 1 mes", color: "bg-purple-100 text-purple-700" },
+    not_interested: { label: "No Interesado", color: "bg-rose-100 text-rose-700" },
+};
+
+
+export function ContactStatusCell({ workspaceUid, eventUid, registration }: { workspaceUid: string; eventUid: string; registration: EventRegistration }) {
+    const [status, setStatus] = useState(registration.contact_status || "pending");
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleStatusChange = async (newStatus: string) => {
+        setIsLoading(true);
+        try {
+            await OrgEventService.updateContactStatus(workspaceUid, eventUid, registration.uid, {
+                contact_status: newStatus,
+            });
+            setStatus(newStatus);
+            toast.success("Estado de contacto actualizado");
+        } catch (error) {
+            toast.error("Error al actualizar el estado");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+
+    const currentConfig = CONTACT_STATUSES[status as keyof typeof CONTACT_STATUSES] || CONTACT_STATUSES.pending;
+
+    return (
+        <div className="flex items-center gap-2">
+            <Select value={status} onValueChange={handleStatusChange} disabled={isLoading}>
+                <SelectTrigger className={`h-7 text-xs font-medium border-none shadow-none focus:ring-0 ${currentConfig.color} w-[140px]`}>
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {Object.entries(CONTACT_STATUSES).map(([key, config]) => (
+                        <SelectItem key={key} value={key} className="text-xs font-medium">
+                            <div className="flex items-center gap-2">
+                                <span className={`h-2 w-2 rounded-full ${config.color.split(' ')[0]}`} />
+                                {config.label}
+                            </div>
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {isLoading && <Loader2 className="h-3 w-3 animate-spin text-slate-400" />}
+        </div>
+    );
 }
 
-export const getAttendeesColumns = ({ onDelete }: AttendeesColumnsProps = {}): ColumnDef<EventRegistration>[] => [
+interface AttendeesColumnsProps {
+    onDelete?: (reg: EventRegistration) => void;
+    workspaceUid: string;
+    eventUid: string;
+}
+
+export const getAttendeesColumns = ({ onDelete, workspaceUid, eventUid }: AttendeesColumnsProps): ColumnDef<EventRegistration>[] => [
     {
         id: "name",
         header: "Nombre",
@@ -117,6 +175,17 @@ export const getAttendeesColumns = ({ onDelete }: AttendeesColumnsProps = {}): C
                 </div>
             );
         },
+    },
+    {
+        id: "contact_status",
+        header: "Seguimiento",
+        cell: ({ row }) => (
+            <ContactStatusCell
+                workspaceUid={workspaceUid}
+                eventUid={eventUid}
+                registration={row.original}
+            />
+        )
     },
     {
         accessorKey: "status",

@@ -33,7 +33,7 @@ export interface EventResource {
 export interface OrgEvent {
   id: number;
   uid: string;
-  event_tag:string;
+  event_tag: string;
   org_company_id: number;
   title: string;
   description?: string;
@@ -74,6 +74,8 @@ export interface EventRegistration {
   uid: string;
   status: "registered" | "attended" | "cancelled";
   source?: string;
+  contact_status?: string;
+  notes?: string;
   created_at: string;
   customer?: {
     id: number;
@@ -133,5 +135,62 @@ export const OrgEventService = {
       body: JSON.stringify({ contacts }),
     });
   },
-  
+
+  updateContactStatus: async (
+    workspaceUid: string,
+    eventUid: string,
+    registrationUid: string,
+    data: { contact_status: string; notes?: string }
+  ) => {
+    return await apiFetch(`/org-companies/${workspaceUid}/events/${eventUid}/registrations/${registrationUid}/contact-status`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+
+  // Agrega esto dentro del objeto OrgEventService:
+
+  exportPdf: async (workspaceUid: string, eventUid: string, registrationIds: number[]) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/org-companies/${workspaceUid}/events/${eventUid}/registrations/export-pdf`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      },
+      body: JSON.stringify({ registration_ids: registrationIds })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw errorData || new Error("Error al exportar el PDF");
+    }
+
+    return await response.blob();
+  },
+
+  exportExcel: async (workspaceUid: string, eventUid: string, registrationIds: number[]) => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/org-companies/${workspaceUid}/events/${eventUid}/registrations/export-excel`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` })
+      },
+      body: JSON.stringify({ registration_ids: registrationIds })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw errorData || new Error("Error al exportar el Excel");
+    }
+
+    return await response.blob();
+  },
+
 };

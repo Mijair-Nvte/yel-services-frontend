@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { OrgEventService, OrgEvent, EventRegistration } from "@/services/events/org-event.service";
-import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check, Target, FileSpreadsheet } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check, Target, FileSpreadsheet, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +23,8 @@ export default function EventDetailsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [copiedUid, setCopiedUid] = useState(false);
     const [copiedAccessLink, setCopiedAccessLink] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [isExportingExcel, setIsExportingExcel] = useState(false);
 
     // 1. Enlace público principal para compartir (Siempre bajo /evento/ con UTMs)
     const publicEventUrl = event?.confirmation_url
@@ -43,6 +45,52 @@ export default function EventDetailsPage() {
             setTimeout(() => setCopiedAccessLink(false), 2000);
         } catch (err) {
             toast.error("No se pudo copiar el enlace");
+        }
+    };
+
+    const handleExportPDF = async () => {
+        if (registrations.length === 0) return;
+        try {
+            setIsExporting(true);
+            const regIds = registrations.map((r) => r.id);
+            const blob = await OrgEventService.exportPdf(workspaceUid, eventUid, regIds);
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            const fileName = `Asistentes_${event?.title || 'Evento'}_${new Date().getTime()}.pdf`;
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            toast.error("Error al exportar el PDF");
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const handleExportExcel = async () => {
+        if (registrations.length === 0) return;
+        try {
+            setIsExportingExcel(true);
+            const regIds = registrations.map((r) => r.id);
+            const blob = await OrgEventService.exportExcel(workspaceUid, eventUid, regIds);
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            const fileName = `Asistentes_${event?.title || 'Evento'}_${new Date().getTime()}.xlsx`;
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            toast.error("Error al exportar el Excel");
+        } finally {
+            setIsExportingExcel(false);
         }
     };
 
@@ -194,10 +242,10 @@ export default function EventDetailsPage() {
                 <div className={`absolute top-0 left-0 w-full h-2 z-10 ${isPast ? 'bg-slate-300' : 'bg-indigo-500'}`} />
 
                 <div className="p-6 md:p-8">
-                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 lg:gap-6">
 
-                        {/* COLUMNA IZQUIERDA: Información principal (Badges, Título, Descripción) */}
-                        <div className="space-y-4 flex-1">
+                        {/* IZQUIERDA: badges, título y datos clave en chips */}
+                        <div className="flex-1 min-w-0 space-y-3">
                             <div className="flex flex-wrap items-center gap-2">
                                 <Badge className={`${isPast ? 'bg-slate-100 text-slate-600' : 'bg-emerald-100 text-emerald-800'} border-none uppercase tracking-wider text-[10px]`}>
                                     {eventStatus}
@@ -207,137 +255,124 @@ export default function EventDetailsPage() {
                                 </Badge>
                             </div>
 
-                            <h1 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">
                                 {event.title}
                             </h1>
 
-                            {event.description && (
-                                <p className="text-slate-600 leading-relaxed text-sm md:text-base">
-                                    {event.description}
-                                </p>
-                            )}
+                            {/* Fecha, hora y ubicación en línea */}
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
+                                    <Calendar className="h-4 w-4 text-indigo-500 shrink-0" />
+                                    <span className="text-sm font-semibold text-slate-800 capitalize">
+                                        {new Date(event.starts_at).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                    </span>
+                                    <span className="text-xs text-slate-500 border-l border-slate-200 pl-2">
+                                        {event.is_all_day ? "Todo el día" : new Date(event.starts_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+
+                                <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
+                                    {event.location === "En línea" ? (
+                                        <Radio className="h-4 w-4 text-rose-500 shrink-0" />
+                                    ) : (
+                                        <MapPin className="h-4 w-4 text-emerald-500 shrink-0" />
+                                    )}
+                                    <span className="text-sm font-semibold text-slate-800">
+                                        {event.location || "Por definir"}
+                                    </span>
+                                </div>
+
+                                {event.meeting_url && (
+                                    <a
+                                        href={event.meeting_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-1 text-xs text-indigo-500 hover:underline font-medium px-1"
+                                    >
+                                        <LinkIcon className="h-3 w-3" /> Unirse a la reunión
+                                    </a>
+                                )}
+                            </div>
                         </div>
 
-                        {/* COLUMNA DERECHA: Imagen de portada + Tarjeta de Fecha/Ubicación/UID */}
-                        <div className="w-full lg:w-[360px] shrink-0 space-y-4">
+                        {/* DERECHA: portada (si existe) + enlaces compactos */}
+                        <div className="w-full lg:w-[320px] shrink-0 space-y-3">
 
-                            {/* 📸 IMAGEN DE PORTADA A LA DERECHA */}
                             {imageUrl && (
-                                <div className="relative w-full h-44 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
+                                <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
                                     <Image
                                         src={imageUrl}
                                         alt={event.title}
                                         fill
                                         priority
-                                        sizes="(max-width: 1024px) 100vw, 360px"
+                                        sizes="(max-width: 1024px) 100vw, 320px"
                                         className="object-cover"
                                     />
                                 </div>
                             )}
 
-                            {/* Tarjeta lateral con fechas, ubicación y enlaces */}
-                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200/60 space-y-4 shadow-2xs">
-                                <div className="flex items-start gap-3">
-                                    <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-100">
-                                        <Calendar className="h-5 w-5 text-indigo-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Fecha y Hora</p>
-                                        <p className="text-sm font-semibold text-slate-800">
-                                            {new Date(event.starts_at).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
-                                        </p>
-                                        <p className="text-xs text-slate-500 mt-0.5">
-                                            {event.is_all_day ? "Todo el día" : new Date(event.starts_at).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                    </div>
-                                </div>
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/60 space-y-2.5 shadow-2xs">
 
-                                <div className="flex items-start gap-3">
-                                    <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-100">
-                                        {event.location === "En línea" ? (
-                                            <Radio className="h-5 w-5 text-rose-500" />
-                                        ) : (
-                                            <MapPin className="h-5 w-5 text-emerald-500" />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Ubicación</p>
-                                        <p className="text-sm font-semibold text-slate-800">
-                                            {event.location || "Por definir"}
-                                        </p>
-                                        {event.meeting_url && (
-                                            <a href={event.meeting_url} target="_blank" rel="noreferrer" className="text-xs text-indigo-500 hover:underline flex items-center gap-1 mt-1 font-medium">
-                                                <LinkIcon className="h-3 w-3" /> Unirse a la reunión
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Bloque para copiar el UID del Evento para Meta Ads / GHL */}
-                                <div className="pt-3 border-t border-slate-200">
-                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">UID para Meta Ads (GHL)</p>
-                                    <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-2xs">
-                                        <span className="text-xs font-mono text-slate-600 truncate max-w-[180px]" title={event.uid}>
+                                {/* UID Meta Ads / GHL */}
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">UID para Meta Ads (GHL)</p>
+                                    <div className="flex items-center justify-between gap-2 bg-white pl-2.5 pr-1 py-1 rounded-lg border border-slate-200 shadow-2xs">
+                                        <span className="text-xs font-mono text-slate-600 truncate min-w-0" title={event.uid}>
                                             {event.uid}
                                         </span>
                                         <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={handleCopyEventUid}
-                                            className="h-7 px-2 text-xs gap-1 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600"
+                                            className="h-6 px-2 text-xs gap-1 shrink-0 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600"
                                         >
-                                            {copiedUid ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                            {copiedUid ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
                                             {copiedUid ? "Copiado" : "Copiar"}
                                         </Button>
                                     </div>
                                 </div>
 
-                                {/* Enlace Público para Compartir (Bajo la ruta /evento/ con UTMs para Redes) */}
+                                {/* Enlace público con UTM */}
                                 {publicEventUrl && (
-                                    <div className="pt-3 border-t border-slate-200">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                                                Compartir Evento (Redes con UTM)
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center justify-between bg-indigo-50/50 px-3 py-2 rounded-lg border border-indigo-100 shadow-2xs">
-                                            <span className="text-xs font-mono text-indigo-700 truncate max-w-[170px]" title={publicEventUrl}>
+                                    <div className="pt-2.5 border-t border-slate-200">
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                            Compartir Evento (Redes con UTM)
+                                        </p>
+                                        <div className="flex items-center justify-between gap-2 bg-indigo-50/50 pl-2.5 pr-1 py-1 rounded-lg border border-indigo-100 shadow-2xs">
+                                            <span className="text-xs font-mono text-indigo-700 truncate min-w-0" title={publicEventUrl}>
                                                 {publicEventUrl.replace(/^https?:\/\//, '')}
                                             </span>
-                                            <EventSharePopover confirmationUrl={publicEventUrl} />
+                                            <div className="shrink-0">
+                                                <EventSharePopover confirmationUrl={publicEventUrl} />
+                                            </div>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Enlace de Acceso al Evento (Ruta /acceso/ limpia para el mero día) */}
+                                {/* Enlace de acceso */}
                                 {eventAccessUrl && (
-                                    <div className="pt-3 border-t border-slate-200">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                                                Enlace de Acceso al Evento
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-2xs">
-                                            <span className="text-xs font-mono text-slate-600 truncate max-w-[170px]" title={eventAccessUrl}>
+                                    <div className="pt-2.5 border-t border-slate-200">
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                            Enlace de Acceso al Evento
+                                        </p>
+                                        <div className="flex items-center justify-between gap-2 bg-white pl-2.5 pr-1 py-1 rounded-lg border border-slate-200 shadow-2xs">
+                                            <span className="text-xs font-mono text-slate-600 truncate min-w-0" title={eventAccessUrl}>
                                                 {eventAccessUrl.replace(/^https?:\/\//, '')}
                                             </span>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={handleCopyAccessLink}
-                                                className="h-7 px-2 text-xs gap-1 border-slate-200 hover:bg-slate-100"
+                                                className="h-6 px-2 text-xs gap-1 shrink-0 border-slate-200 hover:bg-slate-100"
                                             >
-                                                {copiedAccessLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                                                {copiedAccessLink ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
                                                 {copiedAccessLink ? "Copiado" : "Copiar"}
                                             </Button>
                                         </div>
                                     </div>
                                 )}
-
                             </div>
-
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -359,15 +394,35 @@ export default function EventDetailsPage() {
                             </TabsTrigger>
                         </TabsList>
 
-                     
-                        <Button
-                            onClick={() => router.push(`/dashboard/${workspaceUid}/events/${eventUid}/import`)}
-                          
-                            className=" shadow-2xs gap-2 font-medium"
-                        >
-                            <FileSpreadsheet className="h-4 w-4 " />
-                            Importar CSV
-                        </Button>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs gap-2 font-medium"
+                                onClick={handleExportExcel}
+                                disabled={isExportingExcel || registrations.length === 0}
+                            >
+                                {isExportingExcel ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />}
+                                Exportar Excel
+                            </Button>
+
+                            <Button
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs gap-2 font-medium"
+                                onClick={handleExportPDF}
+                                disabled={isExporting || registrations.length === 0}
+                            >
+                                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+                                Exportar PDF
+                            </Button>
+
+                            <Button
+                                onClick={() => router.push(`/dashboard/${workspaceUid}/events/${eventUid}/import`)}
+                                className="shadow-2xs gap-2 font-medium"
+                                variant="outline"
+                            >
+                                <FileSpreadsheet className="h-4 w-4 text-slate-500" />
+                                Importar CSV
+                            </Button>
+                        </div>
                     </div>
                     <TabsContent value="attendees" className="mt-0">
 

@@ -35,8 +35,12 @@ export function AttendeesTable({ registrations, onDeleteSuccess }: AttendeesTabl
   };
 
   // 2. Le pasamos la función onDelete a las columnas 👇
-  const columns = useMemo(() => getAttendeesColumns({ onDelete: handleDeleteRegistration }), [params.workspaceUid, params.eventUid]);
-
+  const columns = useMemo(() => getAttendeesColumns({
+    onDelete: handleDeleteRegistration,
+    workspaceUid: params.workspaceUid,
+    eventUid: params.eventUid
+  }), [params.workspaceUid, params.eventUid]);
+  
   return (
     <DataTable
       columns={columns}
