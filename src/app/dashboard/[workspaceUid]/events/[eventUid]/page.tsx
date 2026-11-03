@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { OrgEventService, OrgEvent, EventRegistration } from "@/services/events/org-event.service";
-import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check, Target, FileSpreadsheet, FileDown } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check, Target, FileSpreadsheet, FileDown, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +23,7 @@ export default function EventDetailsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [copiedUid, setCopiedUid] = useState(false);
     const [copiedAccessLink, setCopiedAccessLink] = useState(false);
+    const [copiedConfirmLink, setCopiedConfirmLink] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [isExportingExcel, setIsExportingExcel] = useState(false);
 
@@ -36,6 +37,10 @@ export default function EventDetailsPage() {
         ? event.confirmation_url.split('?')[0]
         : "";
 
+        const eventConfirmUrl = event?.slug && event?.confirmation_url
+        ? new URL(`/evento/${event.slug}/confirmar-registro`, new URL(event.confirmation_url).origin).toString()
+        : "";
+
     const handleCopyAccessLink = async () => {
         if (!eventAccessUrl) return;
         try {
@@ -43,6 +48,18 @@ export default function EventDetailsPage() {
             setCopiedAccessLink(true);
             toast.success("Enlace de acceso al evento copiado al portapapeles");
             setTimeout(() => setCopiedAccessLink(false), 2000);
+        } catch (err) {
+            toast.error("No se pudo copiar el enlace");
+        }
+    };
+
+    const handleCopyConfirmLink = async () => {
+        if (!eventConfirmUrl) return;
+        try {
+            await navigator.clipboard.writeText(eventConfirmUrl);
+            setCopiedConfirmLink(true);
+            toast.success("Enlace de confirmación copiado al portapapeles");
+            setTimeout(() => setCopiedConfirmLink(false), 2000);
         } catch (err) {
             toast.error("No se pudo copiar el enlace");
         }
@@ -367,6 +384,29 @@ export default function EventDetailsPage() {
                                             >
                                                 {copiedAccessLink ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
                                                 {copiedAccessLink ? "Copiado" : "Copiar"}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {eventConfirmUrl && (
+                                    <div className="pt-2.5 border-t border-slate-200">
+                                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                            <MessageCircle className="h-3 w-3" />
+                                            Confirmación WhatsApp
+                                        </p>
+                                        <div className="flex items-center justify-between gap-2 bg-emerald-50/50 pl-2.5 pr-1 py-1 rounded-lg border border-emerald-100 shadow-2xs">
+                                            <span className="text-xs font-mono text-emerald-700 truncate min-w-0" title={eventConfirmUrl}>
+                                                {eventConfirmUrl.replace(/^https?:\/\//, '')}
+                                            </span>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={handleCopyConfirmLink}
+                                                className="h-6 px-2 text-xs gap-1 shrink-0 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700 text-emerald-600 bg-white"
+                                            >
+                                                {copiedConfirmLink ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                                                {copiedConfirmLink ? "Copiado" : "Copiar"}
                                             </Button>
                                         </div>
                                     </div>

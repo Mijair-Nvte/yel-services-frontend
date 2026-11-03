@@ -33,6 +33,7 @@ export interface EventResource {
 export interface OrgEvent {
   id: number;
   uid: string;
+  slug: string;
   event_tag: string;
   org_company_id: number;
   title: string;
