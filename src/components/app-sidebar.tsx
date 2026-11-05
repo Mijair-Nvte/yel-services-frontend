@@ -47,6 +47,7 @@ import {
   ClipboardList,
   FileQuestion,
   Award,
+  ListChecks,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -88,6 +89,17 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       url: workspace ? `/dashboard/${workspace.uid}/analytics/meta` : "#",
       icon: BarChart3,
       requiredPermission: "view_dashboard",
+    },
+     {
+      title: "Proyectos",
+      url: workspace ? `/dashboard/${workspace.uid}/projects`:"#",
+      icon: ListChecks,
+     
+    },
+    {
+      title: "Planeaciones",
+      url: workspace ? `/dashboard/${workspace.uid}/content-planning` : "#",
+      icon: Megaphone, 
     },
     {
       title: "Clientes",
