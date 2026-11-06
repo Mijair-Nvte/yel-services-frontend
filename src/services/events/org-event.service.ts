@@ -194,4 +194,19 @@ export const OrgEventService = {
     return await response.blob();
   },
 
+  syncWorkflows: async (
+    workspaceUid: string,
+    eventUid: string,
+    workflowIdAttended: string,
+    workflowIdNotAttended: string
+  ) => {
+    return await apiFetch(`/org-companies/${workspaceUid}/events/${eventUid}/sync-ghl-workflows`, {
+      method: "POST",
+      body: JSON.stringify({
+        workflow_id_attended: workflowIdAttended,
+        workflow_id_not_attended: workflowIdNotAttended
+      }),
+    });
+  },
+
 };

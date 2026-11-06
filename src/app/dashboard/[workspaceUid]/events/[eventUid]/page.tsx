@@ -13,7 +13,7 @@ import { AttendeesTable } from "@/components/events/attendees-table";
 import { normalizeSource } from "@/components/events/attendees-columns";
 import { toast } from "sonner";
 import Image from "next/image";
-
+import { PlayCircle } from "lucide-react";
 export default function EventDetailsPage() {
     const { workspaceUid, eventUid } = useParams() as { workspaceUid: string; eventUid: string };
     const router = useRouter();
@@ -27,6 +27,13 @@ export default function EventDetailsPage() {
     const [isExporting, setIsExporting] = useState(false);
     const [isExportingExcel, setIsExportingExcel] = useState(false);
 
+    const [isSyncingWorkflows, setIsSyncingWorkflows] = useState(false);
+
+
+    const WORKFLOW_ATTENDED = "3ee52ba6-4768-4220-bfb0-f581af3dcf65";
+    const WORKFLOW_NOT_ATTENDED = "56d0f156-9efb-4ec2-b4e5-7e84ffa535b1"
+
+
     // 1. Enlace público principal para compartir (Siempre bajo /evento/ con UTMs)
     const publicEventUrl = event?.confirmation_url
         ? event.confirmation_url.replace('/acceso/', '/evento/')
@@ -37,7 +44,7 @@ export default function EventDetailsPage() {
         ? event.confirmation_url.split('?')[0]
         : "";
 
-        const eventConfirmUrl = event?.slug && event?.confirmation_url
+    const eventConfirmUrl = event?.slug && event?.confirmation_url
         ? new URL(`/evento/${event.slug}/confirmar-registro`, new URL(event.confirmation_url).origin).toString()
         : "";
 
@@ -108,6 +115,25 @@ export default function EventDetailsPage() {
             toast.error("Error al exportar el Excel");
         } finally {
             setIsExportingExcel(false);
+        }
+    };
+
+    const handleSyncGhlWorkflows = async () => {
+        if (!confirm("¿Deseas enviar las automatizaciones post-evento a todos los contactos en GoHighLevel?")) return;
+
+        try {
+            setIsSyncingWorkflows(true);
+            const res = await OrgEventService.syncWorkflows(
+                workspaceUid,
+                eventUid,
+                WORKFLOW_ATTENDED,
+                WORKFLOW_NOT_ATTENDED
+            );
+            toast.success(res.message || "Contactos enviados a los workflows correctamente");
+        } catch (error) {
+            toast.error("Error al sincronizar con GoHighLevel");
+        } finally {
+            setIsSyncingWorkflows(false);
         }
     };
 
@@ -461,6 +487,15 @@ export default function EventDetailsPage() {
                             >
                                 <FileSpreadsheet className="h-4 w-4 text-slate-500" />
                                 Importar CSV
+                            </Button>
+
+                            <Button
+                                className="bg-blue-600 hover:bg-blue-700 text-white shadow-2xs gap-2 font-medium"
+                                onClick={handleSyncGhlWorkflows}
+                                disabled={isSyncingWorkflows || registrations.length === 0}
+                            >
+                                {isSyncingWorkflows ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                                Enviar Automatización Post evento
                             </Button>
                         </div>
                     </div>
