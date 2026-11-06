@@ -75,6 +75,7 @@ export interface EventRegistration {
   uid: string;
   status: "registered" | "attended" | "cancelled";
   source?: string;
+  is_new_lead?: boolean;
   contact_status?: string;
   notes?: string;
   created_at: string;

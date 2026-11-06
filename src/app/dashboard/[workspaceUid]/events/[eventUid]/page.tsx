@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { OrgEventService, OrgEvent, EventRegistration } from "@/services/events/org-event.service";
-import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check, Target, FileSpreadsheet, FileDown, MessageCircle } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, MapPin, Users, Link as LinkIcon, Radio, UserCheck, UserX, Copy, Check, Target, FileSpreadsheet, FileDown, MessageCircle, UserPlus, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -198,6 +198,9 @@ export default function EventDetailsPage() {
         const totalAttended = registrations.filter(r => r.status === "attended").length;
         const totalUnattended = registrations.filter(r => r.status === "registered").length;
 
+        const totalNewLeads = registrations.filter(r => r.is_new_lead).length;
+        const totalExistingLeads = totalRegistered - totalNewLeads;
+
         // Tarjetas base de asistencia
         const baseItems: KpiItem[] = [
             {
@@ -210,6 +213,29 @@ export default function EventDetailsPage() {
                 hoverShadow: "hover:shadow-blue-500/20",
                 borderColor: "hover:border-blue-400",
                 subtitle: "Inscritos al evento",
+            },
+            {
+                label: "Nuevos Leads",
+                value: totalNewLeads,
+                icon: UserPlus,
+                color: "text-amber-600",
+                iconBg: "bg-amber-100",
+                cardBg: "bg-amber-50/50 dark:bg-amber-950/20",
+                hoverShadow: "hover:shadow-amber-500/20",
+                borderColor: "hover:border-amber-400",
+                subtitle: "Creados recientemente",
+            },
+
+            {
+                label: "Leads Existente",
+                value: totalExistingLeads,
+                icon: Repeat, // O UsersRound
+                color: "text-purple-600",
+                iconBg: "bg-purple-100",
+                cardBg: "bg-purple-50/50 dark:bg-purple-950/20",
+                hoverShadow: "hover:shadow-purple-500/20",
+                borderColor: "hover:border-purple-400",
+                subtitle: "Ya existían en el CRM",
             },
             {
                 label: "Asistieron",
