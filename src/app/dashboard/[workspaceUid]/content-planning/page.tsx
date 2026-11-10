@@ -13,7 +13,7 @@ export default function ContentPlanningPage() {
       {/* Contenedor del Iframe */}
       <div className="flex-1 w-full bg-white border rounded-xl shadow-sm overflow-hidden">
         <iframe
-          src="/estrategia-noviembre-2026v3.html"
+          src="/estrategia-noviembre-2026NV.html"
           className="w-full h-[85vh]"
           title="Módulo de Planeaciones de Contenido"
           frameBorder="0"
