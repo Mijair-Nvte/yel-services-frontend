@@ -206,7 +206,7 @@ export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps):
     },
     {
         id: "confirmation_url",
-        header: "Enlace Público",
+        header: "Acceso Link",
         cell: ({ row }) => <CopyLinkCell url={row.original.confirmation_url} />,
     },
     {

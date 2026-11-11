@@ -50,6 +50,7 @@ export interface OrgEvent {
   ends_at?: string;
   is_all_day: boolean;
   is_active: boolean;
+  status: "active" | "completed" | "cancelled";
   created_at: string;
   updated_at: string;
   registrations_count?: number;

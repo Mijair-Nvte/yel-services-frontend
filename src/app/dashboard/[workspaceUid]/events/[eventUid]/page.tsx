@@ -291,9 +291,14 @@ export default function EventDetailsPage() {
     if (!event) return null;
 
     const isPast = new Date(event.starts_at) < new Date();
-    const eventStatus = !event.is_active ? "Inactivo" : isPast ? "Finalizado" : "Próximo";
+    const statusMap: Record<string, { label: string, color: string, isPast: boolean }> = {
+        'active': { label: 'Activo', color: 'bg-emerald-100 text-emerald-800', isPast: false },
+        'completed': { label: 'Finalizado', color: 'bg-slate-100 text-slate-600', isPast: true },
+        'cancelled': { label: 'Cancelado', color: 'bg-rose-100 text-rose-800', isPast: true }
+    };
     const imageUrl = event.cover_image_url || event.banner_image_url;
 
+    const currentStatus = statusMap[event.status] || statusMap['active'];
     return (
         <div className="space-y-6 p-1">
             {/* Botón de regreso */}
@@ -308,7 +313,7 @@ export default function EventDetailsPage() {
 
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-                <div className={`absolute top-0 left-0 w-full h-2 z-10 ${isPast ? 'bg-slate-300' : 'bg-indigo-500'}`} />
+                <div className={`absolute top-0 left-0 w-full h-2 z-10 ${currentStatus.isPast ? 'bg-slate-300' : 'bg-indigo-500'}`} />
 
                 <div className="p-6 md:p-8">
                     <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 lg:gap-6">
@@ -316,8 +321,9 @@ export default function EventDetailsPage() {
                         {/* IZQUIERDA: badges, título y datos clave en chips */}
                         <div className="flex-1 min-w-0 space-y-3">
                             <div className="flex flex-wrap items-center gap-2">
-                                <Badge className={`${isPast ? 'bg-slate-100 text-slate-600' : 'bg-emerald-100 text-emerald-800'} border-none uppercase tracking-wider text-[10px]`}>
-                                    {eventStatus}
+
+                                <Badge className={`${currentStatus.color} border-none uppercase tracking-wider text-[10px]`}>
+                                    {currentStatus.label}
                                 </Badge>
                                 <Badge variant="outline" className="text-slate-500 uppercase tracking-wider text-[10px] border-slate-200">
                                     {event.target_platform.replace('_', ' ')}

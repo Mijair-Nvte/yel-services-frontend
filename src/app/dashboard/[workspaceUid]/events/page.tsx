@@ -14,7 +14,7 @@ export default function EventsAdminPage() {
   const { workspaceUid } = useParams() as { workspaceUid: string };
   const router = useRouter();
   const { events, isLoading, loadData, createEvent, updateEvent, deleteEvent } = useAdminEvents(workspaceUid);
-  
+
   // Estados para el EventDialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<OrgEvent | null>(null);
@@ -26,7 +26,7 @@ export default function EventsAdminPage() {
   const kpiItems: KpiItem[] = useMemo(() => {
     const total = events.length;
     const active = events.filter(e => e.is_active && new Date(e.starts_at) >= new Date()).length;
-    const past = events.filter(e => new Date(e.starts_at) < new Date()).length;
+    const past = events.filter(e => e.status === 'completed' || e.status === 'cancelled').length;
 
     return [
       {
@@ -103,8 +103,8 @@ export default function EventsAdminPage() {
             Administra tus eventos presenciales y virtuales, controla los asistentes y mide el impacto.
           </p>
         </div>
-        <Button 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white" 
+        <Button
+          className="bg-indigo-600 hover:bg-indigo-700 text-white"
           onClick={() => {
             setSelectedEvent(null);
             setIsDialogOpen(true);

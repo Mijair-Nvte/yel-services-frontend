@@ -33,7 +33,7 @@ import {
   DEFAULT_EVENT_COLOR,
 } from "@/lib/calendar-colors";
 import { cn } from "@/lib/utils";
-import { Trash2 } from "lucide-react"; 
+import { Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { ImageUploader } from "@/components/ui/image-uploader";
 
@@ -67,13 +67,14 @@ export function EventDialog({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [targetPlatform, setTargetPlatform] = useState("yel_services");
+  const [status, setStatus] = useState("active");
   const isEditing = !!eventToEdit;
 
   const [coverImage, setCoverImage] = useState<File | string | null>(null);
   const [bannerImage, setBannerImage] = useState<File | string | null>(null);
   const [resources, setResources] = useState<ResourceItem[]>([]);
 
-  // 🔥 EFECTO MAGICO: Rellena los datos cuando se abre el modal para editar
+
   useEffect(() => {
     if (open) {
       if (eventToEdit) {
@@ -84,6 +85,7 @@ export function EventDialog({
         setExternalUrl(eventToEdit.external_url || "");
         setIsAllDay(eventToEdit.is_all_day);
         setTargetPlatform(eventToEdit.target_platform || "yel_services");
+        setStatus(eventToEdit.status || "active");
         setColor(
           (eventToEdit.color as CalendarColorKey) || DEFAULT_EVENT_COLOR,
         );
@@ -122,8 +124,7 @@ export function EventDialog({
         setIsAllDay(false);
         setColor(DEFAULT_EVENT_COLOR);
         setTargetPlatform("yel_services");
-        
-        // Si hay una fecha por defecto al hacer clic en el calendario, la cargamos tal cual
+        setStatus("active");
         setStartDate(
           defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : "",
         );
@@ -156,14 +157,12 @@ export function EventDialog({
         location,
         color,
         target_platform: targetPlatform,
+        status,
         meeting_url: meetingUrl,
         external_url: externalUrl,
-        
-        // ✅ CORRECCIÓN 2: Reemplazamos la "T" por espacio y no mandamos la "Z" de UTC
-        // Esto envía "2026-10-08 18:30:00" limpio al servidor
         starts_at: startDate ? startDate.replace('T', ' ') + ':00' : null,
         ends_at: endDate && !isAllDay ? endDate.replace('T', ' ') + ':00' : null,
-        
+
         is_all_day: isAllDay ? 1 : 0,
         resources: resources.map(r => ({
           title: r.title,
@@ -223,8 +222,8 @@ export function EventDialog({
             {isEditing ? "Editar Evento" : "Nuevo Evento"}
           </DialogTitle>
         </SheetHeader>
-      <div className="no-scrollbar overflow-y-auto px-4">
-      <div className="grid flex-1 auto-rows-min gap-6 px-4">
+        <div className="no-scrollbar overflow-y-auto px-4">
+          <div className="grid flex-1 auto-rows-min gap-6 px-4">
             <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
               <div className="space-y-2">
                 <ImageUploader
@@ -360,6 +359,20 @@ export function EventDialog({
                 <option value="yel_investor">Yel Investor</option>
               </select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Estatus del Evento</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">🟢 Activo (Abierto)</SelectItem>
+                <SelectItem value="completed">⚪ Finalizado (Cerrado)</SelectItem>
+                <SelectItem value="cancelled">🔴 Cancelado</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <SheetFooter >
