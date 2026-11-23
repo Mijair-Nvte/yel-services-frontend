@@ -92,7 +92,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     },
      {
       title: "Proyectos",
-      url: workspace ? `/dashboard/${workspace.uid}/projects`:"#",
+      url: workspace ? `/dashboard/${workspace.uid}/projects-v1`:"#",
       icon: ListChecks,
      
     },

@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { OrgEvent } from "@/services/events/org-event.service";
 import { DataTableRowActions } from "@/components/ui/data-table-row-actions";
-import { MapPin, Link as LinkIcon, Users, Eye, Copy, Check, CalendarDays, Tag } from "lucide-react";
+import { MapPin, Link as LinkIcon, Users, Eye, Copy, Check, CalendarDays, Tag, Lock } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -162,12 +162,20 @@ export const getEventColumns = ({ onEdit, onDelete, onView }: EventColumnProps):
                             <CalendarDays className="h-5 w-5 text-slate-400" />
                         )}
                     </div>
-                    <div
-                        className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer transition-colors max-w-[200px] sm:max-w-[300px] truncate"
-                        onClick={() => onView(ev)}
-                        title={ev.title}
-                    >
-                        {ev.title}
+                    <div className="flex flex-col gap-1 min-w-0">
+                        <div
+                            className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer transition-colors max-w-[200px] sm:max-w-[300px] truncate"
+                            onClick={() => onView(ev)}
+                            title={ev.title}
+                        >
+                            {ev.title}
+                        </div>
+                        {ev.is_private && (
+                            <Badge className="w-fit gap-1 bg-amber-100 text-amber-800 border-none shadow-none text-[10px] px-1.5 py-0">
+                                <Lock className="h-3 w-3" />
+                                Privado
+                            </Badge>
+                        )}
                     </div>
                 </div>
             );

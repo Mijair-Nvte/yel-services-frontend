@@ -33,19 +33,18 @@ import {
   DEFAULT_EVENT_COLOR,
 } from "@/lib/calendar-colors";
 import { cn } from "@/lib/utils";
-import { Trash2 } from "lucide-react";
+import { Trash2, Lock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { ImageUploader } from "@/components/ui/image-uploader";
-
+import { OrgEvent, EventResource } from "@/services/events/org-event.service";
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: FormData) => Promise<void>;
   onDelete?: () => Promise<void>;
-  eventToEdit?: any | null;
+  eventToEdit?: OrgEvent | null;
   defaultDate?: Date;
 }
-
 export function EventDialog({
   open,
   onOpenChange,
@@ -68,6 +67,7 @@ export function EventDialog({
   const [endDate, setEndDate] = useState("");
   const [targetPlatform, setTargetPlatform] = useState("yel_services");
   const [status, setStatus] = useState("active");
+  const [isPrivate, setIsPrivate] = useState(false);
   const isEditing = !!eventToEdit;
 
   const [coverImage, setCoverImage] = useState<File | string | null>(null);
@@ -86,6 +86,7 @@ export function EventDialog({
         setIsAllDay(eventToEdit.is_all_day);
         setTargetPlatform(eventToEdit.target_platform || "yel_services");
         setStatus(eventToEdit.status || "active");
+        setIsPrivate(!!eventToEdit.is_private);
         setColor(
           (eventToEdit.color as CalendarColorKey) || DEFAULT_EVENT_COLOR,
         );
@@ -104,7 +105,7 @@ export function EventDialog({
 
         if (eventToEdit.resources && Array.isArray(eventToEdit.resources)) {
           setResources(
-            eventToEdit.resources.map((r: any) => ({
+            eventToEdit.resources.map((r: EventResource) => ({
               title: r.title,
               url: r.url,
               file: null,
@@ -125,6 +126,7 @@ export function EventDialog({
         setColor(DEFAULT_EVENT_COLOR);
         setTargetPlatform("yel_services");
         setStatus("active");
+        setIsPrivate(false);
         setStartDate(
           defaultDate ? format(defaultDate, "yyyy-MM-dd'T'HH:mm") : "",
         );
@@ -164,6 +166,7 @@ export function EventDialog({
         ends_at: endDate && !isAllDay ? endDate.replace('T', ' ') + ':00' : null,
 
         is_all_day: isAllDay ? 1 : 0,
+        is_private: isPrivate,
         resources: resources.map(r => ({
           title: r.title,
           url: r.url || null,
@@ -317,7 +320,18 @@ export function EventDialog({
               <Label>Todo el día</Label>
               <Switch checked={isAllDay} onCheckedChange={setIsAllDay} />
             </div>
-
+            <div className="flex items-start justify-between gap-4 rounded-lg border p-3">
+              <div className="space-y-1">
+                <Label className="flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-amber-600" />
+                  Evento privado / exclusivo
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  No aparecerá en el listado público. Solo quienes tengan el enlace podrán verlo e inscribirse.
+                </p>
+              </div>
+              <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

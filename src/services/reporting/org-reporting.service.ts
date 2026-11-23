@@ -34,12 +34,14 @@ export interface EventPeriodData {
   kpis: {
     total_events: number;
     total_registrations: number;
+    total_attended: number; 
     attendance_rate: number;
   };
-  topEventsChart: { name: string; registrations: number }[];
+  topEventsChart: { name: string; registrations: number; attended: number }[];
   leadTypePie: PieChartData[];
   attendancePie: PieChartData[];
   sourcesPie: PieChartData[];
+  contactStatusPie: PieChartData[]; 
 }
 
 export interface EventsReportResponse {

@@ -2,25 +2,58 @@
 
 import { useState } from "react";
 import { useParams } from "next/navigation";
-import { BarChart3, Users, Ticket, Briefcase, ArrowRightLeft, Landmark,ShieldCheck } from "lucide-react";
+import { BarChart3, Users, Ticket, Briefcase, ArrowRightLeft, Landmark, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { EventsReport } from "@/components/reporting/events-report";
 import { ContactsReport } from "@/components/reporting/contacts-report";
-import { SalesReport } from "@/components/reporting/sales-report"; 
+import { SalesReport } from "@/components/reporting/sales-report";
 import { LoansReport } from "@/components/reporting/loans-report";
 import { InsuranceReport } from "@/components/reporting/insurance-report";
 import { AiInsightsSidebar } from "@/components/reporting/ai-insights-sidebar";
+
+const getDynamicDateRange = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0 = Enero, 11 = Diciembre
+
+  // Primer día del mes actual (Ej: 2026-11-01)
+  const startCurrent = new Date(year, month, 1);
+  // Último día del mes actual (Ej: 2026-11-30)
+  const endCurrent = new Date(year, month + 1, 0);
+
+  // Mes anterior exacto para la comparativa
+  const startPrev = new Date(year, month - 1, 1);
+  const endPrev = new Date(year, month, 0);
+
+  const formatDate = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
+  return {
+    currentStart: formatDate(startCurrent),
+    currentEnd: formatDate(endCurrent),
+    prevStart: formatDate(startPrev),
+    prevEnd: formatDate(endPrev),
+  };
+};
+
 export default function ReportingDashboardPage() {
   const { workspaceUid } = useParams() as { workspaceUid: string };
+  const dates = getDynamicDateRange();
 
-  const [start, setStart] = useState("2026-09-01");
-  const [end, setEnd] = useState("2026-09-30");
+ 
+  const [start, setStart] = useState(dates.currentStart);
+  const [end, setEnd] = useState(dates.currentEnd);
 
   const [isComparing, setIsComparing] = useState(false);
   const [compareStart, setCompareStart] = useState("2026-08-01");
   const [compareEnd, setCompareEnd] = useState("2026-08-31");
+
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-8 bg-slate-50/50 min-h-screen w-full">
@@ -64,13 +97,13 @@ export default function ReportingDashboardPage() {
             </div>
           )}
           <div className="ml-auto pl-4 border-l border-slate-200">
-            <AiInsightsSidebar 
-              workspaceUid={workspaceUid} 
-              start={start} 
-              end={end} 
-              isComparing={isComparing} 
-              compareStart={compareStart} 
-              compareEnd={compareEnd} 
+            <AiInsightsSidebar
+              workspaceUid={workspaceUid}
+              start={start}
+              end={end}
+              isComparing={isComparing}
+              compareStart={compareStart}
+              compareEnd={compareEnd}
             />
           </div>
         </div>
@@ -137,11 +170,11 @@ export default function ReportingDashboardPage() {
             </div>
             <h2 className="text-xl font-bold text-slate-800">Seguros y Pólizas</h2>
           </div>
-          <InsuranceReport 
-            workspaceUid={workspaceUid} 
-            start={start} end={end} 
-            isComparing={isComparing} 
-            compareStart={compareStart} compareEnd={compareEnd} 
+          <InsuranceReport
+            workspaceUid={workspaceUid}
+            start={start} end={end}
+            isComparing={isComparing}
+            compareStart={compareStart} compareEnd={compareEnd}
           />
         </section>
       </div>

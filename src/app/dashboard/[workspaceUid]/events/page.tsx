@@ -66,7 +66,7 @@ export default function EventsAdminPage() {
   }, [events]);
 
   // Manejador centralizado para Crear/Editar desde el Dialog
-  const handleSubmitEvent = async (data: any) => {
+  const handleSubmitEvent = async (data: FormData) => {
     if (selectedEvent) {
       await updateEvent(selectedEvent.uid, data);
     } else {
