@@ -10,6 +10,8 @@ export interface OrgProjectTask {
   department: string; // marketing_redes, pauta, eventos, ventas, etc.
   platform?: string;    // facebook, instagram, tiktok, google_ads, etc.
   task_type?: string;   // reel, carrusel, ad_campaign, etc.
+   phase?: string | null;  
+   is_milestone: boolean;
   start_date?: string;
   end_date?: string;
   status: "pending" | "in_progress" | "review" | "completed";
@@ -46,6 +48,8 @@ export interface SaveTaskDto {
   department: string;
   platform?: string;
   task_type?: string;
+   phase?: string | null;
+  is_milestone?: boolean;
   start_date?: string;
   end_date?: string;
   status?: string;

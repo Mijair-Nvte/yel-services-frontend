@@ -207,7 +207,7 @@ export function getPhaseKey(task: OrgProjectTask) {
 }
 
 // Abiertas primero, luego por fecha fin (sin fecha al final)
-function compareByDeadline(a: OrgProjectTask, b: OrgProjectTask) {
+export function compareByDeadline(a: OrgProjectTask, b: OrgProjectTask) {
   const aDone = a.status === "completed" ? 1 : 0;
   const bDone = b.status === "completed" ? 1 : 0;
   if (aDone !== bDone) return aDone - bDone;
