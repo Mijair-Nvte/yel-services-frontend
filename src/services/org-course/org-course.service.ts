@@ -23,12 +23,17 @@ export interface StoreResourceDto {
 }
 
 // --- Interfaces ---
+
+// 'course' = curso normal | 'class' = clases grabadas de sesiones en vivo
+export type CourseType = 'course' | 'class';
+
 export interface OrgCourse {
     id: number;
     uid: string;
     org_company_id: number;
     title: string;
     slug: string;
+    type: CourseType;
     description: string | null;
     cover_image_url: string | null;
     preview_video_url: string | null;
@@ -48,6 +53,7 @@ export interface OrgCourse {
 export interface CreateCourseDto {
     title: string;
     slug: string;
+    type?: CourseType;
     description?: string;
     cover_image_url?: string;
     preview_video_url?: string;

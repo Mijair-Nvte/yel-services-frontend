@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Save, Info, DollarSign } from "lucide-react";
 
-import { OrgCourse, CreateCourseDto, OrgCourseService } from "@/services/org-course/org-course.service";
+import { OrgCourse, CreateCourseDto, CourseType, OrgCourseService } from "@/services/org-course/org-course.service";
 import { apiFetch } from "@/services/http";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ export function CourseForm({ workspaceUid, initialData }: CourseFormProps) {
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     slug: initialData?.slug || "",
+    type: (initialData?.type ?? "course") as CourseType,
     description: initialData?.description || "",
     status: initialData?.status || "draft",
     is_active: initialData?.is_active ?? true,
@@ -225,6 +226,26 @@ export function CourseForm({ workspaceUid, initialData }: CourseFormProps) {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="type">Tipo de contenido</Label>
+                <Select
+                  disabled={isLoading}
+                  value={formData.type}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value as CourseType }))}
+                >
+                  <SelectTrigger id="type">
+                    <SelectValue placeholder="Selecciona el tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="course">Curso</SelectItem>
+                    <SelectItem value="class">Clase (grabaciones de sesiones en vivo)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-[13px] text-slate-500">
+                  Las clases se muestran en la sección Clases de la app, separadas de los cursos.
+                </p>
               </div>
 
               <div className="space-y-2">
